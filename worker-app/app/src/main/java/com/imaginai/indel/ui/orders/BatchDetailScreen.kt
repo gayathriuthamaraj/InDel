@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -71,6 +72,7 @@ fun BatchDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
     val batch = viewModel.getBatchById(batchId)
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val isZoneASingleStop = remember(batch?.batchId, batch?.zoneLevel, batch?.fromCity, batch?.toCity) {
         batch?.let { viewModel.isZoneASingleStop(it) } == true
     }
@@ -208,19 +210,25 @@ fun BatchDetailScreen(
                                                 orderDeliveryCodes[order.orderId] = ""
                                                 selectedZoneAOrderId = null
                                                 if (deliveryResult.batchCompleted) {
-                                                    stringResource(R.string.delivery_accepted_delivered)
+                                                    context.getString(R.string.delivery_accepted_delivered)
                                                 } else {
                                                     val remaining = deliveryResult.remainingOrders ?: (batch.orders.size - (deliveredOrderCount + 1))
-                                                    stringResource(R.string.delivery_accepted_remaining, remaining)
+                                                    context.getString(R.string.delivery_accepted_remaining, remaining)
                                                 }
                                             } else {
-                                                deliveryResult.errorMessage ?: stringResource(R.string.unable_complete_delivery_right_now)
+                                                deliveryResult.errorMessage ?: context.getString(R.string.unable_complete_delivery_right_now)
                                             }
                                         }
                                     }
                                 )
                             }
                             else -> {
+                                val msgPickupCode = stringResource(R.string.enter_pickup_code)
+                                val msgPickedUp = stringResource(R.string.batch_picked_up_successfully)
+                                val msgPickupFailed = stringResource(R.string.unable_pick_up_batch_right_now)
+                                val msgDeliveryCode = stringResource(R.string.enter_delivery_code_move)
+                                val msgDelivered = stringResource(R.string.delivery_accepted_delivered)
+                                val msgDeliveryFailed = stringResource(R.string.unable_complete_delivery_right_now)
                                 BatchActionCard(
                                     batch = batch,
                                     enteredCode = enteredCode,
@@ -229,7 +237,7 @@ fun BatchDetailScreen(
                                     onConfirmPickup = {
                                         val code = enteredCode.trim()
                                         if (code.isBlank()) {
-                                            feedbackMessage = stringResource(R.string.enter_pickup_code)
+                                            feedbackMessage = msgPickupCode
                                             return@BatchActionCard
                                         }
                                         isAccepting = true
@@ -238,16 +246,16 @@ fun BatchDetailScreen(
                                             isAccepting = false
                                             feedbackMessage = if (accepted.success) {
                                                 enteredCode = ""
-                                                stringResource(R.string.batch_picked_up_successfully)
+                                                msgPickedUp
                                             } else {
-                                                accepted.errorMessage ?: stringResource(R.string.unable_pick_up_batch_right_now)
+                                                accepted.errorMessage ?: msgPickupFailed
                                             }
                                         }
                                     },
                                     onConfirmDelivery = {
                                         val code = enteredCode.trim()
                                         if (code.isBlank()) {
-                                            feedbackMessage = stringResource(R.string.enter_delivery_code_move)
+                                            feedbackMessage = msgDeliveryCode
                                             return@BatchActionCard
                                         }
 
@@ -258,13 +266,13 @@ fun BatchDetailScreen(
                                             feedbackMessage = if (deliveryResult.success) {
                                                 enteredCode = ""
                                                 if (deliveryResult.batchCompleted) {
-                                                    stringResource(R.string.delivery_accepted_delivered)
+                                                    msgDelivered
                                                 } else {
                                                     val remaining = deliveryResult.remainingOrders ?: (batch.orders.size - (deliveredOrderCount + 1))
-                                                    stringResource(R.string.delivery_accepted_remaining, remaining)
+                                                    context.getString(R.string.delivery_accepted_remaining, remaining)
                                                 }
                                             } else {
-                                                deliveryResult.errorMessage ?: stringResource(R.string.unable_complete_delivery_right_now)
+                                                deliveryResult.errorMessage ?: msgDeliveryFailed
                                             }
                                         }
                                     },

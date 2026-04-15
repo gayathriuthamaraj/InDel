@@ -55,7 +55,7 @@
     <string name="earnings_today">आज की कमाई</string>
     <string name="completed_orders">पूर्ण: %1$d ऑर्डर</string>
     <string name="protection_status">सुरक्षा स्थिति</string>
-    <string name="protected">सुरक्षित</string>
+    <string name="status_protected">सुरक्षित</string>
     <string name="not_enrolled">नामांकित नहीं</string>
     <string name="coverage_percent">कवरेज: %1$d%%</string>
     <string name="protected_payouts">सुरक्षित पेआउट</string>
@@ -99,7 +99,7 @@
     <string name="baseline">बेसलाइन</string>
     <string name="income_insight">आय इनसाइट</string>
     <string name="earnings_insight_gap">कम गतिविधि (संभावित व्यवधान) के कारण आपकी कमाई ₹%1$d घटी। आपकी सुरक्षा से आपको ₹%2$d मिलेगा।</string>
-    <string name="earnings_insight_above">आपने अपनी बेसलाइन से ₹%1$d अधिक कमाया है। बहुत बढ़िया! आपकी सुरक्षा अगले सप्ताह भी सक्रिय रहेगी।</string>
+    <string name="earnings_insight_above">आपने अपनी बेसलाइन से Rs %1$d अधिक कमाया है। बहुत बढ़िया! अगले सप्ताह सक्रिय रहेगी।</string>
     <string name="weekly_history">साप्ताहिक इतिहास</string>
     <string name="above_baseline">बेसलाइन से ऊपर</string>
     <string name="below_baseline">बेसलाइन से नीचे</string>
@@ -217,7 +217,7 @@
     <string name="plan_stopped_successfully">प्लान सफलतापूर्वक बंद हुआ।</string>
     <string name="stop_premium_plan">प्रीमियम प्लान रोकें?</string>
     <string name="stop_plan_confirm">क्या आप वाकई प्लान रोकना चाहते हैं?</string>
-    <string name="coverage_end_restart_fee">आपकी कवरेज तुरंत समाप्त हो जाएगी। पुनः शुरू करने के लिए, आपको सक्रियण शुल्क (2× साप्ताहिक प्रीमियम) देना होगा।</string>
+    <string name="coverage_end_restart_fee">आपकी कवरेज तुरंत समाप्त हो जाएगी। पुनः शुरू करने के लिए, आपको सक्रियण शुल्क (2x साप्ताहिक प्रीमियम) देना होगा।</string>
     <string name="yes_stop_plan">हाँ, प्लान रोकें</string>
     <string name="keep_plan">प्लान बनाए रखें</string>
     <string name="stop_plan">प्लान रोकें</string>

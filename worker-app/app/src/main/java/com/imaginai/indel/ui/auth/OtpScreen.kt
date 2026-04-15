@@ -110,7 +110,7 @@ fun OtpScreen(
                 )
                 
                 Text(
-                    text = stringResource(R.string.test_otp, (uiState as OtpUiState.OtpSent).testOtp),
+                    text = stringResource(R.string.test_otp, (uiState as OtpUiState.OtpSent).testOtp ?: ""),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp, start = 4.dp).align(Alignment.Start)

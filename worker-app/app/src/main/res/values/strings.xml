@@ -22,7 +22,7 @@
     <string name="login_email_or_phone">Email or Phone</string>
     <string name="login_password">Password</string>
     <string name="login_cta">Login</string>
-    <string name="login_register_prompt">Don&apos;t have an account? Register</string>
+    <string name="login_register_prompt">No account? Register</string>
     <string name="otp_title">Worker Login</string>
     <string name="otp_subtitle">Secure your income and work</string>
     <string name="phone_number">Phone Number</string>
@@ -55,7 +55,7 @@
     <string name="earnings_today">Earnings Today</string>
     <string name="completed_orders">Completed: %1$d Orders</string>
     <string name="protection_status">Protection Status</string>
-    <string name="protected">Protected</string>
+    <string name="status_protected">Protected</string>
     <string name="not_enrolled">Not Enrolled</string>
     <string name="coverage_percent">Coverage: %1$d%%</string>
     <string name="protected_payouts">Protected Payouts</string>
@@ -84,7 +84,7 @@
     <string name="make_delivery">Make Delivery</string>
     <string name="view">View</string>
     <string name="batch_number">Batch #%1$s</string>
-    <string name="zone_order_count">Zone %1$s • %2$d orders</string>
+    <string name="zone_order_count">Zone %1$s &#8226; %2$d orders</string>
     <string name="pickup_city">Pickup: %1$s</string>
     <string name="drop_city">Drop: %1$s</string>
     <string name="partner">Partner</string>
@@ -99,7 +99,7 @@
     <string name="baseline">Baseline</string>
     <string name="income_insight">Income Insight</string>
     <string name="earnings_insight_gap">Due to reduced activity (likely disruption), your earnings dropped by ₹%1$d. Your protection ensures you receive ₹%2$d.</string>
-    <string name="earnings_insight_above">You&apos;ve exceeded your baseline by ₹%1$d. Great job! Your protection remains active for next week.</string>
+    <string name="earnings_insight_above">Exceeded baseline by Rs %1$d. Great! Protection active next week.</string>
     <string name="weekly_history">Weekly History</string>
     <string name="above_baseline">Above Baseline</string>
     <string name="below_baseline">Below Baseline</string>
@@ -138,8 +138,8 @@
     <string name="verify_your_location">Verify your location</string>
     <string name="enter_6_digit_zone_code">Enter the 6-digit code provided for your current work zone.</string>
     <string name="verification_code">Verification Code</string>
-    <string name="verify_start">Verify &amp; Start</string>
-    <string name="did_not_get_code_request_again">Didn&apos;t get a code? Request again</string>
+    <string name="verify_start">Verify and Start</string>
+    <string name="did_not_get_code_request_again">Did not receive code? Request again</string>
     <string name="session_tracking_wip">Session Tracking Screen (Work in Progress)</string>
     <string name="alerts_payout_updates">Alerts &amp; Payout Updates</string>
     <string name="disruption_alerts">Disruption Alerts</string>
@@ -217,7 +217,7 @@
     <string name="plan_stopped_successfully">Plan stopped successfully.</string>
     <string name="stop_premium_plan">Stop Premium Plan?</string>
     <string name="stop_plan_confirm">Are you sure you want to stop the plan?</string>
-    <string name="coverage_end_restart_fee">Your coverage will end immediately. To restart, you'll need to pay the activation fee (2× weekly premium).</string>
+    <string name="coverage_end_restart_fee">Your coverage will end immediately. To restart, pay the activation fee (2x weekly premium).</string>
     <string name="yes_stop_plan">Yes, Stop Plan</string>
     <string name="keep_plan">Keep Plan</string>
     <string name="stop_plan">Stop Plan</string>

@@ -55,7 +55,7 @@
     <string name="earnings_today">இன்றைய வருமானம்</string>
     <string name="completed_orders">முடிக்கப்பட்டது: %1$d ஆர்டர்கள்</string>
     <string name="protection_status">பாதுகாப்பு நிலை</string>
-    <string name="protected">பாதுகாக்கப்பட்டது</string>
+    <string name="status_protected">பாதுகாக்கப்பட்டது</string>
     <string name="not_enrolled">சேரவில்லை</string>
     <string name="coverage_percent">கவரேஜ்: %1$d%%</string>
     <string name="protected_payouts">பாதுகாக்கப்பட்ட பணப்பரிவர்த்தனை</string>
@@ -99,7 +99,7 @@
     <string name="baseline">அடித்தளம்</string>
     <string name="income_insight">வருமான பகுப்பாய்வு</string>
     <string name="earnings_insight_gap">செயல்பாடு குறைவதால் (இடையூறு இருக்கலாம்), உங்கள் வருமானம் ₹%1$d குறைந்தது. உங்கள் பாதுகாப்பு மூலம் ₹%2$d கிடைக்கும்.</string>
-    <string name="earnings_insight_above">உங்கள் அடித்தளத்தை விட ₹%1$d அதிகம் பெற்றுள்ளீர்கள். அருமை! அடுத்த வாரமும் பாதுகாப்பு செயலில் இருக்கும்.</string>
+    <string name="earnings_insight_above">Exceeded baseline by Rs %1$d. Good! Protection active next week.</string>
     <string name="weekly_history">வார வரலாறு</string>
     <string name="above_baseline">அடித்தளத்தை விட மேல்</string>
     <string name="below_baseline">அடித்தளத்தை விட கீழ்</string>
@@ -217,7 +217,7 @@
     <string name="plan_stopped_successfully">திட்டம் வெற்றிகரமாக நிறுத்தப்பட்டது.</string>
     <string name="stop_premium_plan">பிரீமியம் திட்டத்தை நிறுத்த வேண்டுமா?</string>
     <string name="stop_plan_confirm">நீங்கள் திட்டத்தை நிறுத்த விரும்புகிறீர்களா?</string>
-    <string name="coverage_end_restart_fee">உங்கள் கவரேஜ் உடனடியாக முடிவடையும். மீண்டும் தொடங்க, செயல்படுத்தும் கட்டணத்தை (2× வாராந்திர பிரீமியம்) செலுத்த வேண்டும்.</string>
+    <string name="coverage_end_restart_fee">உங்கள் கவரேஜ் உடனடியாக முடிவடையும். மீண்டும் தொடங்க, செயல்படுத்தும் கட்டணத்தை (2x வாராந்திர பிரீமியம்) செலுத்த வேண்டும்.</string>
     <string name="yes_stop_plan">ஆம், திட்டத்தை நிறுத்து</string>
     <string name="keep_plan">திட்டத்தை வைத்துக்கொள்</string>
     <string name="stop_plan">திட்டத்தை நிறுத்து</string>
