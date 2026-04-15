@@ -128,7 +128,7 @@ fun LandingContent(
             )
             SnapshotCard(
                 title = stringResource(R.string.status),
-                value = if (worker.enrolled == true) stringResource(R.string.protected) else stringResource(R.string.unprotected),
+                value = if (worker.enrolled == true) stringResource(R.string.status_protected) else stringResource(R.string.unprotected),
                 color = if (worker.enrolled == true) SuccessGreen else ErrorRed,
                 modifier = Modifier.weight(1f)
             )

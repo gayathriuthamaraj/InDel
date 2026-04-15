@@ -1,5 +1,6 @@
 package com.imaginai.indel.ui.localization
 
+import android.app.Activity
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
@@ -31,5 +32,8 @@ object AppLanguageManager {
             .apply()
 
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(normalized))
+
+        // Force UI refresh so Compose reads resources for the new locale immediately.
+        (context as? Activity)?.recreate()
     }
 }

@@ -1,8 +1,8 @@
 package com.imaginai.indel
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,7 +17,7 @@ import org.json.JSONObject
 import com.imaginai.indel.ui.localization.AppLanguageManager
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
+class MainActivity : AppCompatActivity(), PaymentResultWithDataListener {
     
     var razorpayCallback: ((success: Boolean, paymentId: String?, error: String?) -> Unit)? = null
 

@@ -100,7 +100,7 @@ fun EarningsContent(earnings: Earnings) {
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         EarningItem(stringResource(R.string.baseline), "₹${earnings.thisWeekBaseline.toInt()}", TextSecondary)
-                        EarningItem(stringResource(R.string.protected), "₹${earnings.protectedIncome.toInt()}", SuccessGreen)
+                        EarningItem(stringResource(R.string.status_protected), "₹${earnings.protectedIncome.toInt()}", SuccessGreen)
                     }
                 }
             }

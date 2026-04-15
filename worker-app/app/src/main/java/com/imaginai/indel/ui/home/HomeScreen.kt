@@ -120,7 +120,7 @@ fun HomeContent(
         // 3. Protection Status Card
         DashboardCard(
             title = stringResource(R.string.protection_status),
-            value = if (policy.status == "active") stringResource(R.string.protected) else stringResource(R.string.not_enrolled),
+            value = if (policy.status == "active") stringResource(R.string.status_protected) else stringResource(R.string.not_enrolled),
             subtitle = stringResource(R.string.coverage_percent, (policy.coverageRatio * 100).toInt()),
             icon = Icons.Default.Shield,
             color = if (policy.status == "active") SuccessGreen else WarningAmber,
