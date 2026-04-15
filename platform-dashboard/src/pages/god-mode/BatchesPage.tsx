@@ -109,7 +109,7 @@ export default function BatchesPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">God Mode tools</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Batch browser by zone</h2>
+          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Batch Browser</h2>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             Generate simulation orders, inspect every batch state, and reveal pickup or delivery codes only in admin mode.
           </p>

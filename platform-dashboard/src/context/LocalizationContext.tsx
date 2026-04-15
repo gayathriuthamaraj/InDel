@@ -14,7 +14,6 @@ export type TranslationKey =
   | 'sidebar.zones'
   | 'sidebar.analytics'
   | 'sidebar.viewBatches'
-  | 'sidebar.batchSimulation'
   | 'sidebar.chaosEngine'
   | 'sidebar.reconciliation'
   | 'sidebar.backendConnected'
@@ -138,8 +137,7 @@ const enTranslations: Record<TranslationKey, string> = {
   'sidebar.workers': 'Workers',
   'sidebar.zones': 'Zones',
   'sidebar.analytics': 'Analytics',
-  'sidebar.viewBatches': 'View Batches',
-  'sidebar.batchSimulation': 'Batch Simulation',
+  'sidebar.viewBatches': 'Batch Browser',
   'sidebar.chaosEngine': 'Chaos Engine',
   'sidebar.reconciliation': 'Reconciliation',
   'sidebar.backendConnected': 'Backend Connected',
@@ -264,7 +262,6 @@ const taTranslations: Record<TranslationKey, string> = {
   'sidebar.zones': 'மண்டலங்கள்',
   'sidebar.analytics': 'பகுப்பாய்வு',
   'sidebar.viewBatches': 'தொகுதிகளை காண்க',
-  'sidebar.batchSimulation': 'தொகுதி மாதிரிப்படுத்தல்',
   'sidebar.chaosEngine': 'கோளாறு இயந்திரம்',
   'sidebar.reconciliation': 'ஒப்புமை',
   'sidebar.backendConnected': 'பின்னணி இணைந்துள்ளது',
@@ -316,7 +313,6 @@ const hiTranslations: Record<TranslationKey, string> = {
   'sidebar.zones': 'ज़ोन्स',
   'sidebar.analytics': 'एनालिटिक्स',
   'sidebar.viewBatches': 'बैच देखें',
-  'sidebar.batchSimulation': 'बैच सिमुलेशन',
   'sidebar.chaosEngine': 'कैओस इंजन',
   'sidebar.reconciliation': 'रिकंसिलिएशन',
   'sidebar.backendConnected': 'बैकएंड कनेक्टेड',

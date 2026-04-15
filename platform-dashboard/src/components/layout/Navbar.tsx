@@ -13,7 +13,6 @@ export default function Navbar() {
     zones: t('sidebar.zones'),
     analytics: t('sidebar.analytics'),
     batches: t('sidebar.viewBatches'),
-    'batch-simulation': t('sidebar.batchSimulation'),
     disruptions: t('sidebar.chaosEngine'),
     reconciliation: t('sidebar.reconciliation'),
   }

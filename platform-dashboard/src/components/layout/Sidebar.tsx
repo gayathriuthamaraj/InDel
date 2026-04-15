@@ -20,7 +20,6 @@ const platformNav: NavItem[] = [
 
 const opsNav: NavItem[] = [
   { to: '/batches', labelKey: 'sidebar.viewBatches', icon: Sparkles },
-  { to: '/god-mode/batch-simulation', labelKey: 'sidebar.batchSimulation', icon: ShieldCheck },
   { to: '/disruptions', labelKey: 'sidebar.chaosEngine', icon: Zap },
   { to: '/reconciliation', labelKey: 'sidebar.reconciliation', icon: FileSearch },
 ]

@@ -23,26 +23,70 @@ type PlanActionPayload<T> = {
   user: T
 }
 
+export type LossRatioRow = {
+  zone_id: number
+  zone_name: string
+  city: string
+  premiums: number
+  claims: number
+  loss_ratio: number
+}
+
+export type ForecastRow = {
+  city: string
+  zone: string
+  date: string
+  probability: number
+}
+
+export type ClaimListRow = {
+  claim_id: number
+  disruption_id: number
+  worker_id: number
+  zone_name: string
+  claim_amount: number
+  status: string
+  fraud_verdict: string
+  created_at: string
+}
+
+export type FraudQueueRow = {
+  claim_id: number
+  worker_id: number
+  status: string
+  fraud_verdict: string
+  fraud_score: number
+  created_at: string
+}
+
 const unwrapSuccess = <T>(response: { data: SuccessEnvelope<T> }) => response.data.data
 const unwrapPaginated = <T>(response: { data: PaginatedEnvelope<T> }) => response.data
 
 export const getOverview = async <T = any>(): Promise<T> =>
   unwrapSuccess<T>(await client.get<SuccessEnvelope<T>>('/api/v1/insurer/overview'))
 
-export const getLossRatio = async <T = any>(params?: any): Promise<T> =>
-  unwrapSuccess<T>(await client.get<SuccessEnvelope<T>>('/api/v1/insurer/loss-ratio', { params }))
+export const getLossRatio = async (params?: { zone_id?: string }): Promise<LossRatioRow[]> =>
+  unwrapSuccess<LossRatioRow[]>(await client.get<SuccessEnvelope<LossRatioRow[]>>('/api/v1/insurer/loss-ratio', { params }))
 
-export const getClaims = async <T = any>(params?: any): Promise<PaginatedEnvelope<T>> =>
-  unwrapPaginated<T>(await client.get<PaginatedEnvelope<T>>('/api/v1/insurer/claims', { params }))
+export const getClaims = async (params?: {
+  page?: number
+  limit?: number
+  status?: string
+  fraud_verdict?: string
+}): Promise<PaginatedEnvelope<ClaimListRow[]>> =>
+  unwrapPaginated<ClaimListRow[]>(await client.get<PaginatedEnvelope<ClaimListRow[]>>('/api/v1/insurer/claims', { params }))
 
 export const getClaimDetail = async <T = any>(claimId: string): Promise<T> =>
   unwrapSuccess<T>(await client.get<SuccessEnvelope<T>>(`/api/v1/insurer/claims/${claimId}`))
 
-export const getFraudQueue = async <T = any>(params?: any): Promise<PaginatedEnvelope<T>> =>
-  unwrapPaginated<T>(await client.get<PaginatedEnvelope<T>>('/api/v1/insurer/claims/fraud-queue', { params }))
+export const getFraudQueue = async (params?: {
+  page?: number
+  limit?: number
+}): Promise<PaginatedEnvelope<FraudQueueRow[]>> =>
+  unwrapPaginated<FraudQueueRow[]>(await client.get<PaginatedEnvelope<FraudQueueRow[]>>('/api/v1/insurer/claims/fraud-queue', { params }))
 
-export const getForecast = async <T = any[]>(): Promise<T> => {
-  const response = await client.get<{ forecast: T }>('/api/v1/insurer/forecast')
+export const getForecast = async (): Promise<ForecastRow[]> => {
+  const response = await client.get<{ forecast: ForecastRow[] }>('/api/v1/insurer/forecast')
   return response.data.forecast
 }
 

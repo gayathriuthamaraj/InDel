@@ -10,7 +10,6 @@ import Disruptions from './pages/Disruptions'
 import ReconciliationOps from './pages/ReconciliationOps'
 import GodModeLayout from './pages/god-mode/GodModeLayout'
 import { GodModeProvider } from './pages/god-mode/state'
-import BatchSimulationPage from './pages/god-mode/BatchSimulationPage'
 
 export default function App() {
   return (
@@ -46,14 +45,7 @@ export default function App() {
                   </GodModeProvider>
                 )}
               />
-              <Route
-                path="/god-mode/batch-simulation"
-                element={(
-                  <GodModeProvider>
-                    <BatchSimulationPage />
-                  </GodModeProvider>
-                )}
-              />
+              <Route path="/god-mode/batch-simulation" element={<Navigate to="/batches" replace />} />
               <Route path="/weekly-cycle" element={<Navigate to="/" replace />} />
               <Route path="/payout-ops" element={<Navigate to="/" replace />} />
               <Route path="/synthetic-data" element={<Navigate to="/" replace />} />
