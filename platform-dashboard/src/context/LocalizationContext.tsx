@@ -15,10 +15,7 @@ export type TranslationKey =
   | 'sidebar.analytics'
   | 'sidebar.viewBatches'
   | 'sidebar.batchSimulation'
-  | 'sidebar.syntheticData'
   | 'sidebar.chaosEngine'
-  | 'sidebar.weeklyCycle'
-  | 'sidebar.payoutOps'
   | 'sidebar.reconciliation'
   | 'sidebar.backendConnected'
   | 'sidebar.backendOffline'
@@ -143,10 +140,7 @@ const enTranslations: Record<TranslationKey, string> = {
   'sidebar.analytics': 'Analytics',
   'sidebar.viewBatches': 'View Batches',
   'sidebar.batchSimulation': 'Batch Simulation',
-  'sidebar.syntheticData': 'Synthetic Data',
   'sidebar.chaosEngine': 'Chaos Engine',
-  'sidebar.weeklyCycle': 'Weekly Cycle',
-  'sidebar.payoutOps': 'Payout Ops',
   'sidebar.reconciliation': 'Reconciliation',
   'sidebar.backendConnected': 'Backend Connected',
   'sidebar.backendOffline': 'Backend Offline',
@@ -271,10 +265,7 @@ const taTranslations: Record<TranslationKey, string> = {
   'sidebar.analytics': 'பகுப்பாய்வு',
   'sidebar.viewBatches': 'தொகுதிகளை காண்க',
   'sidebar.batchSimulation': 'தொகுதி மாதிரிப்படுத்தல்',
-  'sidebar.syntheticData': 'செயற்கை தரவு',
   'sidebar.chaosEngine': 'கோளாறு இயந்திரம்',
-  'sidebar.weeklyCycle': 'வாரச்சுழற்சி',
-  'sidebar.payoutOps': 'பணம் செலுத்தல் செயல்பாடுகள்',
   'sidebar.reconciliation': 'ஒப்புமை',
   'sidebar.backendConnected': 'பின்னணி இணைந்துள்ளது',
   'sidebar.backendOffline': 'பின்னணி ஆஃப்லைன்',
@@ -326,10 +317,7 @@ const hiTranslations: Record<TranslationKey, string> = {
   'sidebar.analytics': 'एनालिटिक्स',
   'sidebar.viewBatches': 'बैच देखें',
   'sidebar.batchSimulation': 'बैच सिमुलेशन',
-  'sidebar.syntheticData': 'सिंथेटिक डेटा',
   'sidebar.chaosEngine': 'कैओस इंजन',
-  'sidebar.weeklyCycle': 'साप्ताहिक चक्र',
-  'sidebar.payoutOps': 'पेआउट ऑप्स',
   'sidebar.reconciliation': 'रिकंसिलिएशन',
   'sidebar.backendConnected': 'बैकएंड कनेक्टेड',
   'sidebar.backendOffline': 'बैकएंड ऑफलाइन',

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import Navbar from './Navbar'
-import { LayoutDashboard, Users, Map, BarChart3, Zap, ShieldCheck, Sparkles, CalendarClock, CircleDollarSign, FileSearch, Database } from 'lucide-react'
+import { LayoutDashboard, Users, Map, BarChart3, Zap, ShieldCheck, Sparkles, FileSearch } from 'lucide-react'
 import { getZones } from '../../api/platform'
 import { useLocalization, type Language, type TranslationKey } from '../../context/LocalizationContext'
 
@@ -21,10 +21,7 @@ const platformNav: NavItem[] = [
 const opsNav: NavItem[] = [
   { to: '/batches', labelKey: 'sidebar.viewBatches', icon: Sparkles },
   { to: '/god-mode/batch-simulation', labelKey: 'sidebar.batchSimulation', icon: ShieldCheck },
-  { to: '/synthetic-data', labelKey: 'sidebar.syntheticData', icon: Database },
   { to: '/disruptions', labelKey: 'sidebar.chaosEngine', icon: Zap },
-  { to: '/weekly-cycle', labelKey: 'sidebar.weeklyCycle', icon: CalendarClock },
-  { to: '/payout-ops', labelKey: 'sidebar.payoutOps', icon: CircleDollarSign },
   { to: '/reconciliation', labelKey: 'sidebar.reconciliation', icon: FileSearch },
 ]
 

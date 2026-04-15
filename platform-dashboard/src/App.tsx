@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { LocalizationProvider } from './context/LocalizationContext'
 import Sidebar from './components/layout/Sidebar'
@@ -7,10 +7,7 @@ import Workers from './pages/Workers'
 import Zones from './pages/Zones'
 import Analytics from './pages/Analytics'
 import Disruptions from './pages/Disruptions'
-import WeeklyCycleOps from './pages/WeeklyCycleOps'
-import PayoutOps from './pages/PayoutOps'
 import ReconciliationOps from './pages/ReconciliationOps'
-import SyntheticDataOps from './pages/SyntheticDataOps'
 import GodModeLayout from './pages/god-mode/GodModeLayout'
 import { GodModeProvider } from './pages/god-mode/state'
 import BatchSimulationPage from './pages/god-mode/BatchSimulationPage'
@@ -31,8 +28,6 @@ export default function App() {
               <Route path="/workers" element={<Workers />} />
               <Route path="/zones" element={<Zones />} />
               <Route path="/analytics" element={<Analytics />} />
-              <Route path="/weekly-cycle" element={<WeeklyCycleOps />} />
-              <Route path="/payout-ops" element={<PayoutOps />} />
               <Route path="/reconciliation" element={<ReconciliationOps />} />
               <Route path="/disruptions" element={<Disruptions />} />
               <Route
@@ -40,14 +35,6 @@ export default function App() {
                 element={(
                   <GodModeProvider>
                     <GodModeLayout />
-                  </GodModeProvider>
-                )}
-              />
-              <Route
-                path="/synthetic-data"
-                element={(
-                  <GodModeProvider>
-                    <SyntheticDataOps />
                   </GodModeProvider>
                 )}
               />
@@ -67,6 +54,10 @@ export default function App() {
                   </GodModeProvider>
                 )}
               />
+              <Route path="/weekly-cycle" element={<Navigate to="/" replace />} />
+              <Route path="/payout-ops" element={<Navigate to="/" replace />} />
+              <Route path="/synthetic-data" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Sidebar>
         </Router>

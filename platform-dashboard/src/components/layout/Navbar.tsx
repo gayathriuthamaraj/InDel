@@ -14,10 +14,7 @@ export default function Navbar() {
     analytics: t('sidebar.analytics'),
     batches: t('sidebar.viewBatches'),
     'batch-simulation': t('sidebar.batchSimulation'),
-    'synthetic-data': t('sidebar.syntheticData'),
     disruptions: t('sidebar.chaosEngine'),
-    'weekly-cycle': t('sidebar.weeklyCycle'),
-    'payout-ops': t('sidebar.payoutOps'),
     reconciliation: t('sidebar.reconciliation'),
   }
   
