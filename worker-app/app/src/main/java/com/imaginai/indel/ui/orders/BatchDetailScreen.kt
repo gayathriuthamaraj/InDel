@@ -42,10 +42,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.BackgroundWarmWhite
 import com.imaginai.indel.ui.theme.BlueSoft
@@ -92,10 +94,10 @@ fun BatchDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Batch Details", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.batch_details), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -126,14 +128,13 @@ fun BatchDetailScreen(
                             Column(modifier = Modifier.padding(14.dp)) {
                                 Text(batch.batchId, style = MaterialTheme.typography.titleSmall, color = BrandBlue, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Text("Zone ${batch.zoneLevel}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.zone_value, batch.zoneLevel), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                                 Text(compactRouteLabel(batch.zoneLevel, batch.fromCity, batch.toCity), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text("${formatBatchWeight(batch.totalWeight)} kg • ${batch.orderCount} orders", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                                Text("Batch earning: ₹${String.format(java.util.Locale.getDefault(), "%.0f", batch.batchEarningInr ?: 0.0)}", style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
+                                Text(stringResource(R.string.batch_earning_value, String.format(java.util.Locale.getDefault(), "%.0f", batch.batchEarningInr ?: 0.0)), style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
                                 if (batch.totalWeight < 10.0) {
-                                    Text("Packing below target; waiting for more orders.", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                                    Text(stringResource(R.string.packing_below_target), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                                 } else {
-                                    Text("Packed for the 10-12 kg range.", style = MaterialTheme.typography.labelSmall, color = SuccessGreen)
+                                    Text(stringResource(R.string.packed_for_range), style = MaterialTheme.typography.labelSmall, color = SuccessGreen)
                                 }
                             }
                         }
@@ -147,19 +148,19 @@ fun BatchDetailScreen(
                             border = androidx.compose.foundation.BorderStroke(1.dp, BlueSoft)
                         ) {
                             Column(modifier = Modifier.padding(14.dp)) {
-                                Text("Delivery progress", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.delivery_progress), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    "$deliveredOrderCount/${batch.orders.size} orders delivered",
+                                    stringResource(R.string.orders_delivered, deliveredOrderCount, batch.orders.size),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
                                     color = BrandBlue
                                 )
                                 Text(
                                     when {
-                                        normalizedBatchStatus == "delivered" -> "Batch completed. Earnings are already released."
-                                        normalizedBatchStatus == "picked_up" -> if (isZoneASingleStop) "Enter each order delivery code and verify one order at a time." else "Enter the delivery code and tap Verify & Move to complete the batch."
-                                        else -> "Pick up the batch first before starting delivery."
+                                        normalizedBatchStatus == "delivered" -> stringResource(R.string.batch_completed_earnings_released)
+                                        normalizedBatchStatus == "picked_up" -> if (isZoneASingleStop) stringResource(R.string.enter_each_order_delivery_code) else stringResource(R.string.enter_delivery_code_move)
+                                        else -> stringResource(R.string.pick_up_batch_first)
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
@@ -178,10 +179,10 @@ fun BatchDetailScreen(
                                     border = androidx.compose.foundation.BorderStroke(1.dp, SuccessGreen)
                                 ) {
                                     Column(modifier = Modifier.padding(14.dp)) {
-                                        Text("Delivery complete", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SuccessGreen)
+                                        Text(stringResource(R.string.delivery_complete), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SuccessGreen)
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            "All orders in this batch are delivered and the earnings have been posted.",
+                                            stringResource(R.string.all_orders_delivered_posted),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = TextSecondary
                                         )
@@ -207,13 +208,13 @@ fun BatchDetailScreen(
                                                 orderDeliveryCodes[order.orderId] = ""
                                                 selectedZoneAOrderId = null
                                                 if (deliveryResult.batchCompleted) {
-                                                    "Delivery accepted. Batch status changed to delivered."
+                                                    stringResource(R.string.delivery_accepted_delivered)
                                                 } else {
                                                     val remaining = deliveryResult.remainingOrders ?: (batch.orders.size - (deliveredOrderCount + 1))
-                                                    "Delivery accepted. $remaining order(s) remaining in this batch."
+                                                    stringResource(R.string.delivery_accepted_remaining, remaining)
                                                 }
                                             } else {
-                                                deliveryResult.errorMessage ?: "Unable to complete delivery right now."
+                                                deliveryResult.errorMessage ?: stringResource(R.string.unable_complete_delivery_right_now)
                                             }
                                         }
                                     }
@@ -228,7 +229,7 @@ fun BatchDetailScreen(
                                     onConfirmPickup = {
                                         val code = enteredCode.trim()
                                         if (code.isBlank()) {
-                                            feedbackMessage = "Enter pickup code"
+                                            feedbackMessage = stringResource(R.string.enter_pickup_code)
                                             return@BatchActionCard
                                         }
                                         isAccepting = true
@@ -237,16 +238,16 @@ fun BatchDetailScreen(
                                             isAccepting = false
                                             feedbackMessage = if (accepted.success) {
                                                 enteredCode = ""
-                                                "Batch picked up successfully."
+                                                stringResource(R.string.batch_picked_up_successfully)
                                             } else {
-                                                accepted.errorMessage ?: "Unable to pick up this batch right now."
+                                                accepted.errorMessage ?: stringResource(R.string.unable_pick_up_batch_right_now)
                                             }
                                         }
                                     },
                                     onConfirmDelivery = {
                                         val code = enteredCode.trim()
                                         if (code.isBlank()) {
-                                            feedbackMessage = "Enter delivery code"
+                                            feedbackMessage = stringResource(R.string.enter_delivery_code_move)
                                             return@BatchActionCard
                                         }
 
@@ -257,13 +258,13 @@ fun BatchDetailScreen(
                                             feedbackMessage = if (deliveryResult.success) {
                                                 enteredCode = ""
                                                 if (deliveryResult.batchCompleted) {
-                                                    "Delivery accepted. Batch status changed to delivered."
+                                                    stringResource(R.string.delivery_accepted_delivered)
                                                 } else {
                                                     val remaining = deliveryResult.remainingOrders ?: (batch.orders.size - (deliveredOrderCount + 1))
-                                                    "Delivery accepted. $remaining order(s) remaining in this batch."
+                                                    stringResource(R.string.delivery_accepted_remaining, remaining)
                                                 }
                                             } else {
-                                                deliveryResult.errorMessage ?: "Unable to complete delivery right now."
+                                                deliveryResult.errorMessage ?: stringResource(R.string.unable_complete_delivery_right_now)
                                             }
                                         }
                                     },
@@ -275,7 +276,7 @@ fun BatchDetailScreen(
                     }
 
                     item {
-                        Text("Orders in this batch", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.orders_in_this_batch), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
 
                     items(batch.orders) { nestedOrder ->
@@ -286,21 +287,21 @@ fun BatchDetailScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
-                                Text("Order ${nestedOrder.orderId}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.order_value, nestedOrder.orderId), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Text("Address: ${nestedOrder.deliveryAddress}", style = MaterialTheme.typography.bodySmall)
-                                Text("Contact: ${nestedOrder.contactName}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                                Text("Phone: ${nestedOrder.contactPhone}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                                Text("Pickup: ${compactRouteLabel(batch.zoneLevel, nestedOrder.pickupArea ?: "-", nestedOrder.dropArea ?: nestedOrder.deliveryAddress)}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.address_value, nestedOrder.deliveryAddress), style = MaterialTheme.typography.bodySmall)
+                                Text(stringResource(R.string.contact_value, nestedOrder.contactName), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.phone_value, nestedOrder.contactPhone), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.pickup_value, compactRouteLabel(batch.zoneLevel, nestedOrder.pickupArea ?: "-", nestedOrder.dropArea ?: nestedOrder.deliveryAddress)), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                                 if (!nestedOrder.pickupTime.isNullOrBlank()) {
-                                    Text("Picked up: ${nestedOrder.pickupTime}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                    Text(stringResource(R.string.picked_up_value, nestedOrder.pickupTime), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                                 }
                                 if (!nestedOrder.deliveryTime.isNullOrBlank()) {
-                                    Text("Delivered: ${nestedOrder.deliveryTime}", style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
+                                    Text(stringResource(R.string.delivered_value, nestedOrder.deliveryTime), style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
                                 }
 
-                                Text("Weight: ${formatBatchWeight(nestedOrder.weight)} kg", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                                Text("Status: ${nestedOrder.status ?: "assigned"}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.weight_value, formatBatchWeight(nestedOrder.weight)), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text(stringResource(R.string.status_value, nestedOrder.status ?: stringResource(R.string.assigned_status)), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                                 Divider(modifier = Modifier.padding(top = 8.dp), color = Color(0xFFE9ECEF))
                             }
                         }
@@ -315,7 +316,7 @@ fun BatchDetailScreen(
                         .background(BackgroundWarmWhite),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Loading batch...", color = TextSecondary)
+                    Text(stringResource(R.string.loading_batch), color = TextSecondary)
                 }
             }
             else -> {
@@ -326,7 +327,7 @@ fun BatchDetailScreen(
                         .background(BackgroundWarmWhite),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Batch not found", color = TextSecondary)
+                    Text(stringResource(R.string.batch_not_found), color = TextSecondary)
                 }
             }
         }
@@ -351,9 +352,9 @@ private fun ZoneABatchDeliverySection(
         border = androidx.compose.foundation.BorderStroke(1.dp, BrandBlue.copy(alpha = 0.25f))
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Zone A delivery", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = BrandBlue)
+            Text(stringResource(R.string.zone_a_delivery), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = BrandBlue)
             Text(
-                "Deliver each order individually. The batch completes only when all orders are delivered.",
+                stringResource(R.string.deliver_each_order),
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
             )
@@ -379,14 +380,14 @@ private fun ZoneABatchDeliverySection(
                         Text("Contact: ${order.contactName}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                         Text("Phone: ${order.contactPhone}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                         if (!order.deliveryTime.isNullOrBlank()) {
-                            Text("Delivered at: ${order.deliveryTime}", style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
+                            Text(stringResource(R.string.delivered_at_value, order.deliveryTime), style = MaterialTheme.typography.bodySmall, color = SuccessGreen)
                         }
 
                         if (isDelivered) {
-                            Text("Delivered", color = SuccessGreen, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.delivery_complete), color = SuccessGreen, fontWeight = FontWeight.Bold)
                         } else {
                             Text(
-                                if (isExpanded) "Enter the delivery code for this order and verify it." else "Tap to enter delivery code",
+                                if (isExpanded) stringResource(R.string.enter_code_for_order) else stringResource(R.string.tap_to_enter_delivery_code),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
@@ -397,8 +398,8 @@ private fun ZoneABatchDeliverySection(
                                     onValueChange = { orderDeliveryCodes[order.orderId] = it.take(4) },
                                     modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
-                                    label = { Text("Delivery code") },
-                                    placeholder = { Text("Enter 4-digit code") }
+                                    label = { Text(stringResource(R.string.delivery_code)) },
+                                    placeholder = { Text(stringResource(R.string.enter_4_digit_code_short)) }
                                 )
                                 Button(
                                     onClick = {
@@ -413,10 +414,10 @@ private fun ZoneABatchDeliverySection(
                                     shape = RoundedCornerShape(12.dp),
                                     enabled = !isDelivering
                                 ) {
-                                    Text(if (isDelivering) "Checking..." else "Verify & Move")
+                                    Text(if (isDelivering) stringResource(R.string.checking) else stringResource(R.string.verify_move))
                                 }
                                 Text(
-                                    "Enter this exact order code to deliver this order. Batch completes when all orders are delivered.",
+                                    stringResource(R.string.exact_order_code_hint),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )

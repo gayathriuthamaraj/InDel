@@ -7,12 +7,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
+import com.imaginai.indel.ui.localization.AppLanguageManager
 import com.imaginai.indel.ui.shared.vehicleOptionsForZoneLevel
 import com.imaginai.indel.ui.shared.zoneLevelOptions
 
@@ -22,6 +26,7 @@ fun ProfileEditScreen(
     navController: NavController,
     viewModel: ProfileEditViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val name by viewModel.name.collectAsState()
     val zoneLevel by viewModel.zoneLevel.collectAsState()
     val zoneName by viewModel.zoneName.collectAsState()
@@ -38,6 +43,8 @@ fun ProfileEditScreen(
     var zoneLevelExpanded by remember { mutableStateOf(false) }
     var zoneNameExpanded by remember { mutableStateOf(false) }
     var vehicleExpanded by remember { mutableStateOf(false) }
+    var languageExpanded by remember { mutableStateOf(false) }
+    var selectedLanguage by remember { mutableStateOf(AppLanguageManager.getSavedLanguage(context)) }
 
     LaunchedEffect(uiState) {
         if (uiState is ProfileEditUiState.Saved) {
@@ -48,10 +55,10 @@ fun ProfileEditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.edit_profile), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -69,10 +76,57 @@ fun ProfileEditScreen(
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
+            ExposedDropdownMenuBox(
+                expanded = languageExpanded,
+                onExpandedChange = { languageExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = when (selectedLanguage) {
+                        "ta" -> stringResource(R.string.language_tamil)
+                        "hi" -> stringResource(R.string.language_hindi)
+                        else -> stringResource(R.string.language_english)
+                    },
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.language)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = languageExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                )
+                ExposedDropdownMenu(
+                    expanded = languageExpanded,
+                    onDismissRequest = { languageExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.language_english)) },
+                        onClick = {
+                            selectedLanguage = "en"
+                            AppLanguageManager.setLanguage(context, "en")
+                            languageExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.language_tamil)) },
+                        onClick = {
+                            selectedLanguage = "ta"
+                            AppLanguageManager.setLanguage(context, "ta")
+                            languageExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.language_hindi)) },
+                        onClick = {
+                            selectedLanguage = "hi"
+                            AppLanguageManager.setLanguage(context, "hi")
+                            languageExpanded = false
+                        }
+                    )
+                }
+            }
+
             OutlinedTextField(
                 value = name,
                 onValueChange = viewModel::onNameChanged,
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.full_name)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -82,10 +136,10 @@ fun ProfileEditScreen(
                 onExpandedChange = { zoneLevelExpanded = it }
             ) {
                 OutlinedTextField(
-                    value = zoneLevel.ifBlank { "Select Zone Level" },
+                    value = zoneLevel.ifBlank { stringResource(R.string.select_zone_level) },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Zone Level") },
+                    label = { Text(stringResource(R.string.zone_level)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = zoneLevelExpanded) },
                     modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 )
@@ -118,8 +172,8 @@ fun ProfileEditScreen(
                         zoneNameExpanded = true 
                     },
                     readOnly = isHub,
-                    label = { Text(if (isHub) "Select Hub" else "Search Zone Name") },
-                    placeholder = { if (!isHub) Text("Start typing city name...") },
+                    label = { Text(if (isHub) stringResource(R.string.select_hub) else stringResource(R.string.search_zone_name)) },
+                    placeholder = { if (!isHub) Text(stringResource(R.string.start_typing_city_name)) },
                     trailingIcon = { 
                         if (isFetchingPaths) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         else ExposedDropdownMenuDefaults.TrailingIcon(expanded = zoneNameExpanded)
@@ -145,7 +199,7 @@ fun ProfileEditScreen(
                     } else {
                         if (filteredPaths.isEmpty() && zoneName.isNotBlank()) {
                             DropdownMenuItem(
-                                text = { Text("No matches found", color = Color.Gray) },
+                                text = { Text(stringResource(R.string.no_matches_found), color = Color.Gray) },
                                 onClick = { },
                                 enabled = false
                             )
@@ -169,10 +223,10 @@ fun ProfileEditScreen(
                 onExpandedChange = { vehicleExpanded = it }
             ) {
                 OutlinedTextField(
-                    value = vehicleType.ifBlank { "Select Vehicle" },
+                    value = vehicleType.ifBlank { stringResource(R.string.select_vehicle) },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Vehicle Type") },
+                    label = { Text(stringResource(R.string.vehicle_type)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehicleExpanded) },
                     modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 )
@@ -195,7 +249,7 @@ fun ProfileEditScreen(
             OutlinedTextField(
                 value = upiId,
                 onValueChange = viewModel::onUpiIdChanged,
-                label = { Text("UPI ID") },
+                label = { Text(stringResource(R.string.upi_id)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -218,7 +272,7 @@ fun ProfileEditScreen(
                 if (uiState is ProfileEditUiState.Saving) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                 } else {
-                    Text("Save Changes")
+                    Text(stringResource(R.string.save_changes))
                 }
             }
         }

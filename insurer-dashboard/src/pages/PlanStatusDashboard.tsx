@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { endUserPlan, getPlanUsers, startUserPlan } from '../api/insurer'
 import type { PlanUser } from '../types'
+import { useLocalization } from '../context/LocalizationContext'
 
 const chartTypes = [
   { label: 'Pie: In Plan vs Not', value: 'pie' },
@@ -12,6 +13,7 @@ const chartTypes = [
 const COLORS = ['#0088FE', '#FF8042']
 
 export default function PlanStatusDashboard() {
+  const { t } = useLocalization()
   const [users, setUsers] = useState<PlanUser[]>([])
   const [chartType, setChartType] = useState('pie')
   const [loading, setLoading] = useState(true)
@@ -85,7 +87,7 @@ export default function PlanStatusDashboard() {
     <div style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 8 }}>Plan Status Analytics</h2>
+          <h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 8 }}>{t('pages.planStatus.title')}</h2>
           <p style={{ color: '#64748b', margin: 0 }}>
             Start or end a worker plan from the same dataset used by the charts below.
           </p>

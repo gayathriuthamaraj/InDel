@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getFraudQueue } from '../api/insurer'
 import { PageShell, Panel } from './OperationsShared'
+import { useLocalization } from '../context/LocalizationContext'
 
 type FraudRow = {
   claim_id: number
@@ -11,6 +12,7 @@ type FraudRow = {
 }
 
 export default function FraudQueue() {
+  const { t } = useLocalization()
   const [rows, setRows] = useState<FraudRow[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -22,21 +24,21 @@ export default function FraudQueue() {
 
   return (
     <PageShell
-      eyebrow="Security"
-      title="Fraud Analysis Queue"
-      description="Review high-risk claims routed for manual verification by the ML scoring engine."
+      eyebrow={t('pages.fraudQueue.eyebrow')}
+      title={t('pages.fraudQueue.title')}
+      description={t('pages.fraudQueue.description')}
     >
       <div className="grid gap-8">
-        <Panel title="Security Flags" subtitle="Sorted by anomaly priority for manual review.">
+        <Panel title={t('pages.fraudQueue.securityFlags')} subtitle={t('pages.fraudQueue.securityFlagsSubtitle')}>
           {error ? <p className="text-[10px] font-black uppercase text-rose-600 mb-6 font-bold">{error}</p> : null}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[11px]">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800">
-                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400">ID</th>
-                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Signal</th>
-                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400 text-right">Anomaly Score</th>
-                  <th className="pb-4 text-right font-black uppercase tracking-widest text-slate-400">Verification</th>
+                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.fraudQueue.headerID')}</th>
+                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.fraudQueue.headerSignal')}</th>
+                  <th className="pb-4 font-black uppercase tracking-widest text-slate-400 text-right">{t('pages.fraudQueue.headerAnomalyScore')}</th>
+                  <th className="pb-4 text-right font-black uppercase tracking-widest text-slate-400">{t('pages.fraudQueue.headerVerification')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -69,7 +71,7 @@ export default function FraudQueue() {
                 {rows.length === 0 && !error ? (
                   <tr>
                     <td className="py-12 text-center text-slate-400 italic" colSpan={4}>
-                       Security clearance complete. No flags.
+                       {t('pages.fraudQueue.noData')}
                     </td>
                   </tr>
                 ) : null}

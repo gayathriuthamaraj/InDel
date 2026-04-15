@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { getLossRatio } from '../api/insurer'
 import { PageShell, Panel } from './OperationsShared'
+import { useLocalization } from '../context/LocalizationContext'
 
 type LossRatioRow = {
   city: string
@@ -12,6 +13,7 @@ type LossRatioRow = {
 }
 
 export default function LossRatio() {
+  const { t } = useLocalization()
   const [rows, setRows] = useState<LossRatioRow[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -30,12 +32,12 @@ export default function LossRatio() {
 
   return (
     <PageShell
-      eyebrow="Analysis"
-      title="Loss Ratio Distribution"
-      description="Deep dive into zone performance and risk concentration across the active insurer book."
+      eyebrow={t('pages.lossRatio.eyebrow')}
+      title={t('pages.lossRatio.title')}
+      description={t('pages.lossRatio.description')}
     >
       <div className="grid gap-8 xl:grid-cols-[1fr_0.4fr]">
-        <Panel title="Zone Metrics" subtitle="Variance across active operational zones.">
+        <Panel title={t('pages.lossRatio.zoneMetrics')} subtitle={t('pages.lossRatio.zoneMetricsSubtitle')}>
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -56,29 +58,29 @@ export default function LossRatio() {
           </div>
         </Panel>
 
-        <Panel title="Summary Insights" subtitle="Critical risk focuses.">
+        <Panel title={t('pages.lossRatio.summaryInsights')} subtitle={t('pages.lossRatio.summaryInsightsSubtitle')}>
           <div className="space-y-4">
              <div className="p-4 rounded border border-orange-200 bg-orange-50 text-xs text-orange-800 dark:border-orange-950 dark:bg-orange-900/10 dark:text-orange-400">
-                <p className="font-bold mb-1 uppercase tracking-widest text-[9px]">Exposure Alert</p>
-                <p className="leading-relaxed">High variance detected in industrial zones. Suggested adjustment for ratios &gt; 80%.</p>
+                <p className="font-bold mb-1 uppercase tracking-widest text-[9px]">{t('pages.lossRatio.exposureAlert')}</p>
+                <p className="leading-relaxed">{t('pages.lossRatio.exposureAlertDesc')}</p>
              </div>
              <div className="p-4 rounded border border-emerald-200 bg-emerald-50 text-xs text-emerald-800 dark:border-emerald-950 dark:bg-emerald-900/10 dark:text-emerald-400">
-                <p className="font-bold mb-1 uppercase tracking-widest text-[9px]">Growth Opportunity</p>
-                <p className="leading-relaxed">Zone scaling successful where loss ratio remains below 15% threshold.</p>
+                <p className="font-bold mb-1 uppercase tracking-widest text-[9px]">{t('pages.lossRatio.growthOpportunity')}</p>
+                <p className="leading-relaxed">{t('pages.lossRatio.growthOpportunityDesc')}</p>
              </div>
           </div>
         </Panel>
       </div>
 
-      <Panel title="Data Grid" className="mt-8">
+      <Panel title={t('pages.lossRatio.dataGrid')} className="mt-8">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Zone</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Premiums</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Claims</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400 text-right">Ratio</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.lossRatio.headerZone')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.lossRatio.headerPremiums')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.lossRatio.headerClaims')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400 text-right">{t('pages.lossRatio.headerRatio')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">

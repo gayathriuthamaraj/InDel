@@ -12,12 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.ZonePath
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.shared.zoneLevelOptions
@@ -61,7 +63,7 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Join InDel",
+                text = stringResource(R.string.register_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = BrandOrange,
                 fontWeight = FontWeight.Bold
@@ -69,7 +71,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Protect your income from day one",
+                text = stringResource(R.string.register_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary
             )
@@ -79,7 +81,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = username,
                 onValueChange = viewModel::onUsernameChanged,
-                label = { Text("Username") },
+                label = { Text(stringResource(R.string.username)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -88,7 +90,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = viewModel::onEmailChanged,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -97,7 +99,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = phone,
                 onValueChange = viewModel::onPhoneChanged,
-                label = { Text("Phone Number") },
+                label = { Text(stringResource(R.string.phone_number)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -109,12 +111,12 @@ fun RegisterScreen(
                 onExpandedChange = { zoneLevelExpanded = !zoneLevelExpanded }
             ) {
                 OutlinedTextField(
-                    value = zoneLevel.ifBlank { "Select Zone Level" },
+                    value = zoneLevel.ifBlank { stringResource(R.string.select_zone_level) },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Zone Level") },
+                    label = { Text(stringResource(R.string.zone_level)) },
                     trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Select zone level")
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_zone_level))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -148,12 +150,12 @@ fun RegisterScreen(
                 }
             ) {
                 OutlinedTextField(
-                    value = zoneName.ifBlank { "Select Zone Name" },
+                    value = zoneName.ifBlank { stringResource(R.string.select_zone_name) },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Zone Name") },
+                    label = { Text(stringResource(R.string.zone_name)) },
                     trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Select zone name")
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_zone_name))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -181,14 +183,14 @@ fun RegisterScreen(
                         }
                         if (availablePaths.size > 10) {
                             DropdownMenuItem(
-                                text = { Text("... and ${availablePaths.size - 10} more") },
+                                text = { Text(stringResource(R.string.and_more_zones, availablePaths.size - 10)) },
                                 onClick = {},
                                 enabled = false
                             )
                         }
                     } else {
                         DropdownMenuItem(
-                            text = { Text("No zones available") },
+                            text = { Text(stringResource(R.string.no_zones_available)) },
                             onClick = {},
                             enabled = false
                         )
@@ -200,7 +202,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = viewModel::onPasswordChanged,
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.login_password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(12.dp)
@@ -210,7 +212,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChanged,
-                label = { Text("Confirm Password") },
+                label = { Text(stringResource(R.string.confirm_password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(12.dp)
@@ -230,7 +232,7 @@ fun RegisterScreen(
                 if (uiState is RegisterUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Register", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.register_cta), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -238,7 +240,7 @@ fun RegisterScreen(
                 onClick = { navController.navigate(Screen.Login.route) },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
-                Text("Already have an account? Login", color = BrandOrange)
+                Text(stringResource(R.string.register_login_prompt), color = BrandOrange)
             }
 
             if (uiState is RegisterUiState.Error) {

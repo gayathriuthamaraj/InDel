@@ -16,10 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 
@@ -36,10 +38,10 @@ fun OrdersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Orders", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.my_orders), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -84,6 +86,11 @@ fun OrdersContent(
     navController: NavController
 ) {
     val tabs = BatchLifecycleTab.entries
+    val tabTitles = mapOf(
+        BatchLifecycleTab.AVAILABLE_NEAR to stringResource(R.string.tab_available_near),
+        BatchLifecycleTab.PICKED_UP to stringResource(R.string.tab_picked_up),
+        BatchLifecycleTab.DELIVERY to stringResource(R.string.tab_delivery),
+    )
     val visibleBatches = when (selectedTab) {
         BatchLifecycleTab.AVAILABLE_NEAR -> state.availableNearBatches
         BatchLifecycleTab.PICKED_UP -> state.pickedUpBatches
@@ -103,7 +110,7 @@ fun OrdersContent(
     ) {
         item {
             Text(
-                "Batch Lifecycle",
+                stringResource(R.string.batch_lifecycle),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -118,7 +125,7 @@ fun OrdersContent(
                     Tab(
                         selected = selectedTab == tab,
                         onClick = { onTabSelected(tab) },
-                        text = { Text("${tab.title} ($count)") }
+                        text = { Text("${tabTitles[tab] ?: tab.title} ($count)") }
                     )
                 }
             }
@@ -127,7 +134,7 @@ fun OrdersContent(
         if (visibleBatches.isNotEmpty()) {
             item {
                 Text(
-                    "${selectedTab.title} Batches",
+                    stringResource(R.string.selected_tab_batches, tabTitles[selectedTab] ?: selectedTab.title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -140,7 +147,7 @@ fun OrdersContent(
         if (tabCount == 0) {
             item {
                 Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No ${selectedTab.title.lowercase()} orders right now", color = TextSecondary)
+                    Text(stringResource(R.string.no_orders_for_tab, (tabTitles[selectedTab] ?: selectedTab.title).lowercase()), color = TextSecondary)
                 }
             }
         }
@@ -151,17 +158,17 @@ fun OrdersContent(
 fun BatchCard(batch: DeliveryBatch, selectedTab: BatchLifecycleTab, navController: NavController) {
     val normalizedStatus = batch.status.trim().lowercase().replace(" ", "_")
     val statusLabel = when (normalizedStatus) {
-        "picked_up" -> "Picked Up"
-        "delivered" -> "Delivered"
-        "assigned", "accepted" -> "Available"
+        "picked_up" -> stringResource(R.string.tab_picked_up)
+        "delivered" -> stringResource(R.string.delivered)
+        "assigned", "accepted" -> stringResource(R.string.available)
         else -> batch.status
     }
     val isZoneASingleStop = batch.zoneLevel.equals("A", ignoreCase = true) && batch.fromCity.equals(batch.toCity, ignoreCase = true)
     val routeLabel = if (isZoneASingleStop) batch.fromCity else "${batch.fromCity} -> ${batch.toCity}"
     val actionLabel = when (selectedTab) {
-        BatchLifecycleTab.AVAILABLE_NEAR -> "Pick Up"
-        BatchLifecycleTab.PICKED_UP -> "Make Delivery"
-        BatchLifecycleTab.DELIVERY -> "View"
+        BatchLifecycleTab.AVAILABLE_NEAR -> stringResource(R.string.pick_up)
+        BatchLifecycleTab.PICKED_UP -> stringResource(R.string.make_delivery)
+        BatchLifecycleTab.DELIVERY -> stringResource(R.string.view)
     }
     val actionColor = when (selectedTab) {
         BatchLifecycleTab.AVAILABLE_NEAR -> BrandBlue
@@ -178,9 +185,9 @@ fun BatchCard(batch: DeliveryBatch, selectedTab: BatchLifecycleTab, navControlle
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text("Batch #${batch.batchId.takeLast(6)}", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text(stringResource(R.string.batch_number, batch.batchId.takeLast(6)), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                     Text(routeLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = BrandBlue)
-                    Text("Zone ${batch.zoneLevel} • ${batch.orderCount} orders", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text(stringResource(R.string.zone_order_count, batch.zoneLevel, batch.orderCount), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                 }
                 Surface(
                     color = BlueSoft,
@@ -214,8 +221,8 @@ fun BatchCard(batch: DeliveryBatch, selectedTab: BatchLifecycleTab, navControlle
                 Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandBlue, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    Text("Pickup: ${batch.fromCity}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Text("Drop: ${batch.toCity}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text(stringResource(R.string.pickup_city, batch.fromCity), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.drop_city, batch.toCity), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
             }
 
@@ -232,7 +239,7 @@ fun BatchCard(batch: DeliveryBatch, selectedTab: BatchLifecycleTab, navControlle
                 }
             } else {
                 Text(
-                    "Delivered",
+                    stringResource(R.string.delivered),
                     color = SuccessGreen,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -251,7 +258,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }

@@ -16,11 +16,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Claim
 import com.imaginai.indel.data.model.WalletResponse
 import com.imaginai.indel.ui.navigation.Screen
@@ -38,10 +40,10 @@ fun ClaimsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Claims & Wallet", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.claims_wallet), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,7 +94,7 @@ fun ClaimsContent(
             ) {
                 Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Available Payout", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+                        Text(stringResource(R.string.available_payout), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
                         Text("₹${wallet.availableBalance.toInt()}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BrandOrange)
                     }
                     Box(
@@ -106,13 +108,13 @@ fun ClaimsContent(
         }
 
         item {
-            Text("Automatic Claims", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.automatic_claims), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
 
         if (claims.isEmpty()) {
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Text("No claims generated yet", color = TextSecondary)
+                    Text(stringResource(R.string.no_claims_generated_yet), color = TextSecondary)
                 }
             }
         } else {
@@ -162,14 +164,14 @@ fun ClaimCard(claim: Claim, navController: NavController, onClick: () -> Unit) {
                 .fillMaxWidth()
                 .clickable { onClick() }, horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Payout Amount", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Text(stringResource(R.string.payout_amount), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                     Text("₹${claim.payoutAmount.toInt()}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = SuccessGreen)
                 }
                 Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextSecondary)
             }
             
             Text(
-                text = "Created on ${claim.createdAt?.take(10) ?: "N/A"}",
+                text = stringResource(R.string.created_on_date, claim.createdAt?.take(10) ?: stringResource(R.string.not_available_short)),
                 style = MaterialTheme.typography.labelSmall,
                 color = TextSecondary,
                 modifier = Modifier.padding(top = 8.dp)
@@ -183,7 +185,7 @@ fun ClaimCard(claim: Claim, navController: NavController, onClick: () -> Unit) {
             if (!claim.mainCause.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Main cause: ${claim.mainCause}",
+                    text = stringResource(R.string.main_cause, claim.mainCause ?: ""),
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary
                 )
@@ -222,7 +224,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }

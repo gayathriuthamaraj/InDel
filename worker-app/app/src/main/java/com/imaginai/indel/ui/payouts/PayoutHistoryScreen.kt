@@ -36,10 +36,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.PayoutRecord
 import com.imaginai.indel.ui.theme.BackgroundWarmWhite
 import com.imaginai.indel.ui.theme.BrandOrange
@@ -60,10 +62,10 @@ fun PayoutHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Payout History", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.payout_history), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -117,8 +119,8 @@ private fun PayoutHistoryContent(payouts: List<PayoutRecord>) {
                 ) {
                     Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = BrandOrange)
                     Column {
-                        Text("Automatic payout ledger", fontWeight = FontWeight.Bold)
-                        Text("Every credited payout triggered by verified disruption events", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(stringResource(R.string.automatic_payout_ledger), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.every_credited_payout_desc), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                     }
                 }
             }
@@ -127,7 +129,7 @@ private fun PayoutHistoryContent(payouts: List<PayoutRecord>) {
         if (payouts.isEmpty()) {
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
-                    Text("No payouts credited yet", color = TextSecondary)
+                    Text(stringResource(R.string.no_payouts_credited_yet), color = TextSecondary)
                 }
             }
         } else {
@@ -160,12 +162,12 @@ private fun PayoutHistoryCard(payout: PayoutRecord) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text("Rs ${payout.amount.toInt()}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = tone)
-                    Text("Claim ${payout.claimId ?: "--"}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text(stringResource(R.string.claim_id_value, payout.claimId ?: "--"), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
                 Text(payout.status.uppercase(), fontWeight = FontWeight.Bold, color = tone)
             }
-            Text("Method: ${payout.method.uppercase()}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-            Text("Processed: ${payout.processedAt.take(19).replace("T", " ")}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(stringResource(R.string.method_value, payout.method.uppercase()), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+            Text(stringResource(R.string.processed_value, payout.processedAt.take(19).replace("T", " ")), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
         }
     }
 }
@@ -179,7 +181,7 @@ private fun PayoutHistoryErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }

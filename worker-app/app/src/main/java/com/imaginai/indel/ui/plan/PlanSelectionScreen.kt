@@ -19,12 +19,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.imaginai.indel.data.model.DeliveryPlan
 import com.imaginai.indel.data.model.Policy
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 
@@ -101,13 +103,13 @@ fun PlanContent(
         item {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    "Select a plan based on your expected delivery volume",
+                    stringResource(R.string.select_plan_by_volume),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
-                    "All plans include full income protection and disruption coverage",
+                    stringResource(R.string.plan_includes_full_coverage),
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
@@ -123,16 +125,16 @@ fun PlanContent(
                             border = androidx.compose.foundation.BorderStroke(1.dp, BrandBlue.copy(alpha = 0.25f))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Current plan", fontWeight = FontWeight.Bold, color = BrandBlue)
+                                Text(stringResource(R.string.current_plan), fontWeight = FontWeight.Bold, color = BrandBlue)
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(currentPlan.planName, fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    "Max payout: ₹${currentPlan.maxPayoutInr}",
+                                    stringResource(R.string.max_payout_value, currentPlan.maxPayoutInr),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
                                 Text(
-                                    "Upgrading to a higher payout tier adds ₹5. Lower payout changes are free.",
+                                    stringResource(R.string.higher_payout_free_note),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = TextSecondary
                                 )
@@ -170,34 +172,34 @@ fun PlanContent(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "Plan Selected: ${selectedPlan.planName}",
+                            stringResource(R.string.plan_selected, selectedPlan.planName),
                             fontWeight = FontWeight.Bold,
                             color = BrandBlue
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Selected Deliveries: $selectedDeliveries/week",
+                            stringResource(R.string.selected_deliveries, selectedDeliveries),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            "Weekly Premium: ₹$selectedPremium",
+                            stringResource(R.string.weekly_premium, selectedPremium),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         if (upgradeFee > 0) {
                             Text(
-                                "Upgrade fee: ₹$upgradeFee",
+                                stringResource(R.string.upgrade_fee, upgradeFee),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = SuccessGreen,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
                         Text(
-                            "Total payable: ₹$totalPayment",
+                            stringResource(R.string.total_payable, totalPayment),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Coverage: ${(selectedPlan.coverageRatio * 100).toInt()}%",
+                            stringResource(R.string.coverage_percent_value, (selectedPlan.coverageRatio * 100).toInt()),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )
@@ -214,7 +216,7 @@ fun PlanContent(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "Choose expected deliveries in selected range",
+                            stringResource(R.string.choose_expected_deliveries),
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -249,13 +251,13 @@ fun PlanContent(
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
                         ) {
-                            Text("Touch Pay & Confirm Plan: ₹$totalPayment")
+                            Text(stringResource(R.string.touch_pay_confirm_plan, totalPayment))
                         }
                         Text(
                             if (upgradeFee > 0) {
-                                "This is an upgrade. The ₹5 fee is added because the payout tier is higher."
+                                stringResource(R.string.upgrade_fee_note)
                             } else {
-                                "Payment is mandatory to activate this plan."
+                                stringResource(R.string.payment_mandatory_note)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
@@ -272,7 +274,7 @@ fun PlanContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Skip")
+                    Text(stringResource(R.string.skip))
             }
         }
     }
@@ -326,7 +328,7 @@ fun PlanCard(
                 }
 
                 Text(
-                    "${plan.rangeStart}-${plan.rangeEnd} deliveries/week",
+                    stringResource(R.string.delivery_range_per_week, plan.rangeStart, plan.rangeEnd),
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -335,7 +337,7 @@ fun PlanCard(
                 val minPremium = plan.weeklyPremiumMinInr ?: plan.weeklyPremiumInr
                 val maxPremium = plan.weeklyPremiumMaxInr ?: plan.weeklyPremiumInr
                 Text(
-                    "Premium range: ₹$minPremium - ₹$maxPremium",
+                    stringResource(R.string.premium_range_value, minPremium, maxPremium),
                     style = MaterialTheme.typography.bodySmall,
                     color = BrandBlue,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -347,35 +349,35 @@ fun PlanCard(
                 ) {
                     Column {
                         Text(
-                            "Premium",
+                            stringResource(R.string.premium_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
                         Text(
-                            "₹${plan.weeklyPremiumInr}",
+                            stringResource(R.string.rupee_value, plan.weeklyPremiumInr),
                             fontWeight = FontWeight.Bold,
                             color = BrandBlue
                         )
                     }
                     Column {
                         Text(
-                            "Coverage",
+                            stringResource(R.string.coverage_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
                         Text(
-                            "${(plan.coverageRatio * 100).toInt()}%",
+                            stringResource(R.string.percent_value, (plan.coverageRatio * 100).toInt()),
                             fontWeight = FontWeight.Bold
                         )
                     }
                     Column {
                         Text(
-                            "Max Payout",
+                            stringResource(R.string.max_payout_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
                         Text(
-                            "₹${plan.maxPayoutInr}",
+                            stringResource(R.string.rupee_value, plan.maxPayoutInr),
                             fontWeight = FontWeight.Bold,
                             color = SuccessGreen
                         )
@@ -386,7 +388,7 @@ fun PlanCard(
             if (isSelected) {
                 Icon(
                     Icons.Default.CheckCircle,
-                    contentDescription = "Selected",
+                    contentDescription = stringResource(R.string.selected),
                     tint = BrandBlue,
                     modifier = Modifier.size(32.dp)
                 )

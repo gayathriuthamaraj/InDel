@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 
@@ -40,10 +42,10 @@ fun DeliveryCompletionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Complete Delivery", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.complete_delivery), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -77,14 +79,14 @@ fun DeliveryCompletionScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            "Delivery Completed!",
+                            stringResource(R.string.delivery_completed),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "Earnings have been updated in your wallet.",
+                            stringResource(R.string.earnings_updated_wallet),
                             textAlign = TextAlign.Center,
                             color = TextSecondary
                         )
@@ -99,7 +101,7 @@ fun DeliveryCompletionScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = BrandOrange)
                         ) {
-                            Text("Back to Home", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.back_to_home), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -116,14 +118,14 @@ fun DeliveryCompletionScreen(
                         ) {
                             Column(modifier = Modifier.padding(20.dp)) {
                                 Text(
-                                    "VERIFICATION REQUIRED",
+                                    stringResource(R.string.verification_required),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = BrandOrange,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    "Please ask the customer for the 4-digit verification code to complete the delivery.",
+                                    stringResource(R.string.ask_customer_verification_code),
                                     fontSize = 15.sp,
                                     lineHeight = 22.sp,
                                     color = TextPrimary
@@ -133,7 +135,7 @@ fun DeliveryCompletionScreen(
                                 OutlinedTextField(
                                     value = customerCode,
                                     onValueChange = { if (it.length <= 4) customerCode = it },
-                                    label = { Text("Enter 4-digit Code") },
+                                    label = { Text(stringResource(R.string.enter_4_digit_code)) },
                                     modifier = Modifier.fillMaxWidth(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
@@ -158,7 +160,7 @@ fun DeliveryCompletionScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = BrandOrange)
                         ) {
-                            Text("Submit & Complete", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.submit_complete), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }

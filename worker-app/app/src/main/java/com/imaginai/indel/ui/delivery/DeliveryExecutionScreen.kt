@@ -16,11 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Order
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
@@ -42,10 +44,10 @@ fun DeliveryExecutionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Delivery in Progress", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.delivery_in_progress), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -102,7 +104,7 @@ fun ExecutionContent(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text("PICKUP DETAILS", style = MaterialTheme.typography.labelSmall, color = BrandBlue, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.pickup_details), style = MaterialTheme.typography.labelSmall, color = BrandBlue, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -115,19 +117,19 @@ fun ExecutionContent(
                 HorizontalDivider(color = BackgroundWarmWhite)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("CUSTOMER DETAILS", style = MaterialTheme.typography.labelSmall, color = BrandBlue, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.customer_details), style = MaterialTheme.typography.labelSmall, color = BrandBlue, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Person, contentDescription = null, tint = TextSecondary)
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(order.customerName ?: "Customer", fontWeight = FontWeight.SemiBold)
+                    Text(order.customerName ?: stringResource(R.string.customer), fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Call, contentDescription = null, tint = TextSecondary)
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(order.customerPhone ?: "Not available", color = TextSecondary)
+                    Text(order.customerPhone ?: stringResource(R.string.not_available), color = TextSecondary)
                 }
             }
         }
@@ -142,7 +144,7 @@ fun ExecutionContent(
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = BrandBlue)
         ) {
-            Text("Confirm Pickup", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.confirm_pickup), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

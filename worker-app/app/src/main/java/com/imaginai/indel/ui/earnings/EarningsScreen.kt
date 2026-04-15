@@ -20,11 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Earnings
 import com.imaginai.indel.ui.theme.*
 
@@ -40,10 +42,10 @@ fun EarningsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Earnings Insight", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.earnings_insight), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -89,7 +91,7 @@ fun EarningsContent(earnings: Earnings) {
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Weekly Earnings", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+                    Text(stringResource(R.string.weekly_earnings), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
                     Text("₹${earnings.thisWeekActual.toInt()}", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = BrandBlue)
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -97,8 +99,8 @@ fun EarningsContent(earnings: Earnings) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        EarningItem("Baseline", "₹${earnings.thisWeekBaseline.toInt()}", TextSecondary)
-                        EarningItem("Protected", "₹${earnings.protectedIncome.toInt()}", SuccessGreen)
+                        EarningItem(stringResource(R.string.baseline), "₹${earnings.thisWeekBaseline.toInt()}", TextSecondary)
+                        EarningItem(stringResource(R.string.protected), "₹${earnings.protectedIncome.toInt()}", SuccessGreen)
                     }
                 }
             }
@@ -125,15 +127,15 @@ fun EarningsContent(earnings: Earnings) {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            "Income Insight",
+                            stringResource(R.string.income_insight),
                             fontWeight = FontWeight.Bold,
                             color = if (isGapped) BlueDeep else SuccessGreen
                         )
                         Text(
                             text = earnings.insight ?: if (isGapped) {
-                                "Due to reduced activity (likely disruption), your earnings dropped by ₹${gap.toInt()}. Your protection ensures you receive ₹${earnings.protectedIncome.toInt()}."
+                                stringResource(R.string.earnings_insight_gap, gap.toInt(), earnings.protectedIncome.toInt())
                             } else {
-                                "You've exceeded your baseline by ₹${(-gap).toInt()}. Great job! Your protection remains active for next week."
+                                stringResource(R.string.earnings_insight_above, (-gap).toInt())
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = TextPrimary
@@ -144,7 +146,7 @@ fun EarningsContent(earnings: Earnings) {
         }
 
         item {
-            Text("Weekly History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.weekly_history), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
 
         items(earnings.history) { record ->
@@ -192,7 +194,7 @@ fun HistoryItem(date: String, amount: Double, baseline: Double) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(date, fontWeight = FontWeight.SemiBold)
                 Text(
-                    if (isAboveBaseline) "Above Baseline" else "Below Baseline",
+                    if (isAboveBaseline) stringResource(R.string.above_baseline) else stringResource(R.string.below_baseline),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isAboveBaseline) SuccessGreen else ErrorRed
                 )
@@ -211,7 +213,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }

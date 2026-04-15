@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getClaims } from '../api/insurer'
 import { PageShell, Panel } from './OperationsShared'
+import { useLocalization } from '../context/LocalizationContext'
 
 type ClaimRow = {
   claim_id: number
@@ -13,6 +14,7 @@ type ClaimRow = {
 }
 
 export default function Claims() {
+  const { t } = useLocalization()
   const [rows, setRows] = useState<ClaimRow[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -24,22 +26,22 @@ export default function Claims() {
 
   return (
     <PageShell
-      eyebrow="Pipeline"
-      title="Global Claims Stream"
-      description="Inspect real-time payout requests, fraud scores, and settlement status across the ecosystem."
+      eyebrow={t('pages.claims.eyebrow')}
+      title={t('pages.claims.title')}
+      description={t('pages.claims.description')}
     >
-      <Panel title="Active Stream" subtitle="Showing the most recent 20 claim events.">
+      <Panel title={t('pages.claims.activeStream')} subtitle={t('pages.claims.activeStreamSubtitle')}>
         {error ? <p className="text-[10px] font-black uppercase text-rose-600 mb-6 font-bold">{error}</p> : null}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[11px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">ID</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Worker</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Zone</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Valuation</th>
-                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">Status</th>
-                <th className="pb-4 text-right font-black uppercase tracking-widest text-slate-400">Security</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerID')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerWorker')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerZone')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerValuation')}</th>
+                <th className="pb-4 font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerStatus')}</th>
+                <th className="pb-4 text-right font-black uppercase tracking-widest text-slate-400">{t('pages.claims.headerSecurity')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -60,7 +62,7 @@ export default function Claims() {
                     <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest leading-none ${
                       row.fraud_verdict === 'safe' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                     }`}>
-                      {row.fraud_verdict}
+                      {row.fraud_verdict === 'safe' ? t('pages.claims.safe') : t('pages.claims.flagged')}
                     </span>
                   </td>
                 </tr>
@@ -68,7 +70,7 @@ export default function Claims() {
               {rows.length === 0 && !error ? (
                 <tr>
                   <td className="py-12 text-center text-slate-400 italic" colSpan={6}>
-                    Awaiting real-time claim signals.
+                    {t('pages.claims.noData')}
                   </td>
                 </tr>
               ) : null}

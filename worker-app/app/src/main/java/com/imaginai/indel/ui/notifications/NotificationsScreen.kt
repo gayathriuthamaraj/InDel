@@ -41,11 +41,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Notification
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.BackgroundWarmWhite
@@ -68,10 +70,10 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Alerts & Payout Updates", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.alerts_payout_updates), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -119,23 +121,23 @@ private fun NotificationsContent(
         item {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SummaryCard(
-                    title = "Disruption Alerts",
+                    title = stringResource(R.string.disruption_alerts),
                     value = disruptionCount.toString(),
-                    subtitle = "Auto protection started",
+                    subtitle = stringResource(R.string.auto_protection_started),
                     color = WarningAmber,
                     modifier = Modifier.weight(1f)
                 )
                 SummaryCard(
-                    title = "Claims Generated",
+                    title = stringResource(R.string.claims_generated),
                     value = claimCount.toString(),
-                    subtitle = "Amount ready for review",
+                    subtitle = stringResource(R.string.amount_ready_review),
                     color = BlueSoft,
                     modifier = Modifier.weight(1f)
                 )
                 SummaryCard(
-                    title = "Payout Credits",
+                    title = stringResource(R.string.payout_credits),
                     value = payoutCount.toString(),
-                    subtitle = "Auto payouts completed",
+                    subtitle = stringResource(R.string.auto_payouts_completed),
                     color = SuccessGreen,
                     modifier = Modifier.weight(1f)
                 )
@@ -165,21 +167,21 @@ private fun NotificationsContent(
                         Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = BrandBlue)
                     }
                     Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
-                        Text("Open payout history", fontWeight = FontWeight.Bold)
-                        Text("See all credited automatic payouts", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text(stringResource(R.string.open_payout_history), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.see_all_credited_payouts), style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                     }
                 }
             }
         }
 
         item {
-            Text("Recent notifications", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.recent_notifications), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
 
         if (notifications.isEmpty()) {
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
-                    Text("No notifications yet", color = TextSecondary)
+                    Text(stringResource(R.string.no_notifications_yet), color = TextSecondary)
                 }
             }
         } else {
@@ -278,7 +280,7 @@ private fun NotificationsErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }
