@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Activity, AlertTriangle, Radio, ShieldAlert, WifiOff, CloudRain, Zap, RefreshCw, Terminal, PlayCircle, Settings2 } from 'lucide-react'
 import { getZoneHealth, getDisruptions, postTriggerDemo, postExternalSignal } from '../api/platform'
 import { getZones } from '../api/zones'
+import { useLocalization } from '../context/LocalizationContext'
 
 interface ZoneHealth {
   zone_id: number
@@ -37,6 +38,7 @@ interface HistoryEvent {
 }
 
 export default function Disruptions() {
+  const { t } = useLocalization()
   const [healths, setHealths] = useState<ZoneHealth[]>([])
   const [zones, setZones] = useState<any[]>([])
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null)
@@ -170,8 +172,8 @@ export default function Disruptions() {
     <div className="space-y-10 font-['Outfit']">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Chaos Engine</h1>
-          <p className="mt-1 text-sm text-slate-500">Manual disruption injection and automated response simulator.</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('pages.disruptions.title')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t('pages.disruptions.description')}</p>
         </div>
         <div className="flex gap-4">
            <div className="enterprise-panel px-4 py-2 flex flex-col items-center justify-center">
@@ -184,10 +186,10 @@ export default function Disruptions() {
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-8 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <StatsCard label="Confirmed" value={disruptions.length} color="text-slate-900 dark:text-white" />
-            <StatsCard label="Claims" value={disruptions.reduce((sum, item) => sum + item.claims_generated, 0)} color="text-orange-600" />
-            <StatsCard label="Workers Paid" value={disruptions.reduce((sum, item) => sum + item.payouts_processed, 0)} color="text-emerald-600" />
-            <StatsCard label="Payouts" value={`Rs ${Math.round(disruptions.reduce((sum, item) => sum + item.payout_amount_total, 0))}`} color="text-orange-600" />
+            <StatsCard label={t('pages.analytics.disruptions')} value={disruptions.length} color="text-slate-900 dark:text-white" />
+            <StatsCard label={t('pages.analytics.claimsGenerated')} value={disruptions.reduce((sum, item) => sum + item.claims_generated, 0)} color="text-orange-600" />
+            <StatsCard label={t('pages.workers.title')} value={disruptions.reduce((sum, item) => sum + item.payouts_processed, 0)} color="text-emerald-600" />
+            <StatsCard label={t('pages.analytics.payoutAmount')} value={`Rs ${Math.round(disruptions.reduce((sum, item) => sum + item.payout_amount_total, 0))}`} color="text-orange-600" />
           </div>
 
           <div className="enterprise-panel p-8">

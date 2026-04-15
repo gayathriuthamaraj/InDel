@@ -14,6 +14,7 @@ import com.razorpay.Checkout
 import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
 import org.json.JSONObject
+import com.imaginai.indel.ui.localization.AppLanguageManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     var razorpayCallback: ((success: Boolean, paymentId: String?, error: String?) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppLanguageManager.applySavedLanguage(this)
         super.onCreate(savedInstanceState)
         Checkout.preload(applicationContext)
         setContent {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
+import { LocalizationProvider, useLocalization, type Language } from './context/LocalizationContext'
 import PlanStatusDashboard from './pages/PlanStatusDashboard'
 import Layout from './components/layout/Sidebar'
 import Overview from './pages/Overview'
@@ -12,6 +13,7 @@ import Register from './pages/Register'
 
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { language, setLanguage, t } = useLocalization()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -22,12 +24,24 @@ function AppContent() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 font-['Outfit']">
         <div className="w-full max-w-[400px] p-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+          <div className="mb-6">
+            <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('common.language')}</label>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="w-full rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none"
+            >
+              <option value="en">{t('lang.english')}</option>
+              <option value="ta">{t('lang.tamil')}</option>
+              <option value="hi">{t('lang.hindi')}</option>
+            </select>
+          </div>
           <div className="mb-8 text-center">
             <div className="inline-flex h-12 w-12 items-center justify-center rounded bg-[var(--brand-primary)] mb-6 font-black text-white italic text-xl">
               ID
             </div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Secure Terminal</h1>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Initialize insurer session to core services.</p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t('auth.secureTerminal')}</h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('auth.initializeSession')}</p>
           </div>
           
           <div className="space-y-4">
@@ -38,16 +52,16 @@ function AppContent() {
                 setIsAuthenticated(true)
               }}
             >
-              Start Session
+              {t('auth.startSession')}
             </button>
             <div className="flex items-center justify-between px-1">
-               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Auth: JWT-256</span>
-               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Status: Ready</span>
+               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('auth.jwt')}</span>
+               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('auth.statusReady')}</span>
             </div>
           </div>
           
           <p className="mt-10 text-center text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600">
-             &copy; 2026 InDel Technologies.
+             {t('auth.copyright')}
           </p>
         </div>
       </div>
@@ -80,7 +94,9 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <LocalizationProvider>
+        <AppContent />
+      </LocalizationProvider>
     </ThemeProvider>
   )
 }

@@ -42,12 +42,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.theme.BackgroundWarmWhite
 import com.imaginai.indel.ui.theme.BlueDeep
 import com.imaginai.indel.ui.theme.BlueSoft
@@ -79,14 +81,17 @@ fun PremiumPayScreen(
     val paymentHint by viewModel.paymentHint.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val premiumNotLoadedText = stringResource(R.string.premium_not_loaded)
+    val unableOpenGatewayText = stringResource(R.string.unable_open_payment_gateway)
+    val paymentFailedText = stringResource(R.string.payment_failed_cancelled)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isActivationPayment) "Activate Premium Plan" else "Pay Weekly Premium", fontWeight = FontWeight.Bold) },
+                title = { Text(if (isActivationPayment) stringResource(R.string.activate_premium_plan) else stringResource(R.string.pay_weekly_premium), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -121,14 +126,14 @@ fun PremiumPayScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            if (isActivationPayment) "Activation Payment Due" else "Weekly Premium Due",
+                            if (isActivationPayment) stringResource(R.string.activation_payment_due) else stringResource(R.string.weekly_premium_due),
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.White.copy(alpha = 0.8f),
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "Rs ${amount.ifBlank { "--" }}",
+                            stringResource(R.string.rupee_amount_value, amount.ifBlank { "--" }),
                             fontSize = 52.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White
@@ -140,7 +145,7 @@ fun PremiumPayScreen(
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Text(
-                                    "Consent payment: 2x weekly premium",
+                                    stringResource(R.string.consent_payment_twice),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                     color = WarningAmber,
                                     fontSize = 12.sp,
@@ -164,7 +169,7 @@ fun PremiumPayScreen(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        "Rs $basePremium base + Rs $lateFee late fee",
+                                        stringResource(R.string.base_plus_late_fee, basePremium, lateFee),
                                         color = WarningAmber,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -173,7 +178,7 @@ fun PremiumPayScreen(
                             }
                         } else {
                             Text(
-                                "ML-computed premium for this cycle",
+                                stringResource(R.string.ml_computed_premium),
                                 color = Color.White.copy(alpha = 0.7f),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
@@ -193,9 +198,9 @@ fun PremiumPayScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         if (isActivationPayment) {
-                            "This one-time consent payment activates your protection again. Future weekly premiums will continue from the ML-computed cycle amount."
+                            stringResource(R.string.activation_payment_explainer)
                         } else {
-                            "Payment is dynamically priced based on current weather risk, order volatility, and your performance baseline."
+                            stringResource(R.string.payment_cycle_dynamically_priced)
                         },
                         fontSize = 13.sp,
                         color = BrandBlue,
@@ -206,7 +211,7 @@ fun PremiumPayScreen(
                         HorizontalDivider(color = BrandBlue.copy(alpha = 0.2f))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Pay now to avoid plan deactivation. Late fee accumulates at Rs 1/day during grace period.",
+                            stringResource(R.string.pay_now_avoid_deactivation),
                             fontSize = 12.sp,
                             color = WarningAmber,
                             fontWeight = FontWeight.Medium
@@ -237,12 +242,12 @@ fun PremiumPayScreen(
                 onClick = {
                     val amountInPaise = (amount.toIntOrNull() ?: 0) * 100
                     if (amountInPaise <= 0) {
-                        viewModel.setPaymentError("Premium amount not yet loaded. Please wait.")
+                        viewModel.setPaymentError(premiumNotLoadedText)
                         return@Button
                     }
                     val mainActivity = context.findMainActivity()
                     if (mainActivity == null) {
-                        viewModel.setPaymentError("Unable to open payment gateway")
+                        viewModel.setPaymentError(unableOpenGatewayText)
                         return@Button
                     }
                     viewModel.setLoading(true)
@@ -250,7 +255,7 @@ fun PremiumPayScreen(
                         if (success) {
                             viewModel.recordPaymentSuccess(paymentId)
                         } else {
-                            viewModel.setPaymentError(error ?: "Payment failed or cancelled")
+                            viewModel.setPaymentError(error ?: paymentFailedText)
                         }
                     }
                 },
@@ -265,7 +270,7 @@ fun PremiumPayScreen(
                 Icon(Icons.Default.Payment, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    if (isActivationPayment) "Consent & Pay  Rs ${amount.ifBlank { "--" }}" else "Touch Pay  Rs ${amount.ifBlank { "--" }}",
+                    if (isActivationPayment) stringResource(R.string.consent_and_pay, amount.ifBlank { "--" }) else stringResource(R.string.touch_pay_amount, amount.ifBlank { "--" }),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
                 )
@@ -276,7 +281,7 @@ fun PremiumPayScreen(
             when (val state = uiState) {
                 is PayUiState.Loading -> {
                     CircularProgressIndicator(color = BrandBlue, modifier = Modifier.padding(8.dp))
-                    Text("Processing payment...", fontSize = 13.sp, color = TextSecondary)
+                    Text(stringResource(R.string.processing_payment), fontSize = 13.sp, color = TextSecondary)
                 }
                 is PayUiState.Success -> {
                     Text(

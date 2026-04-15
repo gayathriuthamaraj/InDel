@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.imaginai.indel.ui.navigation.Screen
+import com.imaginai.indel.R
 import androidx.compose.foundation.text.KeyboardOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,14 +58,14 @@ fun OtpScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Worker Login",
+                text = stringResource(R.string.otp_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Secure your income and work",
+                text = stringResource(R.string.otp_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -73,7 +75,7 @@ fun OtpScreen(
             OutlinedTextField(
                 value = phone,
                 onValueChange = viewModel::onPhoneChanged,
-                label = { Text("Phone Number") },
+                label = { Text(stringResource(R.string.phone_number)) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 shape = RoundedCornerShape(12.dp)
@@ -91,7 +93,7 @@ fun OtpScreen(
                 if (uiState is OtpUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Send OTP", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.send_otp), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -101,14 +103,14 @@ fun OtpScreen(
                 OutlinedTextField(
                     value = otp,
                     onValueChange = viewModel::onOtpChanged,
-                    label = { Text("Enter OTP") },
+                    label = { Text(stringResource(R.string.enter_otp)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     shape = RoundedCornerShape(12.dp)
                 )
                 
                 Text(
-                    text = "Test OTP: ${(uiState as OtpUiState.OtpSent).testOtp}",
+                    text = stringResource(R.string.test_otp, (uiState as OtpUiState.OtpSent).testOtp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp, start = 4.dp).align(Alignment.Start)
@@ -124,7 +126,7 @@ fun OtpScreen(
                     enabled = uiState !is OtpUiState.Loading && otp.isNotEmpty(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Verify & Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.verify_continue), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

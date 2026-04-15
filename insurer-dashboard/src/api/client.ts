@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const currentHost = typeof window !== 'undefined' && window.location?.hostname
   ? window.location.hostname
-  : '192.168.1.6'
+  : '192.168.1.8'
 const defaultGatewayBaseUrl = `http://${currentHost}:8004`
 
 const INSURER_API_URL = import.meta.env.VITE_INSURER_API_URL || defaultGatewayBaseUrl

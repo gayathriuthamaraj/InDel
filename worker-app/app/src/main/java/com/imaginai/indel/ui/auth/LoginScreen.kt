@@ -12,8 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 
@@ -46,14 +48,14 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Welcome Back",
+                text = stringResource(R.string.login_welcome_back),
                 style = MaterialTheme.typography.headlineLarge,
                 color = BrandBlue,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Login to continue protecting your income",
+                text = stringResource(R.string.login_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary
             )
@@ -63,7 +65,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = identifier,
                 onValueChange = viewModel::onIdentifierChanged,
-                label = { Text("Email or Phone") },
+                label = { Text(stringResource(R.string.login_email_or_phone)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -72,7 +74,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = viewModel::onPasswordChanged,
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.login_password)) },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 shape = RoundedCornerShape(12.dp)
@@ -92,7 +94,7 @@ fun LoginScreen(
                 if (uiState is LoginUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Login", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.login_cta), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -100,7 +102,7 @@ fun LoginScreen(
                 onClick = { navController.navigate(Screen.Register.route) },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
-                Text("Don't have an account? Register", color = BrandBlue)
+                Text(stringResource(R.string.login_register_prompt), color = BrandBlue)
             }
 
             if (uiState is LoginUiState.Error) {

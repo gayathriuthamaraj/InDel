@@ -1,14 +1,25 @@
 import { useLocation } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
 import { Search, Moon, Sun } from 'lucide-react'
+import { useLocalization } from '../../context/LocalizationContext'
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
+  const { t } = useLocalization()
   const location = useLocation()
+
+  const segmentLabelMap: Record<string, string> = {
+    workers: t('sidebar.workers'),
+    zones: t('sidebar.zones'),
+    analytics: t('sidebar.analytics'),
+    batches: t('sidebar.viewBatches'),
+    disruptions: t('sidebar.chaosEngine'),
+    reconciliation: t('sidebar.reconciliation'),
+  }
   
   const pathSegments = location.pathname.split('/').filter(Boolean)
   const breadcrumbs = pathSegments.map((segment, index) => ({
-    label: segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
+    label: segmentLabelMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
     path: '/' + pathSegments.slice(0, index + 1).join('/')
   }))
 
@@ -16,7 +27,7 @@ export default function Navbar() {
     <nav className="flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-12">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
-          <span className="text-slate-400">Platform</span>
+          <span className="text-slate-400">{t('navbar.platform')}</span>
           {breadcrumbs.length > 0 && <span className="text-slate-300">/</span>}
           {breadcrumbs.map((bc, i) => (
             <div key={bc.path} className="flex items-center gap-1.5">
@@ -26,7 +37,7 @@ export default function Navbar() {
               {i < breadcrumbs.length - 1 && <span className="text-slate-300">/</span>}
             </div>
           ))}
-          {breadcrumbs.length === 0 && <span className="text-[var(--brand-primary)] dark:text-[var(--brand-soft)]">Overview</span>}
+          {breadcrumbs.length === 0 && <span className="text-[var(--brand-primary)] dark:text-[var(--brand-soft)]">{t('sidebar.overview')}</span>}
         </div>
       </div>
 
@@ -37,7 +48,7 @@ export default function Navbar() {
           </div>
           <input
             type="text"
-            placeholder="Search platform..."
+            placeholder={t('navbar.searchPlaceholder')}
             className="w-48 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-1.5 pl-9 pr-3 text-[11px] text-slate-900 dark:text-white outline-none focus:border-[var(--brand-primary)] transition-none"
           />
         </div>

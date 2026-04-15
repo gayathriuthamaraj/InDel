@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getDisruptions, getForecast, getZones, getZoneHealth } from '../api/platform'
 import { BarChart3, TrendingDown, ClipboardList, AlertOctagon, ArrowDownUp, Download, BrainCircuit, Info, RefreshCw } from 'lucide-react'
+import { useLocalization } from '../context/LocalizationContext'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -10,6 +11,7 @@ interface ForecastPoint {
 }
 
 export default function Analytics() {
+  const { t } = useLocalization()
   const [health, setHealth] = useState<any[]>([])
   const [disruptions, setDisruptions] = useState<any[]>([])
   const [zones, setZones] = useState<any[]>([])
@@ -144,21 +146,21 @@ export default function Analytics() {
     <div className="space-y-10">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Platform Analytics</h1>
-          <p className="mt-1 text-sm text-slate-500">Deep dive into historical disruption trends and automation performance.</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('pages.analytics.title')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t('pages.disruptions.description')}</p>
         </div>
         <button
           onClick={exportCSV}
           className="flex items-center gap-2 h-9 px-4 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold font-['Outfit'] hover:bg-slate-50 dark:hover:bg-slate-800 transition-none">
           <Download className="h-3.5 w-3.5" />
-          EXPORT DATA
+          {t('pages.workers.exportCSV')}
         </button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <AnalyticsCard label="Average Zone Drop" value={`${stats.avgDrop}%`} icon={TrendingDown} color="text-rose-600" />
-        <AnalyticsCard label="Claims Triggered" value={stats.claims} icon={ClipboardList} color="text-orange-600" />
-        <AnalyticsCard label="Manual Review Queue" value={stats.manualReview} icon={AlertOctagon} color={stats.manualReview > 0 ? "text-amber-600" : "text-emerald-600"} />
+        <AnalyticsCard label={t('pages.analytics.avgOrderDrop')} value={`${stats.avgDrop}%`} icon={TrendingDown} color="text-rose-600" />
+        <AnalyticsCard label={t('pages.analytics.claimsGenerated')} value={stats.claims} icon={ClipboardList} color="text-orange-600" />
+        <AnalyticsCard label={t('pages.analytics.manualReview')} value={stats.manualReview} icon={AlertOctagon} color={stats.manualReview > 0 ? "text-amber-600" : "text-emerald-600"} />
       </div>
 
       <div className="enterprise-panel p-8">
@@ -167,10 +169,10 @@ export default function Analytics() {
             <BrainCircuit className="h-5 w-5 text-violet-500" />
             <div>
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white font-['Outfit']">
-                7-Day Reserve Forecast
+                {t('pages.analytics.forecastMetadata')}
               </h2>
               <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest">
-                {forecastMeta?.scope ?? 'Backend forecast'} · Zone {selectedZone ?? '-'} · ML output
+                {forecastMeta?.scope ?? t('pages.analytics.scope')} · Zone {selectedZone ?? '-'} · ML output
               </p>
             </div>
           </div>
@@ -223,10 +225,10 @@ export default function Analytics() {
 
         {forecastError ? (
           <div className="py-10 text-center text-xs text-slate-400 italic">
-            Forecast service unavailable - reserve planning estimates offline.
+            {t('pages.analytics.forecastError')}
           </div>
         ) : forecastLoading ? (
-          <div className="py-10 text-center text-xs text-slate-400 italic">Loading forecast...</div>
+          <div className="py-10 text-center text-xs text-slate-400 italic">{t('pages.analytics.loadingForecast')}</div>
         ) : (
           <>
             <div className="grid grid-cols-7 gap-2 items-end h-32 mb-3">
@@ -310,7 +312,7 @@ export default function Analytics() {
                   : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                {f}
+                {f === 'all' ? t('pages.analytics.allTime') : f === 'weekly' ? t('pages.analytics.weekly') : t('pages.analytics.realTime')}
               </button>
             ))}
           </div>

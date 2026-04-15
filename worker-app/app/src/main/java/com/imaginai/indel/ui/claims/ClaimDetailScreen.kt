@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Claim
 import com.imaginai.indel.ui.theme.*
 
@@ -36,10 +38,10 @@ fun ClaimDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Claim Details", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.claim_details), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -81,7 +83,7 @@ fun ClaimDetailContent(claim: Claim) {
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Total Payout", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+                Text(stringResource(R.string.total_payout), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
                 Text("₹${claim.payoutAmount}", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = SuccessGreen)
                 Spacer(modifier = Modifier.height(8.dp))
                 StatusBadge(claim.status)
@@ -92,11 +94,11 @@ fun ClaimDetailContent(claim: Claim) {
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Claim ID", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(stringResource(R.string.claim_id), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                         Text(claim.claimId.take(8), fontWeight = FontWeight.Bold)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Type", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(stringResource(R.string.type), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                         Text(claim.disruptionType.replace("_", " "), fontWeight = FontWeight.Bold)
                     }
                 }
@@ -114,10 +116,10 @@ fun ClaimDetailContent(claim: Claim) {
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                BreakdownRow("Income Loss", "₹${claim.incomeLoss}")
-                BreakdownRow("Coverage Ratio", "85%")
+                BreakdownRow(stringResource(R.string.income_loss), "₹${claim.incomeLoss}")
+                BreakdownRow(stringResource(R.string.coverage_ratio), "85%")
                 HorizontalDivider(color = BackgroundWarmWhite)
-                BreakdownRow("Final Payout", "₹${claim.payoutAmount}", isTotal = true)
+                BreakdownRow(stringResource(R.string.final_payout), "₹${claim.payoutAmount}", isTotal = true)
             }
         }
 
@@ -131,9 +133,9 @@ fun ClaimDetailContent(claim: Claim) {
                 Icon(Icons.Default.Verified, contentDescription = null, tint = SuccessGreen)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Automated Verdict", fontWeight = FontWeight.Bold, color = SuccessGreen)
+                    Text(stringResource(R.string.automated_verdict), fontWeight = FontWeight.Bold, color = SuccessGreen)
                     Text(
-                        claim.fraudVerdict ?: "Claim verified against real-time weather and dispatch data. No manual action required.",
+                        claim.fraudVerdict ?: stringResource(R.string.claim_verified_auto),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextPrimary
                     )

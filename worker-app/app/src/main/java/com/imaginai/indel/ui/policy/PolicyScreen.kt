@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.imaginai.indel.data.model.Policy
 import com.imaginai.indel.data.model.ShapImpact
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 import java.text.SimpleDateFormat
@@ -56,10 +58,10 @@ fun PolicyScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Premium Plan", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.premium_plan), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -89,7 +91,7 @@ fun PolicyScreen(
                         ) {
                             CircularProgressIndicator(color = BrandBlue)
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("Loading plan data...", color = TextSecondary, fontSize = 14.sp)
+                            Text(stringResource(R.string.loading_plan_data), color = TextSecondary, fontSize = 14.sp)
                         }
                     }
                     is PolicyUiState.Success -> PremiumPlanContent(
@@ -111,7 +113,7 @@ fun PolicyScreen(
                     }
                     is PolicyUiState.PlanStopped -> {
                         EmptyPlanState(
-                            message = "Plan stopped successfully.",
+                            message = stringResource(R.string.plan_stopped_successfully),
                             onRestart = { viewModel.loadPolicy() }
                         )
                     }
@@ -140,13 +142,13 @@ fun PolicyScreen(
     if (showStopConfirm) {
         AlertDialog(
             onDismissRequest = { showStopConfirm = false },
-            title = { Text("Stop Premium Plan?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.stop_premium_plan), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Are you sure you want to stop the plan?")
+                    Text(stringResource(R.string.stop_plan_confirm))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Your coverage will end immediately. To restart, you'll need to pay the activation fee (2× weekly premium).",
+                        stringResource(R.string.coverage_end_restart_fee),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -159,11 +161,11 @@ fun PolicyScreen(
                         viewModel.stopPlan()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)
-                ) { Text("Yes, Stop Plan") }
+                ) { Text(stringResource(R.string.yes_stop_plan)) }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showStopConfirm = false }) {
-                    Text("Keep Plan")
+                    Text(stringResource(R.string.keep_plan))
                 }
             }
         )

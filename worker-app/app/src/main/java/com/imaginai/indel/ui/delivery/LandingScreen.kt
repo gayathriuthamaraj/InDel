@@ -15,11 +15,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.WorkerProfile
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
@@ -42,10 +44,10 @@ fun LandingScreen(
                 title = { Text("InDel", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.notifications))
                     }
                     IconButton(onClick = { navController.navigate(Screen.ProfileEdit.route) }) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+                        Icon(Icons.Default.AccountCircle, contentDescription = stringResource(R.string.profile))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -85,13 +87,13 @@ fun LandingContent(
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "Hello, ${worker.name ?: "Partner"}",
+            text = stringResource(R.string.hello_partner, worker.name ?: stringResource(R.string.partner)),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
         )
         Text(
-            text = "Ready to start your shift?",
+            text = stringResource(R.string.ready_start_shift),
             style = MaterialTheme.typography.bodyLarge,
             color = TextSecondary,
             modifier = Modifier.align(Alignment.Start)
@@ -111,7 +113,7 @@ fun LandingContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(48.dp))
                 Spacer(modifier = Modifier.width(16.dp))
-                Text("Start Delivery", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.start_delivery), fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -120,13 +122,13 @@ fun LandingContent(
         // Quick Snapshot Cards
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             SnapshotCard(
-                title = "Earnings Today",
+                title = stringResource(R.string.earnings_today),
                 value = "₹${earningsToday.toInt()}",
                 modifier = Modifier.weight(1f)
             )
             SnapshotCard(
-                title = "Status",
-                value = if (worker.enrolled == true) "Protected" else "Unprotected",
+                title = stringResource(R.string.status),
+                value = if (worker.enrolled == true) stringResource(R.string.protected) else stringResource(R.string.unprotected),
                 color = if (worker.enrolled == true) SuccessGreen else ErrorRed,
                 modifier = Modifier.weight(1f)
             )
@@ -136,7 +138,7 @@ fun LandingContent(
 
         // Bottom link to full dashboard
         TextButton(onClick = { navController.navigate(Screen.Home.route) }) {
-            Text("View Full Dashboard", color = BrandBlue, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.view_full_dashboard), color = BrandBlue, fontWeight = FontWeight.Bold)
         }
     }
 }

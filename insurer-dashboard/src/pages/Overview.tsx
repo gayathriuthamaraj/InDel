@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import { getMoneyExchange, getOverview, getPoolHealth } from '../api/insurer'
 import { PageShell, Panel, StatCard } from './OperationsShared'
+import { useLocalization } from '../context/LocalizationContext'
 
 type OverviewData = {
   active_workers: number
@@ -57,6 +58,7 @@ const portfolioTrend = [
 ]
 
 export default function Overview() {
+  const { t } = useLocalization()
   const [overview, setOverview] = useState<OverviewData | null>(null)
   const [pool, setPool] = useState<PoolHealth | null>(null)
   const [moneyExchange, setMoneyExchange] = useState<MoneyExchangeSummary | null>(null)
@@ -82,9 +84,9 @@ export default function Overview() {
   }, [levelFilter, zoneFilter, refreshTick])
 
   const claimsDistribution = [
-    { name: 'Pending', value: overview?.pending_claims ?? 0, color: '#f97316' },
-    { name: 'Approved', value: overview?.approved_claims ?? 0, color: '#10b981' },
-    { name: 'Flagged', value: 12, color: '#f43f5e' },
+    { name: t('pages.overview.pending'), value: overview?.pending_claims ?? 0, color: '#f97316' },
+    { name: t('pages.overview.approved'), value: overview?.approved_claims ?? 0, color: '#10b981' },
+    { name: t('pages.overview.flagged'), value: 12, color: '#f43f5e' },
   ]
 
   const zoneRows = moneyExchange?.zone_breakdown ?? []
@@ -97,32 +99,32 @@ export default function Overview() {
 
   return (
     <PageShell
-      eyebrow="Console"
-      title="Global Portfolio Operations"
-      description="Track real-time worker coverage, enterprise claims pressure, and reserve posture across the ecosystem."
+      eyebrow={t('pages.overview.eyebrow')}
+      title={t('pages.overview.title')}
+      description={t('pages.overview.description')}
     >
       {error ? <div className="mb-8 p-4 rounded bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border border-rose-200 dark:border-rose-900 font-bold uppercase text-[10px] tracking-widest">{error}</div> : null}
-      <Panel title="Dynamic Controls" subtitle="Slice by zone level/name and refresh after each scenario change.">
+      <Panel title={t('pages.overview.dynamicControls')} subtitle={t('pages.overview.controlsSubtitle')}>
         <div className="grid gap-4 md:grid-cols-[180px_1fr_auto]">
           <label className="space-y-2">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Zone Level</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('pages.overview.zoneLevel')}</span>
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
               className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none"
             >
-              <option value="ALL">ALL</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
+              <option value="ALL">{t('pages.overview.allZones')}</option>
+              <option value="A">{t('pages.overview.levelA')}</option>
+              <option value="B">{t('pages.overview.levelB')}</option>
+              <option value="C">{t('pages.overview.levelC')}</option>
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Zone / City Search</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('pages.overview.zoneSearch')}</span>
             <input
               value={zoneFilter}
               onChange={(e) => setZoneFilter(e.target.value)}
-              placeholder="Filter by zone or city"
+              placeholder={t('pages.overview.searchPlaceholder')}
               className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none"
             />
           </label>
@@ -132,18 +134,18 @@ export default function Overview() {
               onClick={() => setRefreshTick((value) => value + 1)}
               className="rounded bg-slate-900 px-4 py-2 text-xs font-black uppercase tracking-widest text-white"
             >
-              Refresh
+              {t('pages.overview.refresh')}
             </button>
           </div>
         </div>
       </Panel>
       
       <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Premium Pool" value={`Rs ${Math.round(moneyExchange?.premium_pool ?? 0).toLocaleString()}`} />
-        <StatCard label="Subscribed On Plan" value={String(moneyExchange?.total_subscribed ?? Math.round(overview?.active_workers ?? 0))} />
-        <StatCard label="Claims Happened" value={String(moneyExchange?.total_claims ?? 0)} tone="alert" />
+        <StatCard label={t('pages.overview.premiumPool')} value={`Rs ${Math.round(moneyExchange?.premium_pool ?? 0).toLocaleString()}`} />
+        <StatCard label={t('pages.overview.subscribedPlan')} value={String(moneyExchange?.total_subscribed ?? Math.round(overview?.active_workers ?? 0))} />
+        <StatCard label={t('pages.overview.claimsHappened')} value={String(moneyExchange?.total_claims ?? 0)} tone="alert" />
         <StatCard
-          label="Overall Money Exchange"
+          label={t('pages.overview.moneyExchange')}
           value={`Rs ${Math.round((moneyExchange?.total_payouts ?? 0) - (moneyExchange?.premium_pool ?? 0)).toLocaleString()}`}
           tone={(moneyExchange?.net_pool ?? 0) < 0 ? 'alert' : 'default'}
         />

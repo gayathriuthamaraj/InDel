@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Activity, Search, Wind, CloudRain, ShieldAlert, Zap } from 'lucide-react';
 import { getZones, getZoneHealth, getZonePaths } from '../api/zones';
 import { getDisruptions, postTriggerDemo } from '../api/platform';
+import { useLocalization } from '../context/LocalizationContext';
 
 type SignalBadgeProps = { icon: React.ElementType, label: string, active?: boolean };
 const SignalBadge = ({ icon: Icon, label, active }: SignalBadgeProps) => (
@@ -16,6 +17,7 @@ const SignalBadge = ({ icon: Icon, label, active }: SignalBadgeProps) => (
 );
 
 export default function Zones() {
+   const { t } = useLocalization();
    // Disruption dropdown state
    const [disruptions, setDisruptions] = useState<any[]>([]);
    const [selectedDisruption, setSelectedDisruption] = useState<string>('');
@@ -93,7 +95,7 @@ export default function Zones() {
          <div className="enterprise-panel p-4 mb-8">
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
                <div>
-                  <label className="block text-xs font-bold mb-1">Zone Level</label>
+                  <label className="block text-xs font-bold mb-1">{t('pages.zones.selectLevel')}</label>
                   <select
                      className="rounded border px-3 py-2 text-sm"
                      value={zoneLevel}
@@ -106,14 +108,14 @@ export default function Zones() {
                        setZoneName('');
                      }}
                   >
-                     <option value="">Select Level</option>
-                     <option value="a">A</option>
-                     <option value="b">B</option>
-                     <option value="c">C</option>
+                     <option value="">{t('pages.zones.selectLevel')}</option>
+                     <option value="a">{t('pages.zones.levelA')}</option>
+                     <option value="b">{t('pages.zones.levelB')}</option>
+                     <option value="c">{t('pages.zones.levelC')}</option>
                   </select>
                </div>
                <div>
-                  <label className="block text-xs font-bold mb-1">Zone Name</label>
+                  <label className="block text-xs font-bold mb-1">{t('pages.zones.selectZone')}</label>
                   <select
                      className="rounded border px-3 py-2 text-sm"
                      value={selectedZoneIndex !== null ? String(selectedZoneIndex) : ''}
@@ -146,7 +148,7 @@ export default function Zones() {
                      }}
                      disabled={!zoneLevel || zoneOptions.length === 0}
                   >
-                     <option value="">{zoneLevel ? 'Select Zone' : 'Select Level First'}</option>
+                     <option value="">{zoneLevel ? t('pages.zones.selectZone') : t('pages.zones.selectLevelFirst')}</option>
                      {zoneOptions.map((z, idx) => (
                         <option key={z.zone_id || z.city || z.zone_name || idx} value={idx}>
                            {(z.city || z.zone_name) + (z.state ? ', ' + z.state : '')}
@@ -155,14 +157,14 @@ export default function Zones() {
                   </select>
                </div>
                <div>
-                  <label className="block text-xs font-bold mb-1">Disruption</label>
+                  <label className="block text-xs font-bold mb-1">{t('pages.zones.disruptionDropdown')}</label>
                   <select
                      className="rounded border px-3 py-2 text-sm"
                      value={selectedDisruption}
                      onChange={e => setSelectedDisruption(e.target.value)}
                      disabled={!zoneLevel || !zoneName || disruptions.length === 0}
                   >
-                     <option value="">{zoneLevel && zoneName ? 'Select Disruption' : 'Select Zone First'}</option>
+                     <option value="">{zoneLevel && zoneName ? t('pages.zones.triggerDisruption') : t('pages.zones.selectLevelFirst')}</option>
                      {disruptions.map((d: any) => (
                        <option key={d.id} value={d.id}>{d.name || d.type || d.id}</option>
                      ))}
@@ -196,7 +198,7 @@ export default function Zones() {
                        setDisruptionStatus('Failed to trigger');
                      }
                    }}
-                 >Trigger Disruption</button>
+                 >{t('pages.zones.triggerDisruption')}</button>
                  {disruptionStatus && (
                    <span className="ml-2 text-xs font-bold text-emerald-600">{disruptionStatus}</span>
                  )}
@@ -208,8 +210,8 @@ export default function Zones() {
          </div>
          <div className="flex items-end justify-between">
             <div>
-               <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Zone Monitoring</h1>
-               <p className="mt-1 text-sm text-slate-500">Live regional telemetry and risk assessment for automated insurance payout triggers.</p>
+               <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('pages.zones.title')}</h1>
+               <p className="mt-1 text-sm text-slate-500">{t('pages.disruptions.description')}</p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
@@ -225,12 +227,12 @@ export default function Zones() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter by name, city or state..."
+                  placeholder={t('pages.zones.searchZone')}
                   className="w-full rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-1.5 pl-9 pr-3 text-[11px] text-slate-900 dark:text-white outline-none focus:border-orange-500 transition-none"
                />
             </div>
             <div className="flex items-center gap-2">
-               <span className="text-[10px] font-black uppercase text-slate-400 mr-2">Health Filter:</span>
+               <span className="text-[10px] font-black uppercase text-slate-400 mr-2">{t('pages.zones.filterStatus')}:</span>
                {(['all', 'healthy', 'anomalous', 'disrupted'] as const).map((s) => (
                   <button
                      key={s}
@@ -241,7 +243,7 @@ export default function Zones() {
                            : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
                      }`}
                   >
-                     {s}
+                     {s === 'all' ? t('pages.zones.statusAll') : s === 'healthy' ? t('pages.zones.statusHealthy') : s === 'disrupted' ? t('pages.zones.statusDisrupted') : t('pages.zones.statusAnomalous')}
                   </button>
                ))}
             </div>
@@ -249,7 +251,7 @@ export default function Zones() {
          <div>
             {filteredZones.length === 0 ? (
                <div className="col-span-full py-20 text-center text-slate-400 text-xs italic border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
-                  No zones match the current monitoring parameters.
+                  {t('pages.zones.loading')}
                </div>
             ) : (
                filteredZones.map((zone: any) => {

@@ -11,11 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.shared.*
 
@@ -58,7 +60,7 @@ fun OnboardingScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile Setup", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.onboarding_profile_setup), fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White
@@ -75,7 +77,7 @@ fun OnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Help us personalize your protection",
+                text = stringResource(R.string.onboarding_help_personalize),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -84,7 +86,7 @@ fun OnboardingScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = viewModel::onNameChanged,
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.full_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -95,12 +97,12 @@ fun OnboardingScreen(
                 onExpandedChange = { vehicleExpanded = !vehicleExpanded }
             ) {
                 OutlinedTextField(
-                    value = vehicleType.ifBlank { "Select Vehicle" },
+                    value = vehicleType.ifBlank { stringResource(R.string.select_vehicle) },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Vehicle Type") },
+                    label = { Text(stringResource(R.string.vehicle_type)) },
                     trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Select vehicle")
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_vehicle))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -136,13 +138,13 @@ fun OnboardingScreen(
                     value = when {
                         vehicleNameOption == "other" && vehicleName.isNotBlank() -> "other"
                         vehicleNameOption.isNotBlank() -> vehicleNameOption
-                        else -> "Select Transport Means"
+                        else -> stringResource(R.string.select_transport_means)
                     },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Vehicle Name") },
+                    label = { Text(stringResource(R.string.vehicle_name)) },
                     trailingIcon = {
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Select vehicle name")
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_vehicle_name))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -175,7 +177,7 @@ fun OnboardingScreen(
                 OutlinedTextField(
                     value = vehicleName,
                     onValueChange = viewModel::onVehicleNameChanged,
-                    label = { Text("Type Vehicle Name") },
+                    label = { Text(stringResource(R.string.type_vehicle_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -185,7 +187,7 @@ fun OnboardingScreen(
             OutlinedTextField(
                 value = upiId,
                 onValueChange = viewModel::onUpiIdChanged,
-                label = { Text("UPI ID (for payouts)") },
+                label = { Text(stringResource(R.string.upi_id_for_payouts)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -207,7 +209,7 @@ fun OnboardingScreen(
                 if (uiState is OnboardingUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Complete Setup", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.complete_setup), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

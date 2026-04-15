@@ -11,12 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.navigation.Screen
 import com.imaginai.indel.ui.theme.*
 
@@ -40,10 +42,10 @@ fun FetchVerificationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Zone Verification", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.zone_verification), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -71,13 +73,13 @@ fun FetchVerificationScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Verify your location",
+                text = stringResource(R.string.verify_your_location),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Enter the 6-digit code provided for your current work zone.",
+                text = stringResource(R.string.enter_6_digit_zone_code),
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,
                 textAlign = TextAlign.Center,
@@ -89,7 +91,7 @@ fun FetchVerificationScreen(
             OutlinedTextField(
                 value = code,
                 onValueChange = viewModel::onCodeChanged,
-                label = { Text("Verification Code") },
+                label = { Text(stringResource(R.string.verification_code)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 20.sp, letterSpacing = 4.sp)
@@ -109,7 +111,7 @@ fun FetchVerificationScreen(
                 if (uiState is VerificationUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Verify & Start", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.verify_start), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -126,7 +128,7 @@ fun FetchVerificationScreen(
                 onClick = viewModel::sendCode,
                 modifier = Modifier.padding(top = 16.dp)
             ) {
-                Text("Didn't get a code? Request again", color = BrandBlue)
+                Text(stringResource(R.string.did_not_get_code_request_again), color = BrandBlue)
             }
         }
     }

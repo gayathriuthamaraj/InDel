@@ -20,12 +20,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.ui.theme.*
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,10 +57,10 @@ fun DevToolsScreen(navController: NavController,
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Dev Tools", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.dev_tools), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,7 +94,7 @@ fun DevToolsScreen(navController: NavController,
                     Icon(Icons.Default.Warning, contentDescription = null,
                          tint = WarningAmber, modifier = Modifier.size(18.dp))
                     Text(
-                        "Debug-only. These controls directly mutate backend state.",
+                        stringResource(R.string.debug_only_controls),
                         style = MaterialTheme.typography.bodySmall,
                         color = WarningAmber
                     )
@@ -115,7 +117,7 @@ fun DevToolsScreen(navController: NavController,
                             Icons.Default.ErrorOutline, (actionState as DevToolsActionState.Error).message, ErrorRed
                         )
                         is DevToolsActionState.Loading -> ResultStyle(
-                            DevSurface, DevBorder, Icons.Default.HourglassEmpty, "Working…", DevLabel
+                            DevSurface, DevBorder, Icons.Default.HourglassEmpty, stringResource(R.string.working), DevLabel
                         )
                         else -> ResultStyle(DevSurface, DevBorder, Icons.Default.Info, "", Color.Transparent)
                     }
@@ -148,8 +150,8 @@ fun DevToolsScreen(navController: NavController,
 
             // ─── Section 1: Chaos Engine ──────────────────────────────────
             item {
-                DevSectionHeader(icon = Icons.Default.FlashOn, title = "Chaos Engine",
-                                 subtitle = "Trigger zone-targeted disruptions")
+                DevSectionHeader(icon = Icons.Default.FlashOn, title = stringResource(R.string.chaos_engine),
+                                 subtitle = stringResource(R.string.trigger_zone_disruptions))
             }
 
             item {
@@ -158,7 +160,7 @@ fun DevToolsScreen(navController: NavController,
 
                         // Zone Level dropdown
                         DevDropdown(
-                            label = "Zone Level",
+                            label = stringResource(R.string.zone_level_label),
                             options = zoneLevels.map { it.label.ifBlank { it.level } },
                             selected = zoneLevels.firstOrNull { it.level == selectedLevel }
                                 ?.label?.ifBlank { selectedLevel } ?: selectedLevel,
@@ -169,19 +171,19 @@ fun DevToolsScreen(navController: NavController,
 
                         // Zone Name dropdown (dynamic, first 15)
                         DevDropdown(
-                            label = "Zone Name  (first 15)",
+                            label = stringResource(R.string.zone_name_label),
                             options = zoneNames,
                             selected = if (selectedZone.isBlank() && zoneNames.isNotEmpty())
                                 zoneNames.first() else selectedZone,
                             onSelect = { idx ->
                                 viewModel.selectedZone.value = zoneNames.getOrNull(idx) ?: ""
                             },
-                            placeholder = if (zoneNames.isEmpty()) "Loading zones…" else "Select zone"
+                            placeholder = if (zoneNames.isEmpty()) stringResource(R.string.loading_zones) else stringResource(R.string.select_zone)
                         )
 
                         // Disruption type
                         DevDropdown(
-                            label = "Disruption Type",
+                            label = stringResource(R.string.disruption_type),
                             options = listOf("WEATHER", "FLOOD", "STRIKE", "TRAFFIC", "POWER_CUT"),
                             selected = selectedType,
                             onSelect = { idx ->
@@ -200,7 +202,7 @@ fun DevToolsScreen(navController: NavController,
                         ) {
                             Icon(Icons.Default.FlashOn, contentDescription = null,
                                  modifier = Modifier.size(18.dp).padding(end = 6.dp))
-                            Text("Trigger Disruption", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.trigger_disruption), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -208,8 +210,8 @@ fun DevToolsScreen(navController: NavController,
 
             // ─── Section 2: Order Controls ────────────────────────────────
             item {
-                DevSectionHeader(icon = Icons.Default.ShoppingCart, title = "Order Controls",
-                                 subtitle = "Simulate order assignment and delivery")
+                DevSectionHeader(icon = Icons.Default.ShoppingCart, title = stringResource(R.string.order_controls),
+                                 subtitle = stringResource(R.string.simulate_order_assignment_delivery))
             }
 
             item {
@@ -220,7 +222,7 @@ fun DevToolsScreen(navController: NavController,
                     // Assign Orders
                     DevCard(modifier = Modifier.weight(1f)) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Assign Orders", color = Color.White,
+                               Text(stringResource(R.string.assign_orders), color = Color.White,
                                  fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                             DevCountRow(
                                 count = assignCount,
@@ -233,13 +235,13 @@ fun DevToolsScreen(navController: NavController,
                                 colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
                                 shape = RoundedCornerShape(8.dp),
                                 enabled = actionState !is DevToolsActionState.Loading
-                            ) { Text("Run", fontSize = 13.sp) }
+                            ) { Text(stringResource(R.string.run), fontSize = 13.sp) }
                         }
                     }
                     // Simulate Deliveries
                     DevCard(modifier = Modifier.weight(1f)) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Simulate Deliveries", color = Color.White,
+                               Text(stringResource(R.string.simulate_deliveries), color = Color.White,
                                  fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                             DevCountRow(
                                 count = simulateCount,
@@ -252,7 +254,7 @@ fun DevToolsScreen(navController: NavController,
                                 colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
                                 shape = RoundedCornerShape(8.dp),
                                 enabled = actionState !is DevToolsActionState.Loading
-                            ) { Text("Run", fontSize = 13.sp) }
+                            ) { Text(stringResource(R.string.run), fontSize = 13.sp) }
                         }
                     }
                 }
@@ -260,8 +262,8 @@ fun DevToolsScreen(navController: NavController,
 
             // ─── Section 3: System Tools ──────────────────────────────────
             item {
-                DevSectionHeader(icon = Icons.Default.Settings, title = "System Tools",
-                                 subtitle = "Settlements and resets")
+                DevSectionHeader(icon = Icons.Default.Settings, title = stringResource(R.string.system_tools),
+                                 subtitle = stringResource(R.string.settlements_and_resets))
             }
 
             item {
@@ -272,7 +274,7 @@ fun DevToolsScreen(navController: NavController,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             DevActionButton(
-                                label = "Settle Earnings",
+                                label = stringResource(R.string.settle_earnings),
                                 icon = Icons.Default.CurrencyRupee,
                                 color = SuccessGreen,
                                 modifier = Modifier.weight(1f),
@@ -280,7 +282,7 @@ fun DevToolsScreen(navController: NavController,
                             ) { viewModel.settleEarnings() }
 
                             DevActionButton(
-                                label = "Reset Zone",
+                                label = stringResource(R.string.reset_zone),
                                 icon = Icons.Default.Refresh,
                                 color = WarningAmber,
                                 modifier = Modifier.weight(1f),
@@ -302,9 +304,9 @@ fun DevToolsScreen(navController: NavController,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text("Full Reset", color = ErrorRed, fontWeight = FontWeight.Bold,
+                                  Text(stringResource(R.string.full_reset), color = ErrorRed, fontWeight = FontWeight.Bold,
                                      fontSize = 13.sp)
-                                Text("Wipes ALL demo data", color = DevLabel, fontSize = 11.sp)
+                                  Text(stringResource(R.string.wipes_all_demo_data), color = DevLabel, fontSize = 11.sp)
                             }
                             Button(
                                 onClick = { viewModel.fullReset() },
@@ -315,7 +317,7 @@ fun DevToolsScreen(navController: NavController,
                             ) {
                                 Icon(Icons.Default.DeleteForever, contentDescription = null,
                                      modifier = Modifier.size(16.dp).padding(end = 4.dp))
-                                Text("Reset All", fontSize = 13.sp)
+                                Text(stringResource(R.string.reset_all), fontSize = 13.sp)
                             }
                         }
                     }

@@ -19,11 +19,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.imaginai.indel.R
 import com.imaginai.indel.data.model.Earnings
 import com.imaginai.indel.data.model.Policy
 import com.imaginai.indel.data.model.WorkerProfile
@@ -49,15 +51,15 @@ fun HomeScreen(
                 title = { 
                     Column {
                         Text("InDel", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                        Text("Last updated: $lastUpdated", style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.last_updated, lastUpdated), style = MaterialTheme.typography.labelSmall)
                     }
                 },
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                        Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.notifications))
                     }
                     IconButton(onClick = { navController.navigate(Screen.ProfileEdit.route) }) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+                        Icon(Icons.Default.AccountCircle, contentDescription = stringResource(R.string.profile))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -108,18 +110,18 @@ fun HomeContent(
 
         // 2. Earnings Today Card
         DashboardCard(
-            title = "Earnings Today",
+            title = stringResource(R.string.earnings_today),
             value = "₹${earnings.todayEarnings.toInt()}",
-            subtitle = "Completed: ${worker.ordersCompleted ?: 0} Orders",
+            subtitle = stringResource(R.string.completed_orders, worker.ordersCompleted ?: 0),
             icon = Icons.Default.CurrencyRupee,
             onClick = { navController.navigate(Screen.Earnings.route) }
         )
 
         // 3. Protection Status Card
         DashboardCard(
-            title = "Protection Status",
-            value = if (policy.status == "active") "Protected" else "Not Enrolled",
-            subtitle = "Coverage: ${(policy.coverageRatio * 100).toInt()}%",
+            title = stringResource(R.string.protection_status),
+            value = if (policy.status == "active") stringResource(R.string.protected) else stringResource(R.string.not_enrolled),
+            subtitle = stringResource(R.string.coverage_percent, (policy.coverageRatio * 100).toInt()),
             icon = Icons.Default.Shield,
             color = if (policy.status == "active") SuccessGreen else WarningAmber,
             onClick = { navController.navigate(Screen.Policy.route) }
@@ -128,9 +130,9 @@ fun HomeContent(
         // 3.a. Protected Payouts (if any)
         if (earnings.protectedIncome > 0) {
             DashboardCard(
-                title = "Protected Payouts",
+                title = stringResource(R.string.protected_payouts),
                 value = "₹${earnings.protectedIncome.toInt()}",
-                subtitle = "Auto-Processed Claims",
+                subtitle = stringResource(R.string.auto_processed_claims),
                 icon = Icons.Default.VerifiedUser,
                 color = SuccessGreen,
                 onClick = { navController.navigate(Screen.Claims.route) }
@@ -143,14 +145,14 @@ fun HomeContent(
         }
 
         // 5. Quick Navigation Grid
-        Text("Services", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.services), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            NavBox("Orders", Icons.Default.DeliveryDining, Modifier.weight(1f)) { navController.navigate(Screen.Orders.route) }
-            NavBox("Earnings", Icons.Default.Payments, Modifier.weight(1f)) { navController.navigate(Screen.Earnings.route) }
+            NavBox(stringResource(R.string.orders), Icons.Default.DeliveryDining, Modifier.weight(1f)) { navController.navigate(Screen.Orders.route) }
+            NavBox(stringResource(R.string.earnings), Icons.Default.Payments, Modifier.weight(1f)) { navController.navigate(Screen.Earnings.route) }
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            NavBox("Policy", Icons.Default.Description, Modifier.weight(1f)) { navController.navigate(Screen.Policy.route) }
-            NavBox("Claims", Icons.AutoMirrored.Filled.AssignmentReturn, Modifier.weight(1f)) { navController.navigate(Screen.Claims.route) }
+            NavBox(stringResource(R.string.policy), Icons.Default.Description, Modifier.weight(1f)) { navController.navigate(Screen.Policy.route) }
+            NavBox(stringResource(R.string.claims), Icons.AutoMirrored.Filled.AssignmentReturn, Modifier.weight(1f)) { navController.navigate(Screen.Claims.route) }
         }
         
         Spacer(modifier = Modifier.height(32.dp))
@@ -184,13 +186,13 @@ fun StatusCard(worker: WorkerProfile, isOnline: Boolean, onToggle: (Boolean) -> 
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(worker.name ?: "Unknown Worker", fontWeight = FontWeight.Bold)
+                Text(worker.name ?: stringResource(R.string.unknown_worker), fontWeight = FontWeight.Bold)
                 Text("${worker.zoneLevel} - ${worker.zoneName}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             }
             // Online Toggle
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = if (isOnline) "Online" else "Offline",
+                    text = if (isOnline) stringResource(R.string.online) else stringResource(R.string.offline),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = if (isOnline) SuccessGreen else TextSecondary
@@ -250,8 +252,8 @@ fun DisruptionBanner() {
                 Icon(Icons.Default.Warning, contentDescription = null, tint = Color.White)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Heavy Rain Alert - Tambaram", color = Color.White, fontWeight = FontWeight.Bold)
-                    Text("Your income is protected. Stay safe.", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
+                    Text(stringResource(R.string.heavy_rain_alert_tambaram), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.income_protected_stay_safe), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
                 }
             }
         }
@@ -287,7 +289,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
     ) {
         Text(message, color = ErrorRed)
         Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text("Retry")
+            Text(stringResource(R.string.retry))
         }
     }
 }

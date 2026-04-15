@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getDisruptions, getWorkers, getZoneHealth, getZones } from '../api/platform'
 import { Users, MapPin, ShoppingBag, AlertTriangle, ArrowUpRight, TrendingUp, ShieldCheck } from 'lucide-react'
+import { useLocalization } from '../context/LocalizationContext'
 
 export default function Overview() {
+  const { t } = useLocalization()
   const [workers, setWorkers] = useState<any[]>([])
   const [previousWorkerCount, setPreviousWorkerCount] = useState<number | null>(null)
   const lastWorkerCountRef = useRef<number | null>(null)
@@ -43,8 +45,8 @@ export default function Overview() {
     const workersTrend = workerDelta === null
       ? 'Loading'
       : workerDelta === 0
-        ? 'Stable'
-        : `${workerDelta > 0 ? '+' : ''}${workerDelta} since refresh`
+        ? t('pages.overview.stable')
+        : `${workerDelta > 0 ? '+' : ''}${workerDelta} ${t('pages.overview.refreshed')}`
     const coverage = health.length > 0 ? Math.round((healthyZones / health.length) * 100) : 0
 
     return { liveOrders, baselineOrders, disruptedZones, paid, ordersTrend, workersTrend, coverage }
@@ -53,26 +55,26 @@ export default function Overview() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-['Outfit']">Platform Command</h1>
-        <p className="mt-1 text-sm text-slate-500">Real-time telemetry and disruption automation across all covered regions.</p>
+        <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-['Outfit']">{t('pages.overview.title')}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t('pages.overview.description')}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Active Workers" value={workers.length} icon={Users} trend={totals.workersTrend} color="text-emerald-600" />
-        <MetricCard label="Tracked Zones" value={zones.length} icon={MapPin} trend="Stable" color="text-slate-600" />
-        <MetricCard label="Live Orders" value={totals.liveOrders} icon={ShoppingBag} trend={`${totals.ordersTrend}%`} color={parseFloat(totals.ordersTrend) < -30 ? "text-rose-600" : "text-orange-600"} />
-        <MetricCard label="Disrupted" value={totals.disruptedZones} icon={AlertTriangle} trend={totals.disruptedZones > 0 ? "Critical" : "None"} color={totals.disruptedZones > 0 ? "text-rose-600" : "text-emerald-600"} />
+        <MetricCard label={t('pages.overview.activeWorkers')} value={workers.length} icon={Users} trend={totals.workersTrend} color="text-emerald-600" />
+        <MetricCard label={t('pages.overview.trackedZones')} value={zones.length} icon={MapPin} trend={t('pages.overview.stable')} color="text-slate-600" />
+        <MetricCard label={t('pages.overview.liveOrders')} value={totals.liveOrders} icon={ShoppingBag} trend={`${totals.ordersTrend}%`} color={parseFloat(totals.ordersTrend) < -30 ? "text-rose-600" : "text-orange-600"} />
+        <MetricCard label={t('pages.overview.disrupted')} value={totals.disruptedZones} icon={AlertTriangle} trend={totals.disruptedZones > 0 ? t('pages.overview.critical') : t('pages.overview.none')} color={totals.disruptedZones > 0 ? "text-rose-600" : "text-emerald-600"} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="enterprise-panel p-8">
           <div className="flex items-center justify-between mb-8">
-             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 font-['Outfit']">Zone Pressure Matrix</h2>
+             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 font-['Outfit']">{t('pages.overview.zonePressure')}</h2>
              <TrendingUp className="h-4 w-4 text-slate-300" />
           </div>
           <div className="space-y-4">
             {health.length === 0 ? (
-               <div className="py-10 text-center text-xs text-slate-400 italic">Connecting to regional nodes...</div>
+               <div className="py-10 text-center text-xs text-slate-400 italic">{t('pages.overview.connecting')}</div>
             ) : health.map((item) => (
               <div key={item.zone_id} className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60">
                 <div>
@@ -86,7 +88,7 @@ export default function Overview() {
                       <div className={`text-xs font-black uppercase font-['Outfit'] ${item.status === 'disrupted' ? 'text-rose-500' : item.status === 'healthy' ? 'text-emerald-500' : 'text-amber-500'}`}>
                          {item.status.replace('_', ' ')}
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 font-['Outfit']">Drop: {Math.round((item.order_drop || 0) * 100)}%</div>
+                       <div className="text-[10px] text-slate-400 mt-0.5 font-['Outfit']">{t('pages.overview.orderDrop')}: {Math.round((item.order_drop || 0) * 100)}%</div>
                    </div>
                    <div className={`h-2 w-2 rounded-full ${item.status === 'disrupted' ? 'bg-rose-500 animate-pulse' : item.status === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
                 </div>
@@ -97,7 +99,7 @@ export default function Overview() {
 
         <div className="enterprise-panel p-8">
            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 font-['Outfit']">Automation Outcome</h2>
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 font-['Outfit']">{t('pages.overview.automationOutcome')}</h2>
               <ShieldCheckIcon className="h-4 w-4 text-slate-300" />
            </div>
            

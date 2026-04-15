@@ -1,24 +1,27 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import Navbar from './Navbar'
-import { LayoutDashboard, Users, Map, BarChart3, Zap, ShieldCheck, Sparkles, CalendarClock, CircleDollarSign, FileSearch, Database } from 'lucide-react'
+import { LayoutDashboard, Users, Map, BarChart3, Zap, ShieldCheck, Sparkles, FileSearch } from 'lucide-react'
 import { getZones } from '../../api/platform'
+import { useLocalization, type Language, type TranslationKey } from '../../context/LocalizationContext'
 
-const platformNav = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard },
-  { to: '/workers', label: 'Workers', icon: Users },
-  { to: '/zones', label: 'Zones', icon: Map },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+type NavItem = {
+  to: string
+  labelKey: TranslationKey
+  icon: typeof LayoutDashboard
+}
+
+const platformNav: NavItem[] = [
+  { to: '/', labelKey: 'sidebar.overview', icon: LayoutDashboard },
+  { to: '/workers', labelKey: 'sidebar.workers', icon: Users },
+  { to: '/zones', labelKey: 'sidebar.zones', icon: Map },
+  { to: '/analytics', labelKey: 'sidebar.analytics', icon: BarChart3 },
 ]
 
-const opsNav = [
-  { to: '/batches', label: 'View Batches', icon: Sparkles },
-  { to: '/god-mode/batch-simulation', label: 'Batch Simulation', icon: ShieldCheck },
-  { to: '/synthetic-data', label: 'Synthetic Data', icon: Database },
-  { to: '/disruptions', label: 'Chaos Engine', icon: Zap },
-  { to: '/weekly-cycle', label: 'Weekly Cycle', icon: CalendarClock },
-  { to: '/payout-ops', label: 'Payout Ops', icon: CircleDollarSign },
-  { to: '/reconciliation', label: 'Reconciliation', icon: FileSearch },
+const opsNav: NavItem[] = [
+  { to: '/batches', labelKey: 'sidebar.viewBatches', icon: Sparkles },
+  { to: '/disruptions', labelKey: 'sidebar.chaosEngine', icon: Zap },
+  { to: '/reconciliation', labelKey: 'sidebar.reconciliation', icon: FileSearch },
 ]
 
 function navClass(isActive: boolean) {
@@ -31,6 +34,7 @@ function navClass(isActive: boolean) {
 }
 
 export default function Sidebar({ children }: { children: ReactNode }) {
+  const { language, setLanguage, t } = useLocalization()
   const [backendZoneCount, setBackendZoneCount] = useState<number | null>(null)
   const [backendStatus, setBackendStatus] = useState<'loading' | 'ready' | 'error'>('loading')
 
@@ -67,24 +71,24 @@ export default function Sidebar({ children }: { children: ReactNode }) {
 
           <div className="flex-1 space-y-8 overflow-y-auto no-scrollbar">
             <section>
-              <p className="mb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Inventory</p>
+              <p className="mb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('sidebar.inventory')}</p>
               <nav className="flex flex-col">
                 {platformNav.map((item) => (
                   <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) => navClass(isActive)}>
                     <item.icon className="h-4 w-4" />
-                    {item.label}
+                    {t(item.labelKey)}
                   </NavLink>
                 ))}
               </nav>
             </section>
 
             <section>
-              <p className="mb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Operations</p>
+              <p className="mb-2 px-6 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('sidebar.operations')}</p>
               <nav className="flex flex-col">
                 {opsNav.map((item) => (
                   <NavLink key={item.to} to={item.to} className={({ isActive }) => navClass(isActive)}>
                     <item.icon className="h-4 w-4" />
-                    {item.label}
+                    {t(item.labelKey)}
                   </NavLink>
                 ))}
               </nav>
@@ -92,15 +96,27 @@ export default function Sidebar({ children }: { children: ReactNode }) {
           </div>
 
           <div className="mt-auto px-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+             <div className="mb-3">
+                <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{t('common.language')}</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Language)}
+                  className="w-full rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-[11px] font-bold text-slate-900 dark:text-white outline-none"
+                >
+                  <option value="en">{t('lang.english')}</option>
+                  <option value="ta">{t('lang.tamil')}</option>
+                  <option value="hi">{t('lang.hindi')}</option>
+                </select>
+             </div>
              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-1">
                    <div className={`h-1.5 w-1.5 rounded-full ${backendStatus === 'ready' ? 'bg-emerald-500' : backendStatus === 'error' ? 'bg-rose-500' : 'bg-amber-500'}`}></div>
                    <p className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                     {backendStatus === 'ready' ? 'Backend Connected' : backendStatus === 'error' ? 'Backend Offline' : 'Connecting'}
+                     {backendStatus === 'ready' ? t('sidebar.backendConnected') : backendStatus === 'error' ? t('sidebar.backendOffline') : t('sidebar.connecting')}
                    </p>
                 </div>
                 <p className="text-[10px] text-slate-500 leading-tight">
-                  {backendZoneCount === null ? 'Loading zone inventory...' : `${backendZoneCount} zones loaded from backend`}
+                  {backendZoneCount === null ? t('sidebar.loadingZoneInventory') : `${backendZoneCount} ${t('sidebar.zonesLoaded')}`}
                 </p>
              </div>
           </div>
