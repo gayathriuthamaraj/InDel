@@ -17,6 +17,8 @@ services:
       DB_NAME: indel_demo
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      FRAUD_LAYER_ENABLED: "true"
+      FRAUD_SERVICE_URL: "http://fraud-ml:8000/ml/v1/fraud/score"
     ports:
       - "8000:8000"
     depends_on:
@@ -24,6 +26,8 @@ services:
         condition: service_healthy
       db-migrate:
         condition: service_completed_successfully
+      fraud-ml:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:8000/health >/dev/null 2>&1 || exit 1"]
       interval: 10s
@@ -253,6 +257,9 @@ services:
         VITE_PLATFORM_API_URL: ${PLATFORM_API_URL:-http://localhost:8004}
     ports:
       - "5175:5175"
+    volumes:
+      - ./platform-dashboard:/app
+      - /app/node_modules
     depends_on:
       api-gateway:
         condition: service_started

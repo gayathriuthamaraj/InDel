@@ -1,0 +1,2 @@
+ALTER TABLE worker_profiles ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT TRUE;
+ALTER TABLE worker_profiles ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMP;

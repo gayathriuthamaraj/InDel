@@ -36,11 +36,17 @@ export default function Workers() {
 
   useEffect(() => {
     async function load() {
-      const response = await getWorkers()
-      setWorkers(response.data.workers ?? [])
+      try {
+        const response = await getWorkers()
+        setWorkers(response.data.workers ?? [])
+      } catch (error) {
+        console.error('Failed to load workers', error)
+      }
     }
 
-    load().catch((error) => console.error('Failed to load workers', error))
+    load()
+    const interval = setInterval(load, 10000) // Poll every 10 seconds
+    return () => clearInterval(interval)
   }, [])
 
   const filteredWorkers = useMemo(() => {
@@ -51,7 +57,7 @@ export default function Workers() {
         worker.worker_id.toString().includes(searchQuery) ||
         zoneLabel.toLowerCase().includes(searchQuery.toLowerCase())
 
-      const isLive = zoneLabel !== unknownZoneLabel
+      const isLive = !!worker.is_online
       const matchesStatus =
         statusFilter === 'all' ||
         (statusFilter === 'live' && isLive) ||
@@ -59,7 +65,7 @@ export default function Workers() {
 
       return matchesSearch && matchesStatus
     })
-  }, [workers, searchQuery, statusFilter, unknownZoneLabel])
+  }, [workers, searchQuery, statusFilter])
 
   const exportToCSV = () => {
     const headers = [
@@ -97,7 +103,9 @@ export default function Workers() {
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('pages.workers.title')}</h1>
-          <p className="mt-1 text-sm text-slate-500">{t('pages.workers.description')}</p>
+          <p className="mt-1 text-sm text-slate-500">
+            {t('pages.workers.description')} • {t('pages.workers.lastUpdated')}: {new Date().toLocaleTimeString()}
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -106,6 +114,13 @@ export default function Workers() {
           >
             <Download className="h-3.5 w-3.5" />
             {t('pages.workers.exportCSV')}
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 h-9 px-4 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold font-['Outfit'] hover:bg-slate-50 dark:hover:bg-slate-800 transition-none"
+          >
+            <Search className="h-3.5 w-3.5" />
+            {t('pages.workers.refresh')}
           </button>
         </div>
       </div>
@@ -187,26 +202,36 @@ export default function Workers() {
                       <td className="px-8 py-5">
                         <div
                           className={`flex items-center gap-2 px-2 py-1 rounded w-fit border ${
-                            isLive
+                            worker.is_online
                               ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20'
                               : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60'
                           }`}
                         >
-                          <div className={`h-1 w-1 rounded-full ${isLive ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+                          <div className={`h-1 w-1 rounded-full ${worker.is_online ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
                           <span
                             className={`text-[9px] font-black uppercase tracking-tighter ${
-                              isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'
+                              worker.is_online ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'
                             }`}
                           >
-                            {isLive ? t('pages.workers.activeCoverage') : t('pages.workers.inactive')}
+                            {worker.is_online ? t('pages.workers.activeCoverage') : t('pages.workers.inactive')}
                           </span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                          {isLive ? t('pages.workers.liveOnShift') : t('pages.workers.offline')}
+                        <div className={`text-xs font-bold ${worker.is_online ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}`}>
+                          {worker.is_online ? t('pages.workers.liveOnShift') : t('pages.workers.offline')}
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{t('pages.workers.contact')}: {worker.phone}</div>
+                        <div className="text-[9px] text-slate-400 mt-0.5">
+                          {worker.is_online ? (
+                             <>{t('pages.workers.contact')}: {worker.phone}</>
+                          ) : (
+                             <>
+                               {worker.last_active_at && worker.last_active_at !== '0001-01-01T00:00:00Z' 
+                                 ? `${t('pages.workers.lastSeen')} ${new Date(worker.last_active_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` 
+                                 : t('pages.workers.neverSeen')}
+                             </>
+                          )}
+                        </div>
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">

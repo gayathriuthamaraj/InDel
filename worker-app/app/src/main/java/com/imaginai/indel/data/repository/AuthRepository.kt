@@ -54,5 +54,12 @@ class AuthRepository @Inject constructor(
     val authToken = preferencesDataStore.authToken
     val workerId = preferencesDataStore.workerId
     
-    suspend fun logout() = preferencesDataStore.clearAll()
+    suspend fun logout() {
+        try {
+            authApiService.logout()
+        } catch (e: Exception) {
+            // Ignore error to ensure local preferences are still cleared
+        }
+        preferencesDataStore.clearAll()
+    }
 }

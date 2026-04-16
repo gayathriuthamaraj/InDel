@@ -3,6 +3,7 @@ package worker
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -360,7 +361,85 @@ func UpdateProfile(c *gin.Context) {
 		profile["upi_id"] = upi
 	}
 
+	profile["last_active_at"] = time.Now()
 	store.data.WorkerProfiles[workerID] = profile
 
 	c.JSON(200, gin.H{"updated": true, "worker": profile})
+}
+
+// UpdateOnlineStatus toggles the worker's online status
+func UpdateOnlineStatus(c *gin.Context) {
+	workerID, ok := requireAuth(c)
+	if !ok {
+		return
+	}
+	body := parseBody(c)
+	isOnline := bodyBool(body, "online", true)
+
+	now := time.Now()
+
+	if HasDB() {
+		workerIDUint, parseErr := parseWorkerID(workerID)
+		if parseErr == nil {
+			var profile models.WorkerProfile
+			err := workerDB.Where("worker_id = ?", workerIDUint).First(&profile).Error
+			if err == nil {
+				profile.IsOnline = isOnline
+				profile.LastActiveAt = now
+				_ = workerDB.Save(&profile).Error
+			}
+		}
+	}
+
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	profile, exists := store.data.WorkerProfiles[workerID]
+	if !exists {
+		profile = map[string]any{"worker_id": workerID}
+	}
+
+	profile["online"] = isOnline
+	profile["last_active_at"] = now
+	store.data.WorkerProfiles[workerID] = profile
+
+	c.JSON(200, gin.H{"updated": true, "online": isOnline, "last_active_at": now})
+}
+
+// Heartbeat keeps the worker's session alive
+func Heartbeat(c *gin.Context) {
+	workerID, ok := requireAuth(c)
+	if !ok {
+		return
+	}
+
+	now := time.Now()
+
+	if HasDB() {
+		workerIDUint, parseErr := parseWorkerID(workerID)
+		if parseErr == nil {
+			var profile models.WorkerProfile
+			err := workerDB.Where("worker_id = ?", workerIDUint).First(&profile).Error
+			if err == nil {
+				// Heartbeat implies they are online
+				profile.IsOnline = true
+				profile.LastActiveAt = now
+				_ = workerDB.Save(&profile).Error
+			}
+		}
+	}
+
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	profile, exists := store.data.WorkerProfiles[workerID]
+	if !exists {
+		profile = map[string]any{"worker_id": workerID}
+	}
+
+	profile["online"] = true
+	profile["last_active_at"] = now
+	store.data.WorkerProfiles[workerID] = profile
+
+	c.JSON(200, gin.H{"status": "alive", "last_active_at": now})
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -280,9 +281,28 @@ func GetSessionFraudSignals(c *gin.Context) {
 }
 
 func EndSession(c *gin.Context) {
-	if _, ok := requireAuth(c); !ok {
+	workerID, ok := requireAuth(c)
+	if !ok {
 		return
 	}
+
+	if HasDB() {
+		workerIDUint, parseErr := parseWorkerID(workerID)
+		if parseErr == nil {
+			_ = workerDB.Model(&models.WorkerProfile{}).Where("worker_id = ?", workerIDUint).Updates(map[string]any{
+				"is_online":      false,
+				"last_active_at": time.Now(),
+			}).Error
+		}
+	}
+
+	store.mu.Lock()
+	if profile, exists := store.data.WorkerProfiles[workerID]; exists {
+		profile["online"] = false
+		profile["last_active_at"] = time.Now()
+	}
+	store.mu.Unlock()
+
 	c.JSON(200, gin.H{"message": "session_ended", "session_id": c.Param("session_id")})
 }
 

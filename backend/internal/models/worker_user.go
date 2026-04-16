@@ -29,6 +29,8 @@ type WorkerProfile struct {
 	UPIId                 string
 	AQIZone               string
 	TotalEarningsLifetime float64
+	IsOnline              bool      `gorm:"column:is_online;default:true"`
+	LastActiveAt          time.Time `gorm:"column:last_active_at"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }
