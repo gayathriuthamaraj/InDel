@@ -3,6 +3,7 @@ package platform
 import (
 	"time"
 
+	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,12 +11,12 @@ import (
 func GetWorkers(c *gin.Context) {
 	if hasDB() {
 		type row struct {
-			WorkerID     uint      `gorm:"column:worker_id"`
-			Name         string    `gorm:"column:name"`
-			Phone        string    `gorm:"column:phone"`
-			Zone         string    `gorm:"column:zone"`
-			IsOnline     bool      `gorm:"column:is_online"`
-			LastActiveAt time.Time `gorm:"column:last_active_at"`
+			WorkerID     uint       `gorm:"column:worker_id"`
+			Name         string     `gorm:"column:name"`
+			Phone        string     `gorm:"column:phone"`
+			Zone         string     `gorm:"column:zone"`
+			IsOnline     bool       `gorm:"column:is_online"`
+			LastActiveAt *time.Time `gorm:"column:last_active_at"`
 		}
 
 		rows := make([]row, 0)
@@ -25,7 +26,7 @@ func GetWorkers(c *gin.Context) {
 			       u.phone,
 			       COALESCE(z.name || ', ' || z.city, 'Unknown Zone') AS zone,
 			       COALESCE(wp.is_online, false) AS is_online,
-			       COALESCE(wp.last_active_at, '0001-01-01 00:00:00') AS last_active_at
+			       wp.last_active_at AS last_active_at
 			FROM users u
 			JOIN worker_profiles wp ON wp.worker_id = u.id
 			LEFT JOIN zones z ON z.id = wp.zone_id
@@ -36,11 +37,11 @@ func GetWorkers(c *gin.Context) {
 		workers := make([]gin.H, 0, len(rows))
 		now := time.Now()
 		for _, r := range rows {
-			// Staleness check: If worker is "Online" but no pings for 2 mins, treat as offline
-			effectiveOnline := r.IsOnline
-			if r.IsOnline && !r.LastActiveAt.IsZero() && now.Sub(r.LastActiveAt) > 2*time.Minute {
-				effectiveOnline = false
+			lastActiveAt := time.Time{}
+			if r.LastActiveAt != nil {
+				lastActiveAt = *r.LastActiveAt
 			}
+			effectiveOnline := models.EffectiveWorkerOnlineStatus(r.IsOnline, lastActiveAt, now)
 
 			workers = append(workers, gin.H{
 				"worker_id":      r.WorkerID,
@@ -48,7 +49,7 @@ func GetWorkers(c *gin.Context) {
 				"phone":          r.Phone,
 				"zone":           r.Zone,
 				"is_online":      effectiveOnline,
-				"last_active_at": r.LastActiveAt.Format(time.RFC3339),
+				"last_active_at": lastActiveAt.Format(time.RFC3339),
 				"status": func() string {
 					if effectiveOnline {
 						return "live"

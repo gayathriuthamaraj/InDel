@@ -279,7 +279,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 		BaselineAmount float64
 		ActualEarnings float64
 		IsOnline       bool
-		LastActiveAt   time.Time
+		LastActiveAt   *time.Time
 	}
 
 	weekStart, _ := weekBounds(now.UTC())
@@ -287,7 +287,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 	// Check for workers in the disrupted zone who have ACTIVE protection plans
 	// This ensures claims are only generated for workers currently enrolled in the protection policy
 	if err := s.DB.Table("worker_profiles wp").
-		Select("wp.worker_id, COALESCE(eb.baseline_amount, 5000.0) AS baseline_amount, COALESCE(wes.total_earnings, 0) AS actual_earnings, COALESCE(wp.is_online, false) AS is_online, COALESCE(wp.last_active_at, '0001-01-01 00:00:00') AS last_active_at").
+		Select("wp.worker_id, COALESCE(eb.baseline_amount, 5000.0) AS baseline_amount, COALESCE(wes.total_earnings, 0) AS actual_earnings, COALESCE(wp.is_online, false) AS is_online, wp.last_active_at").
 		Joins("INNER JOIN policies p ON p.worker_id = wp.worker_id AND p.status = 'active'").
 		Joins("LEFT JOIN earnings_baseline eb ON eb.worker_id = wp.worker_id").
 		Joins("LEFT JOIN weekly_earnings_summary wes ON wes.worker_id = wp.worker_id AND wes.week_start = ?", weekStart).
@@ -333,7 +333,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 			Now:            now,
 			// Pre-fetched data
 			IsOnline:       &worker.IsOnline,
-			LastActiveAt:   &worker.LastActiveAt,
+			LastActiveAt:   worker.LastActiveAt,
 			BaselineAmount: &worker.BaselineAmount,
 			ActualEarnings: &worker.ActualEarnings,
 		}

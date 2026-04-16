@@ -8,7 +8,9 @@ COPY . .
 
 # SERVICE maps to folders under ./cmd (core, worker-gateway, insurer-gateway, platform-gateway)
 ARG SERVICE=core
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o backend ./cmd/${SERVICE}
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+	CGO_ENABLED=0 GOOS=linux go build -o backend ./cmd/${SERVICE}
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates

@@ -77,21 +77,17 @@ func AdaptSyntheticActivity(_ context.Context, source any) (WorkerActivity, erro
 // AdaptClaimActivity loads live worker/order data and derives the strict contract.
 // The adapter touches raw tables so the core engines never need direct order access.
 func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (WorkerActivity, error) {
-	if db == nil {
-		return WorkerActivity{}, fmt.Errorf("db unavailable")
-	}
-
 	windowStart, windowEnd := disruptionWindow(source)
 	preStart := windowStart.Add(-7 * 24 * time.Hour)
 
 	type workerRow struct {
-		ZoneName       string  `gorm:"column:zone_name"`
-		ZoneCity       string  `gorm:"column:zone_city"`
-		ZoneLevel      string  `gorm:"column:zone_level"`
-		VehicleType    string    `gorm:"column:vehicle_type"`
-		BaselineAmount float64   `gorm:"column:baseline_amount"`
-		IsOnline       bool      `gorm:"column:is_online"`
-		LastActiveAt   time.Time `gorm:"column:last_active_at"`
+		ZoneName       string     `gorm:"column:zone_name"`
+		ZoneCity       string     `gorm:"column:zone_city"`
+		ZoneLevel      string     `gorm:"column:zone_level"`
+		VehicleType    string     `gorm:"column:vehicle_type"`
+		BaselineAmount float64    `gorm:"column:baseline_amount"`
+		IsOnline       bool       `gorm:"column:is_online"`
+		LastActiveAt   *time.Time `gorm:"column:last_active_at"`
 	}
 
 	row := workerRow{
@@ -105,7 +101,7 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 		row.IsOnline = *source.IsOnline
 	}
 	if source.LastActiveAt != nil {
-		row.LastActiveAt = *source.LastActiveAt
+		row.LastActiveAt = source.LastActiveAt
 	}
 	if source.BaselineAmount != nil {
 		row.BaselineAmount = *source.BaselineAmount
@@ -113,6 +109,9 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 
 	needsQuery := source.IsOnline == nil || source.LastActiveAt == nil || source.BaselineAmount == nil
 	if needsQuery {
+		if db == nil {
+			return WorkerActivity{}, fmt.Errorf("db unavailable")
+		}
 		_ = db.WithContext(ctx).
 			Table("worker_profiles wp").
 			Select(`
@@ -122,7 +121,7 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 				COALESCE(wp.vehicle_type, 'two_wheeler') AS vehicle_type,
 				COALESCE(eb.baseline_amount, 0) AS baseline_amount,
 				COALESCE(wp.is_online, true) AS is_online,
-				COALESCE(wp.last_active_at, '0001-01-01 00:00:00') AS last_active_at
+				wp.last_active_at
 			`, row.ZoneName).
 			Joins("LEFT JOIN zones z ON z.id = wp.zone_id").
 			Joins("LEFT JOIN earnings_baseline eb ON eb.worker_id = wp.worker_id").
@@ -130,10 +129,15 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 			Scan(&row).Error
 	}
 
-	// Unify staleness logic: If marked online but haven't pinged for 2 mins, treat as offline
-	if row.IsOnline && !row.LastActiveAt.IsZero() && time.Since(row.LastActiveAt) > 2*time.Minute {
-		row.IsOnline = false
+	statusNow := source.Now
+	if statusNow.IsZero() {
+		statusNow = time.Now()
 	}
+	lastActiveAt := time.Time{}
+	if row.LastActiveAt != nil {
+		lastActiveAt = *row.LastActiveAt
+	}
+	row.IsOnline = models.EffectiveWorkerOnlineStatus(row.IsOnline, lastActiveAt, statusNow)
 
 	attemptTimeExpr := "created_at"
 	completeTimeExpr := "created_at"
@@ -154,10 +158,15 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 		Where("worker_id = ? AND "+attemptTimeExpr+" >= ? AND "+attemptTimeExpr+" < ?", source.WorkerID, preStart, windowStart).
 		Count(&ordersBefore).Error
 
+	attemptClause := ""
+	if hasOrderColumn(db, "accepted_at") {
+		attemptClause = " AND (accepted_at IS NOT NULL OR LOWER(COALESCE(status, '')) NOT IN ('assigned', 'pending'))"
+	}
+
 	var ordersAttempted int64
 	_ = db.WithContext(ctx).
 		Table("orders").
-		Where("worker_id = ? AND "+attemptTimeExpr+" >= ? AND "+attemptTimeExpr+" <= ?", source.WorkerID, windowStart, windowEnd).
+		Where("worker_id = ? AND "+attemptTimeExpr+" >= ? AND "+attemptTimeExpr+" <= ?"+attemptClause, source.WorkerID, windowStart, windowEnd).
 		Count(&ordersAttempted).Error
 
 	var ordersCompleted int64
@@ -196,14 +205,16 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 		baseline = maxFloat(source.ClaimAmount/0.85, source.ClaimAmount) * 4
 	}
 	expected := round2((baseline / 40.0) * durationHours)
+
+	// Actual is the sum of granular order fees earned specifically during the window
 	actual := round2(actualFromOrders)
-	if actual <= 0 {
-		if source.ActualEarnings != nil {
-			actual = *source.ActualEarnings
-		} else {
-			inferredLoss := source.ClaimAmount / 0.85
-			actual = round2(math.Max(expected-inferredLoss, 0))
-		}
+	// NOTE: Do NOT fall back to source.ActualEarnings (weekly total) here.
+	// If no orders were completed during the disruption window, actual = 0.
+	// This correctly triggers the loss calculation for the income guarantee.
+	if actual <= 0 && source.ActualEarnings != nil && ordersAttempted > 0 {
+		// Only use the passed actual earnings if there IS window activity
+		// (protects against stale weekly totals masking genuine disruption losses)
+		actual = *source.ActualEarnings
 	}
 
 	zoneLabel := strings.TrimSpace(row.ZoneName)
@@ -212,12 +223,16 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 	}
 
 	loginDuration := duringHours
+	if loginDuration <= 0 && row.IsOnline && !lastActiveAt.IsZero() && lastActiveAt.Before(windowStart) {
+		// Use the recent live-session lead time as participation evidence for
+		// workers who were online before the disruption hit.
+		loginDuration = math.Min(durationHours, windowStart.Sub(lastActiveAt).Hours())
+	}
 	if loginDuration <= 0 && ordersAttempted > 0 {
-		loginDuration = math.Min(durationHours, math.Max(0.02, float64(ordersAttempted)*0.5))
+		loginDuration = math.Min(durationHours, math.Max(minLoginEvidenceHours, float64(ordersAttempted)*0.5))
 	}
 
-	recentHistoryWindow := windowStart.Add(-1 * time.Hour)
-	activeBefore := (ordersBefore > 0 || beforeHours > 0) || (row.LastActiveAt.After(recentHistoryWindow) && row.LastActiveAt.Before(windowStart))
+	activeBefore := ordersBefore > 0 || beforeHours > 0
 
 	return WorkerActivity{
 		WorkerID:         source.WorkerID,
@@ -274,7 +289,7 @@ func normalizeActivity(activity WorkerActivity) WorkerActivity {
 		activity.LoginDuration = 0
 	}
 	if activity.LoginDuration == 0 && (activity.OrdersAttempted > 0 || activity.OrdersCompleted > 0) {
-		activity.LoginDuration = math.Max(0.02, float64(activity.OrdersAttempted)*0.5)
+		activity.LoginDuration = math.Max(minLoginEvidenceHours, float64(activity.OrdersAttempted)*0.5)
 	}
 	if activity.EarningsExpected < 0 {
 		activity.EarningsExpected = 0
@@ -289,7 +304,7 @@ func normalizeActivity(activity WorkerActivity) WorkerActivity {
 		activity.EarningsActual = round2(float64(activity.OrdersCompleted) * 40)
 	}
 	if !activity.ActiveDuring {
-		activity.ActiveDuring = activity.LoginDuration >= 0.02 || activity.OrdersAttempted >= 1 || activity.OrdersCompleted > 0
+		activity.ActiveDuring = activity.LoginDuration >= minLoginEvidenceHours || activity.OrdersAttempted >= 1 || activity.OrdersCompleted > 0
 	}
 	if activity.EarningsActual > activity.EarningsExpected && activity.EarningsExpected > 0 {
 		activity.EarningsActual = activity.EarningsExpected

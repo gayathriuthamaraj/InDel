@@ -8,12 +8,14 @@ import (
 )
 
 func TestEvaluateDetailed_Participation(t *testing.T) {
-	// minLoginDuration = 0.02 (approx 1.2 mins)
-	
+	const approxGoodSession = 50.0 / 3600.0
+	const approxIdleFraudSession = 65.0 / 3600.0
+
 	tests := []struct {
 		name             string
 		activity         WorkerActivity
 		expectedDecision Decision
+		expectedScore    float64
 		containsReason   string
 		containsSignal   string
 	}{
@@ -30,6 +32,22 @@ func TestEvaluateDetailed_Participation(t *testing.T) {
 				EarningsExpected: 150,
 			},
 			expectedDecision: DecisionApprove,
+		},
+		{
+			name: "Case A2: Good Worker - One Real Order Before Disruption",
+			activity: WorkerActivity{
+				WorkerID:         11,
+				IsOnline:         true,
+				ActiveBefore:     true,
+				ActiveDuring:     true,
+				LoginDuration:    approxGoodSession,
+				OrdersAttempted:  0,
+				OrdersCompleted:  0,
+				EarningsActual:   0,
+				EarningsExpected: 150,
+			},
+			expectedDecision: DecisionApprove,
+			expectedScore:    0.10,
 		},
 		{
 			name: "Case B: Bad Worker - Offline - No Activity - No History",
@@ -52,14 +70,32 @@ func TestEvaluateDetailed_Participation(t *testing.T) {
 				WorkerID:         3,
 				IsOnline:         true,
 				ActiveBefore:     false,
-				ActiveDuring:     false,
-				LoginDuration:    0,
+				ActiveDuring:     true,
+				LoginDuration:    approxIdleFraudSession,
 				OrdersAttempted:  0,
 				EarningsActual:   0,
 				EarningsExpected: 100,
 			},
-			expectedDecision: DecisionReject, // 0.45 + 0.50 = 0.95 result
+			expectedDecision: DecisionReject,
+			expectedScore:    0.95,
 			containsSignal:   "idle_online_presence",
+		},
+		{
+			name: "Case E: Online Historical Worker - No Live Window Evidence",
+			activity: WorkerActivity{
+				WorkerID:         6,
+				IsOnline:         true,
+				ActiveBefore:     true,
+				ActiveDuring:     false,
+				LoginDuration:    0,
+				OrdersAttempted:  0,
+				OrdersCompleted:  0,
+				EarningsActual:   0,
+				EarningsExpected: 100,
+			},
+			expectedDecision: DecisionDelay,
+			containsReason:   "manual review required: worker is online but has no live order/login evidence in the disruption window",
+			containsSignal:   "no_live_window_activity",
 		},
 		{
 			name: "Storm Safe Net: Offline but Active - Historical",
@@ -121,6 +157,9 @@ func TestEvaluateDetailed_Participation(t *testing.T) {
 				if !found {
 					t.Errorf("%s: expected signal name containing %q, got %v", tt.name, tt.containsSignal, outcome.Signals)
 				}
+			}
+			if tt.expectedScore > 0 && outcome.FraudScore != tt.expectedScore {
+				t.Errorf("%s: expected fraud score %.2f, got %.2f", tt.name, tt.expectedScore, outcome.FraudScore)
 			}
 			fmt.Printf("--- Test %s ---\nDecision: %s | Score: %.2f | Reasons: %v\n", tt.name, outcome.Decision, outcome.FraudScore, outcome.Reasons)
 		})

@@ -67,6 +67,7 @@ services:
         SERVICE: core
     environment:
       INDEL_ENV: production
+      INDEL_ALLOWED_ORIGINS: "*"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: indel
@@ -100,6 +101,7 @@ services:
         SERVICE: worker-gateway
     environment:
       INDEL_ENV: production
+      INDEL_ALLOWED_ORIGINS: "*"
       SERVICE: worker-gateway
       CORE_URL: http://core:8000
       PREMIUM_ML_URL: http://premium-ml:8000/ml/v1/premium/calculate
@@ -134,6 +136,7 @@ services:
         SERVICE: insurer-gateway
     environment:
       INDEL_ENV: production
+      INDEL_ALLOWED_ORIGINS: "*"
       SERVICE: insurer-gateway
       CORE_URL: http://core:8000
       DB_HOST: postgres
@@ -166,6 +169,7 @@ services:
         SERVICE: platform-gateway
     environment:
       INDEL_ENV: production
+      INDEL_ALLOWED_ORIGINS: "*"
       SERVICE: platform-gateway
       CORE_URL: http://core:8000
       DB_HOST: postgres

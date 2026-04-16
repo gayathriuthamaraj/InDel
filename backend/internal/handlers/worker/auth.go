@@ -101,15 +101,15 @@ func VerifyOTP(c *gin.Context) {
 			zoneID := ensureZoneIDByLevelAndName("A", "Tambaram")
 			if zoneID != 0 {
 				_ = workerDB.Exec(
-					`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime)
-					 VALUES (?, ?, ?, ?, ?, ?, ?)
+					`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime, is_online, last_active_at)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 ON CONFLICT (worker_id) DO UPDATE SET
 					 name = COALESCE(NULLIF(worker_profiles.name, ''), EXCLUDED.name),
 					 zone_id = COALESCE(NULLIF(worker_profiles.zone_id, 0), EXCLUDED.zone_id),
 					 vehicle_type = COALESCE(NULLIF(worker_profiles.vehicle_type, ''), EXCLUDED.vehicle_type),
 					 upi_id = COALESCE(NULLIF(worker_profiles.upi_id, ''), EXCLUDED.upi_id),
 					 aqi_zone = COALESCE(NULLIF(worker_profiles.aqi_zone, ''), EXCLUDED.aqi_zone)`,
-					workerIDUint, "New Worker", zoneID, "bike", "new@upi", "AQI-Medium", 0,
+					workerIDUint, "New Worker", zoneID, "bike", "new@upi", "AQI-Medium", 0, false, time.Now(),
 				).Error
 			}
 
@@ -143,7 +143,8 @@ func VerifyOTP(c *gin.Context) {
 			"upi_id":          "new@upi",
 			"coverage_status": "inactive",
 			"enrolled":        false,
-			"online":          true,
+			"online":          false,
+			"is_online":       false,
 			"last_active_at":  time.Now(),
 		}
 	} else {
@@ -234,7 +235,8 @@ func Register(c *gin.Context) {
 			"upi_id":          "new@upi",
 			"coverage_status": "active",
 			"enrolled":        true,
-			"online":          true,
+			"online":          false,
+			"is_online":       false,
 			"last_active_at":  time.Now(),
 		}
 	}
@@ -293,7 +295,7 @@ func Register(c *gin.Context) {
 			 upi_id = EXCLUDED.upi_id,
 			 aqi_zone = EXCLUDED.aqi_zone,
 			 last_active_at = EXCLUDED.last_active_at`,
-			workerIDUint, username, zone.ID, "bike", "demo@upi", "AQI-Medium", 0, true, time.Now(),
+			workerIDUint, username, zone.ID, "bike", "demo@upi", "AQI-Medium", 0, false, time.Now(),
 		)
 
 		// 3. Set Earnings Baseline.
@@ -393,7 +395,7 @@ func Login(c *gin.Context) {
 				profile = map[string]any{"worker_id": workerID}
 			}
 			if zoneSummary.City != "" {
-			profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
+				profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
 			} else {
 				profile["zone"] = zoneSummary.ZoneName
 			}
@@ -402,6 +404,11 @@ func Login(c *gin.Context) {
 			profile["worker_type"] = orderRouteType(normalizeZoneLevel(zoneSummary.ZoneLevel))
 			profile["zone_name"] = zoneSummary.ZoneName
 			profile["last_active_at"] = time.Now()
+			if _, exists := profile["is_online"]; !exists {
+				if online, ok := profile["online"].(bool); ok {
+					profile["is_online"] = online
+				}
+			}
 			store.data.WorkerProfiles[workerID] = profile
 			store.mu.Unlock()
 		}
@@ -482,6 +489,7 @@ func Logout(c *gin.Context) {
 	// 1. Mark Offline in store
 	if profile, exists := store.data.WorkerProfiles[workerID]; exists {
 		profile["online"] = false
+		profile["is_online"] = false
 		profile["last_active_at"] = time.Now()
 	}
 	// 2. Clear from token map

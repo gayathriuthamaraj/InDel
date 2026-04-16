@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -60,8 +61,8 @@ type zoneIDRow struct {
 }
 
 type zoneSeedScope struct {
-	ZoneID   uint   `gorm:"column:zone_id"`
-	ZoneCity string `gorm:"column:zone_city"`
+	ZoneID    uint   `gorm:"column:zone_id"`
+	ZoneCity  string `gorm:"column:zone_city"`
 	ZoneLevel string `gorm:"column:zone_level"`
 }
 
@@ -937,12 +938,80 @@ func DemoTriggerDisruption(c *gin.Context) {
 	}
 	body := parseBody(c)
 	disruptionType := bodyString(body, "disruption_type", "heavy_rain")
-	zone := bodyString(body, "zone", "Tambaram, Chennai")
+	zoneLevel := normalizeZoneLevel(bodyString(body, "zone_level", ""))
+	zoneName := bodyString(body, "zone_name", "")
+	zone := bodyString(body, "zone", "")
+	if zoneLevel == "" || zoneName == "" {
+		if workerIDUint, parseErr := parseWorkerID(workerID); parseErr == nil {
+			summary := getWorkerZoneSummary(workerIDUint)
+			if zoneLevel == "" {
+				zoneLevel = normalizeZoneLevel(summary.ZoneLevel)
+			}
+			if zoneName == "" {
+				zoneName = summary.ZoneName
+				if zoneName == "" {
+					zoneName = summary.City
+				}
+			}
+			if zone == "" {
+				zone = formatZoneDisplay(summary.ZoneName, summary.City)
+			}
+		}
+	}
+	if zoneLevel == "" {
+		zoneLevel = "A"
+	}
+	if zoneName == "" {
+		zoneName = "Tambaram"
+	}
+	if zone == "" {
+		zone = formatZoneDisplay(zoneName, "")
+	}
 	msg := disruptionType + " detected in " + zone + ". You are protected."
 
 	if HasDB() {
-		if workerIDUint, parseErr := parseWorkerID(workerID); parseErr == nil {
-			_ = workerDB.Exec("INSERT INTO notifications (worker_id, type, message) VALUES (?, ?, ?)", workerIDUint, "disruption_alert", msg).Error
+		zoneID := ensureZoneIDByLevelAndName(zoneLevel, zoneName)
+		if zoneID == 0 {
+			c.JSON(400, gin.H{"error": "zone_resolution_failed"})
+			return
+		}
+
+		now := time.Now().UTC()
+		endTime := now.Add(4 * time.Hour)
+		disruption := models.Disruption{
+			ZoneID:          zoneID,
+			Type:            disruptionType,
+			Severity:        "high",
+			Confidence:      0.92,
+			Status:          "confirmed",
+			SignalTimestamp: &now,
+			ConfirmedAt:     &now,
+			StartTime:       &now,
+			EndTime:         &endTime,
+		}
+		if err := workerDB.Create(&disruption).Error; err != nil {
+			c.JSON(500, gin.H{"error": "disruption_create_failed"})
+			return
+		}
+
+		if workerCoreOps != nil {
+			result, err := workerCoreOps.AutoProcessDisruption(disruption.ID, now)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "disruption_auto_process_failed", "message": err.Error()})
+				return
+			}
+
+			c.JSON(200, gin.H{
+				"message":         "disruption_triggered",
+				"disruption_id":   fmt.Sprintf("dis-%d", disruption.ID),
+				"disruption_type": disruptionType,
+				"zone":            zone,
+				"zone_level":      zoneLevel,
+				"zone_name":       zoneName,
+				"time":            nowISO(),
+				"result":          result,
+			})
+			return
 		}
 	}
 

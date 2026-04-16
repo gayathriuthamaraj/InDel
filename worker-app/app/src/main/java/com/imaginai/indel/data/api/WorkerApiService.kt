@@ -28,6 +28,12 @@ interface WorkerApiService {
     @PUT("api/v1/worker/profile")
     suspend fun updateProfile(@Body request: OnboardRequest): Response<WorkerProfileResponse>
 
+    @PATCH("api/v1/worker/status")
+    suspend fun updateOnlineStatus(@Body request: OnlineStatusRequest): Response<OnlineStatusResponse>
+
+    @POST("api/v1/worker/heartbeat")
+    suspend fun heartbeat(): Response<HeartbeatResponse>
+
     // Zones
     @GET("api/v1/platform/zones")
     suspend fun getZones(): Response<ZoneListResponse>

@@ -18,6 +18,8 @@ data class WorkerProfile(
     @SerializedName("upi_id") val upiId: String,
     @SerializedName("coverage_status") val coverageStatus: String,
     @SerializedName("enrolled") val enrolled: Boolean,
+    @SerializedName("is_online") val isOnline: Boolean? = null,
+    @SerializedName("last_active_at") val lastActiveAt: String? = null,
     @SerializedName("orders_completed") val ordersCompleted: Int? = 0,
     @SerializedName("today_earnings") val todayEarnings: Int? = 0
 )
@@ -42,4 +44,19 @@ data class OnboardResponse(
 
 data class WorkerProfileResponse(
     @SerializedName("worker") val worker: WorkerProfile
+)
+
+data class OnlineStatusRequest(
+    @SerializedName("online") val online: Boolean
+)
+
+data class OnlineStatusResponse(
+    @SerializedName("updated") val updated: Boolean,
+    @SerializedName("online") val online: Boolean,
+    @SerializedName("last_active_at") val lastActiveAt: String? = null
+)
+
+data class HeartbeatResponse(
+    @SerializedName("status") val status: String,
+    @SerializedName("last_active_at") val lastActiveAt: String? = null
 )

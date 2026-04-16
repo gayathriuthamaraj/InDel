@@ -236,20 +236,22 @@ func GetProfile(c *gin.Context) {
 		workerIDUint, parseErr := parseWorkerID(workerID)
 		if parseErr == nil {
 			type profileResp struct {
-				WorkerID    uint
-				Phone       string
-				Name        string
-				ZoneID      uint
-				ZoneLevel   string
-				ZoneName    string
-				City        string
-				VehicleType string
-				UPIId       string
+				WorkerID     uint
+				Phone        string
+				Name         string
+				ZoneID       uint
+				ZoneLevel    string
+				ZoneName     string
+				City         string
+				VehicleType  string
+				UPIId        string
+				IsOnline     bool
+				LastActiveAt *time.Time
 			}
 
 			var row profileResp
 			err := workerDB.Table("users u").
-				Select("u.id as worker_id, u.phone, wp.name, COALESCE(z.id, 0) as zone_id, COALESCE(z.level, '') as zone_level, z.name as zone_name, z.city, wp.vehicle_type, wp.upi_id").
+				Select("u.id as worker_id, u.phone, wp.name, COALESCE(z.id, 0) as zone_id, COALESCE(z.level, '') as zone_level, z.name as zone_name, z.city, wp.vehicle_type, wp.upi_id, COALESCE(wp.is_online, false) as is_online, wp.last_active_at").
 				Joins("LEFT JOIN worker_profiles wp ON wp.worker_id = u.id").
 				Joins("LEFT JOIN zones z ON z.id = wp.zone_id").
 				Where("u.id = ?", workerIDUint).
@@ -275,6 +277,11 @@ func GetProfile(c *gin.Context) {
 				_ = workerDB.Raw("SELECT COALESCE(SUM(amount_earned), 0) FROM earnings_records WHERE worker_id = ? AND date = CURRENT_DATE", row.WorkerID).Scan(&todayEarnings).Error
 
 				zoneLevel := normalizeZoneLevel(row.ZoneLevel)
+				lastActiveAt := time.Time{}
+				if row.LastActiveAt != nil {
+					lastActiveAt = *row.LastActiveAt
+				}
+				effectiveOnline := models.EffectiveWorkerOnlineStatus(row.IsOnline, lastActiveAt, time.Now())
 				c.JSON(200, gin.H{"worker": gin.H{
 					"worker_id":        fmt.Sprintf("%d", row.WorkerID),
 					"name":             name,
@@ -290,6 +297,8 @@ func GetProfile(c *gin.Context) {
 					"upi_id":           row.UPIId,
 					"coverage_status":  "active",
 					"enrolled":         true,
+					"is_online":        effectiveOnline,
+					"last_active_at":   lastActiveAt.Format(time.RFC3339),
 					"orders_completed": ordersCompleted,
 					"today_earnings":   int(todayEarnings),
 				}})
@@ -301,6 +310,14 @@ func GetProfile(c *gin.Context) {
 	store.mu.RLock()
 	profile := store.data.WorkerProfiles[workerID]
 	store.mu.RUnlock()
+
+	if profile != nil {
+		if _, exists := profile["is_online"]; !exists {
+			if online, ok := profile["online"].(bool); ok {
+				profile["is_online"] = online
+			}
+		}
+	}
 
 	c.JSON(200, gin.H{"worker": profile})
 }
@@ -400,6 +417,7 @@ func UpdateOnlineStatus(c *gin.Context) {
 	}
 
 	profile["online"] = isOnline
+	profile["is_online"] = isOnline
 	profile["last_active_at"] = now
 	store.data.WorkerProfiles[workerID] = profile
 
@@ -438,6 +456,7 @@ func Heartbeat(c *gin.Context) {
 	}
 
 	profile["online"] = true
+	profile["is_online"] = true
 	profile["last_active_at"] = now
 	store.data.WorkerProfiles[workerID] = profile
 

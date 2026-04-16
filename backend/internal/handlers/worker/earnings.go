@@ -37,9 +37,9 @@ func GetEarnings(c *gin.Context) {
 
 			var paidAmount float64 = 0
 			_ = workerDB.Raw(`
-				SELECT COALESCE(SUM(c.claim_amount), 0)
-				FROM claims c
-				WHERE c.worker_id = ? AND c.status IN ('paid', 'approved', 'queued_for_payout')
+				SELECT COALESCE(SUM(p.amount), 0)
+				FROM payouts p
+				WHERE p.worker_id = ? AND p.status IN ('processed', 'credited', 'completed')
 			`, workerIDUint).Scan(&paidAmount).Error
 
 			var todayAmount float64 = 0

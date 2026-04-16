@@ -35,6 +35,34 @@ type WorkerProfile struct {
 	UpdatedAt             time.Time
 }
 
+const WorkerStatusStalenessThreshold = 15 * time.Minute
+
+func (wp WorkerProfile) IsStaleAt(now time.Time) bool {
+	return IsWorkerStatusStale(wp.IsOnline, wp.LastActiveAt, now)
+}
+
+func (wp WorkerProfile) EffectiveOnlineStatus(now time.Time) bool {
+	return EffectiveWorkerOnlineStatus(wp.IsOnline, wp.LastActiveAt, now)
+}
+
+func IsWorkerStatusStale(isOnline bool, lastActiveAt, now time.Time) bool {
+	if !isOnline {
+		return false
+	}
+	// If marked online but NEVER pinged (zero time), treat as stale
+	if lastActiveAt.IsZero() {
+		return true
+	}
+	if now.IsZero() {
+		now = time.Now()
+	}
+	return now.Sub(lastActiveAt) > WorkerStatusStalenessThreshold
+}
+
+func EffectiveWorkerOnlineStatus(isOnline bool, lastActiveAt, now time.Time) bool {
+	return isOnline && !IsWorkerStatusStale(isOnline, lastActiveAt, now)
+}
+
 type Zone struct {
 	ID         uint   `gorm:"primaryKey"`
 	Name       string `gorm:"uniqueIndex"`
