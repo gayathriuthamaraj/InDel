@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"database/sql"
 	"fmt"
 	"log"
 	"math"
@@ -184,9 +185,9 @@ func (s *CoreOpsService) RunWeeklyCycle(now time.Time) (*WeeklyCycleResult, erro
 	type cycleWorker struct {
 		WorkerID       uint
 		ZoneID         uint
-		RiskRating     float64
-		VehicleType    string
-		BaselineAmount float64
+		RiskRating     float64      `gorm:"column:risk_rating"`
+		VehicleType    string       `gorm:"column:vehicle_type"`
+		BaselineAmount float64      `gorm:"column:baseline_amount"`
 	}
 
 	var workers []cycleWorker
@@ -276,10 +277,10 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 
 	type eligibleWorker struct {
 		WorkerID       uint
-		BaselineAmount float64
-		ActualEarnings float64
-		IsOnline       bool
-		LastActiveAt   *time.Time
+		BaselineAmount float64      `gorm:"column:baseline_amount"`
+		ActualEarnings float64      `gorm:"column:actual_earnings"`
+		IsOnline       bool         `gorm:"column:is_online"`
+		LastActiveAt   sql.NullTime `gorm:"column:last_active_at"`
 	}
 
 	weekStart, _ := weekBounds(now.UTC())
@@ -333,7 +334,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 			Now:            now,
 			// Pre-fetched data
 			IsOnline:       &worker.IsOnline,
-			LastActiveAt:   worker.LastActiveAt,
+			LastActiveAt:   func() *time.Time { if worker.LastActiveAt.Valid { t := worker.LastActiveAt.Time; return &t }; return nil }(),
 			BaselineAmount: &worker.BaselineAmount,
 			ActualEarnings: &worker.ActualEarnings,
 		}

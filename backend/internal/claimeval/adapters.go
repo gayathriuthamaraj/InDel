@@ -2,6 +2,7 @@ package claimeval
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"math"
 	"strings"
@@ -87,7 +88,7 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 		VehicleType    string     `gorm:"column:vehicle_type"`
 		BaselineAmount float64    `gorm:"column:baseline_amount"`
 		IsOnline       bool       `gorm:"column:is_online"`
-		LastActiveAt   *time.Time `gorm:"column:last_active_at"`
+		LastActiveAt   sql.NullTime `gorm:"column:last_active_at"`
 	}
 
 	row := workerRow{
@@ -101,7 +102,7 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 		row.IsOnline = *source.IsOnline
 	}
 	if source.LastActiveAt != nil {
-		row.LastActiveAt = source.LastActiveAt
+		row.LastActiveAt = sql.NullTime{Time: *source.LastActiveAt, Valid: true}
 	}
 	if source.BaselineAmount != nil {
 		row.BaselineAmount = *source.BaselineAmount
@@ -133,10 +134,7 @@ func AdaptClaimActivity(ctx context.Context, db *gorm.DB, source ClaimSource) (W
 	if statusNow.IsZero() {
 		statusNow = time.Now()
 	}
-	lastActiveAt := time.Time{}
-	if row.LastActiveAt != nil {
-		lastActiveAt = *row.LastActiveAt
-	}
+	lastActiveAt := row.LastActiveAt.Time
 	row.IsOnline = models.EffectiveWorkerOnlineStatus(row.IsOnline, lastActiveAt, statusNow)
 
 	attemptTimeExpr := "created_at"

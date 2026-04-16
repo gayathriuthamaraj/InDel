@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/Shravanthi20/InDel/backend/internal/models"
@@ -15,8 +16,8 @@ func GetWorkers(c *gin.Context) {
 			Name         string     `gorm:"column:name"`
 			Phone        string     `gorm:"column:phone"`
 			Zone         string     `gorm:"column:zone"`
-			IsOnline     bool       `gorm:"column:is_online"`
-			LastActiveAt *time.Time `gorm:"column:last_active_at"`
+			IsOnline     bool         `gorm:"column:is_online"`
+			LastActiveAt sql.NullTime `gorm:"column:last_active_at"`
 		}
 
 		rows := make([]row, 0)
@@ -37,10 +38,7 @@ func GetWorkers(c *gin.Context) {
 		workers := make([]gin.H, 0, len(rows))
 		now := time.Now()
 		for _, r := range rows {
-			lastActiveAt := time.Time{}
-			if r.LastActiveAt != nil {
-				lastActiveAt = *r.LastActiveAt
-			}
+			lastActiveAt := r.LastActiveAt.Time
 			effectiveOnline := models.EffectiveWorkerOnlineStatus(r.IsOnline, lastActiveAt, now)
 
 			workers = append(workers, gin.H{

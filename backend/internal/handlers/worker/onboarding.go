@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -246,7 +247,7 @@ func GetProfile(c *gin.Context) {
 				VehicleType  string
 				UPIId        string
 				IsOnline     bool
-				LastActiveAt *time.Time
+				LastActiveAt sql.NullTime
 			}
 
 			var row profileResp
@@ -277,10 +278,7 @@ func GetProfile(c *gin.Context) {
 				_ = workerDB.Raw("SELECT COALESCE(SUM(amount_earned), 0) FROM earnings_records WHERE worker_id = ? AND date = CURRENT_DATE", row.WorkerID).Scan(&todayEarnings).Error
 
 				zoneLevel := normalizeZoneLevel(row.ZoneLevel)
-				lastActiveAt := time.Time{}
-				if row.LastActiveAt != nil {
-					lastActiveAt = *row.LastActiveAt
-				}
+				lastActiveAt := row.LastActiveAt.Time
 				effectiveOnline := models.EffectiveWorkerOnlineStatus(row.IsOnline, lastActiveAt, time.Now())
 				c.JSON(200, gin.H{"worker": gin.H{
 					"worker_id":        fmt.Sprintf("%d", row.WorkerID),
