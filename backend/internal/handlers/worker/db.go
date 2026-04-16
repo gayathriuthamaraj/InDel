@@ -143,8 +143,10 @@ func EnsureDemoSeed() error {
 	}
 
 	if err := workerDB.Exec(
-		`INSERT INTO orders (worker_id, zone_id, order_value)
-		 VALUES (?, ?, 78), (?, ?, 62), (?, ?, 88)`,
+		`INSERT INTO orders (worker_id, zone_id, order_value, status, from_city, to_city, pickup_area, drop_area, distance_km, tip_inr, delivery_fee_inr, zone_route_path, customer_name)
+		 VALUES (?, ?, 78, 'assigned', 'Chennai', 'Chennai', 'Tambaram Main Road', 'Camp Road Apartments', 2.5, 8, 25, '["A"]', 'Ananya Sharma'),
+		        (?, ?, 62, 'assigned', 'Chennai', 'Chennai', 'Perungudi Main Road', 'T Nagar Residency', 3.1, 6, 25, '["A"]', 'Rohit Kumar'),
+		        (?, ?, 88, 'assigned', 'Chennai', 'Chennai', 'T Nagar High Street', 'Nungambakkam Gardens', 2.8, 10, 25, '["A"]', 'Priya Nair')`,
 		user.ID, zone.ID, user.ID, zone.ID, user.ID, zone.ID,
 	).Error; err != nil {
 		return err

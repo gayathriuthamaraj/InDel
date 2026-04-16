@@ -25,7 +25,7 @@ type normalizedZoneInput struct {
 }
 
 func normalizeZoneLevel(zoneLevel string) string {
-	return strings.ToUpper(strings.TrimSpace(zoneLevel))
+	return normalizeZoneLevelValue(zoneLevel, "", "", "", "")
 }
 
 func zoneDefaultsForLevel(zoneLevel string) (city string, state string) {
@@ -39,11 +39,43 @@ func zoneDefaultsForLevel(zoneLevel string) (city string, state string) {
 	}
 }
 
+func canonicalZoneCity(zoneName, zoneCity string) string {
+	city := strings.TrimSpace(zoneCity)
+	name := strings.TrimSpace(zoneName)
+
+	if city != "" && !strings.Contains(strings.ToLower(city), " to ") && strings.Contains(city, " - ") {
+		parts := strings.SplitN(city, " - ", 2)
+		city = strings.TrimSpace(parts[0])
+	}
+	if city != "" {
+		return city
+	}
+
+	if name != "" && !strings.Contains(strings.ToLower(name), " to ") && strings.Contains(name, " - ") {
+		parts := strings.SplitN(name, " - ", 2)
+		return strings.TrimSpace(parts[0])
+	}
+	return name
+}
+
 func normalizeZoneInput(zoneLevel, zoneName string) normalizedZoneInput {
 	level := normalizeZoneLevel(zoneLevel)
 	rawName := strings.TrimSpace(zoneName)
 	city, state := zoneDefaultsForLevel(level)
 	name := rawName
+
+	if rawName != "" && !strings.Contains(strings.ToLower(rawName), " to ") && strings.Contains(rawName, " - ") {
+		parts := strings.SplitN(rawName, " - ", 2)
+		parsedCity := strings.TrimSpace(parts[0])
+		parsedState := strings.TrimSpace(parts[1])
+		if parsedCity != "" {
+			city = parsedCity
+		}
+		if parsedState != "" {
+			state = parsedState
+		}
+		name = strings.TrimSpace(rawName)
+	}
 
 	if idx := strings.LastIndex(rawName, " ("); idx > 0 && strings.HasSuffix(rawName, ")") {
 		baseName := strings.TrimSpace(rawName[:idx])
@@ -65,7 +97,7 @@ func normalizeZoneInput(zoneLevel, zoneName string) normalizedZoneInput {
 	}
 
 	if name != "" && city == "Chennai" && !strings.Contains(strings.ToLower(name), "chennai") {
-		city = name
+		city = canonicalZoneCity(name, city)
 	}
 
 	return normalizedZoneInput{
@@ -143,7 +175,7 @@ func Onboard(c *gin.Context) {
 	if HasDB() {
 		workerIDUint, parseErr := parseWorkerID(workerID)
 		if parseErr == nil {
-			zoneLevel := bodyString(body, "zone_level", "")
+			zoneLevel := normalizeZoneLevel(bodyString(body, "zone_level", ""))
 			zoneName := bodyString(body, "zone_name", "")
 			zoneID := ensureZoneIDByLevelAndName(zoneLevel, zoneName)
 			if zoneID != 0 {
@@ -182,7 +214,7 @@ func Onboard(c *gin.Context) {
 	}
 
 	profile["name"] = bodyString(body, "name", bodyString(profile, "name", "New Worker"))
-	profile["zone_level"] = bodyString(body, "zone_level", bodyString(profile, "zone_level", ""))
+	profile["zone_level"] = normalizeZoneLevel(bodyString(body, "zone_level", bodyString(profile, "zone_level", "")))
 	profile["zone_name"] = bodyString(body, "zone_name", bodyString(profile, "zone_name", ""))
 	profile["vehicle_type"] = bodyString(body, "vehicle_type", bodyString(profile, "vehicle_type", "bike"))
 	profile["upi_id"] = bodyString(body, "upi_id", bodyString(profile, "upi_id", "new@upi"))
@@ -241,12 +273,15 @@ func GetProfile(c *gin.Context) {
 				var todayEarnings float64
 				_ = workerDB.Raw("SELECT COALESCE(SUM(amount_earned), 0) FROM earnings_records WHERE worker_id = ? AND date = CURRENT_DATE", row.WorkerID).Scan(&todayEarnings).Error
 
+				zoneLevel := normalizeZoneLevel(row.ZoneLevel)
 				c.JSON(200, gin.H{"worker": gin.H{
 					"worker_id":        fmt.Sprintf("%d", row.WorkerID),
 					"name":             name,
 					"phone":            row.Phone,
 					"zone":             formatZoneDisplay(zoneName, city),
-					"zone_level":       row.ZoneLevel,
+					"zone_level":       zoneLevel,
+					"zone_type":        orderRouteType(zoneLevel),
+					"worker_type":      orderRouteType(zoneLevel),
 					"zone_name":        zoneName,
 					"zone_id":          row.ZoneID,
 					"city":             city,
@@ -286,7 +321,7 @@ func UpdateProfile(c *gin.Context) {
 				if name := bodyString(body, "name", ""); name != "" {
 					profile.Name = name
 				}
-				zoneLevel := bodyString(body, "zone_level", "")
+				zoneLevel := normalizeZoneLevel(bodyString(body, "zone_level", ""))
 				zoneName := bodyString(body, "zone_name", "")
 				if zoneLevel != "" && zoneName != "" {
 					if zoneID := ensureZoneIDByLevelAndName(zoneLevel, zoneName); zoneID != 0 {

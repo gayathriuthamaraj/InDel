@@ -77,8 +77,17 @@ class OtpViewModel @Inject constructor(
     private suspend fun checkWorkerProfile() {
         try {
             val response = workerRepository.getProfile()
-            // Updated to handle WorkerProfileResponse which wraps the worker object
-            if (response.isSuccessful && response.body()?.worker?.name?.isNotEmpty() == true) {
+            val worker = response.body()?.worker
+            val hasRealProfile = response.isSuccessful &&
+                worker != null &&
+                worker.name.isNotBlank() &&
+                !worker.name.equals("New Worker", ignoreCase = true) &&
+                worker.zoneLevel.isNotBlank() &&
+                worker.zoneName.isNotBlank() &&
+                worker.upiId.isNotBlank() &&
+                worker.vehicleType.isNotBlank()
+
+            if (hasRealProfile) {
                 _uiState.value = OtpUiState.Success(hasProfile = true)
             } else {
                 _uiState.value = OtpUiState.Success(hasProfile = false)

@@ -18,7 +18,7 @@ import com.imaginai.indel.ui.earnings.EarningsScreen
 import com.imaginai.indel.ui.claims.ClaimsScreen
 import com.imaginai.indel.ui.claims.ClaimDetailScreen
 import com.imaginai.indel.ui.orders.BatchDetailScreen
-import com.imaginai.indel.ui.orders.OrdersScreen
+import com.imaginai.indel.ui.orders.OrderPipelineScreen
 import com.imaginai.indel.ui.delivery.LandingScreen
 import com.imaginai.indel.ui.delivery.FetchVerificationScreen
 import com.imaginai.indel.ui.delivery.DeliveryExecutionScreen
@@ -92,7 +92,7 @@ fun NavGraph() {
             HomeScreen(navController)
         }
         composable(Screen.Orders.route) {
-            OrdersScreen(navController)
+            OrderPipelineScreen(navController)
         }
         composable(
             route = Screen.BatchDetail.route,

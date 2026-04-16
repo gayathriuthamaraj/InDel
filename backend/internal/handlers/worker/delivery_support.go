@@ -23,6 +23,7 @@ func GetOrderDetail(c *gin.Context) {
 			type row struct {
 				ID              uint    `gorm:"column:id"`
 				Status          string  `gorm:"column:status"`
+				OrderValue      float64 `gorm:"column:order_value"`
 				PickupArea      string  `gorm:"column:pickup_area"`
 				DropArea        string  `gorm:"column:drop_area"`
 				DistanceKm      float64 `gorm:"column:distance_km"`
@@ -31,6 +32,14 @@ func GetOrderDetail(c *gin.Context) {
 				CreatedAt       string  `gorm:"column:created_at"`
 				ZoneName        string  `gorm:"column:zone_name"`
 				ZoneLevel       string  `gorm:"column:zone_level"`
+				FromCity        string  `gorm:"column:from_city"`
+				ToCity          string  `gorm:"column:to_city"`
+				FromState       string  `gorm:"column:from_state"`
+				ToState         string  `gorm:"column:to_state"`
+				CustomerName    string  `gorm:"column:customer_name"`
+				CustomerPhone   string  `gorm:"column:customer_contact_number"`
+				Address         string  `gorm:"column:address"`
+				PaymentMethod   string  `gorm:"column:payment_method"`
 				SourceNode      string  `gorm:"column:source_node"`
 				DestinationNode string  `gorm:"column:destination_node"`
 				CurrentNode     string  `gorm:"column:current_node"`
@@ -41,6 +50,7 @@ func GetOrderDetail(c *gin.Context) {
 				SELECT 
 					o.id,
 					o.status,
+					COALESCE(o.order_value, 0) AS order_value,
 					COALESCE(o.pickup_area, 'Pickup Location') AS pickup_area,
 					COALESCE(o.drop_area, 'Drop Location') AS drop_area,
 					COALESCE(o.distance_km, 0) AS distance_km,
@@ -49,6 +59,14 @@ func GetOrderDetail(c *gin.Context) {
 					o.created_at::text,
 					COALESCE(z.name, '') AS zone_name,
 					COALESCE(z.level, '') AS zone_level,
+					COALESCE(o.from_city, '') AS from_city,
+					COALESCE(o.to_city, '') AS to_city,
+					COALESCE(o.from_state, '') AS from_state,
+					COALESCE(o.to_state, '') AS to_state,
+					COALESCE(o.customer_name, 'Customer') AS customer_name,
+					COALESCE(o.customer_contact_number, '') AS customer_contact_number,
+					COALESCE(o.address, COALESCE(o.drop_area, '')) AS address,
+					COALESCE(o.payment_method, 'cod') AS payment_method,
 					COALESCE(o.pickup_area, '') AS source_node,
 					COALESCE(o.drop_area, '') AS destination_node,
 					CASE 
@@ -63,21 +81,36 @@ func GetOrderDetail(c *gin.Context) {
 				LIMIT 1
 			`, orderNumID, workerIDUint).Scan(&r).Error
 			if err == nil && r.ID != 0 {
+				routeLevel := r.ZoneLevel
+				if strings.TrimSpace(routeLevel) == "" {
+					routeLevel = inferOrderRouteLevel(r.FromCity, r.ToCity, r.FromState, r.ToState)
+				}
+				deliveryFee := r.DeliveryFeeInr
+				if deliveryFee <= 0 {
+					deliveryFee = float64(computeZoneRouteDeliveryFee([]string{routeLevel}))
+				}
 				c.JSON(200, gin.H{
-					"order_id":         fmt.Sprintf("ord-%03d", r.ID),
+					"order_id":         formatOrderID(r.ID),
+					"order_value":      r.OrderValue,
 					"pickup_area":      r.PickupArea,
 					"drop_area":        r.DropArea,
 					"distance_km":      r.DistanceKm,
 					"earning_inr":      totalDeliveryEarningINR(r.TipInr),
 					"tip_inr":          r.TipInr,
+					"delivery_fee_inr": deliveryFee,
 					"status":           r.Status,
 					"assigned_at":      r.CreatedAt,
-					"customer_name":    "Customer",
-					"customer_phone":   "",
-					"address":          "",
-					"payment_type":     "cod",
+					"customer_name":    r.CustomerName,
+					"customer_phone":   r.CustomerPhone,
+					"address":          r.Address,
+					"payment_type":     r.PaymentMethod,
 					"zone_name":        r.ZoneName,
-					"zone_level":       r.ZoneLevel,
+					"zone_level":       routeLevel,
+					"route_type":       orderRouteType(routeLevel),
+					"from_city":        r.FromCity,
+					"to_city":          r.ToCity,
+					"from_state":       r.FromState,
+					"to_state":         r.ToState,
 					"source_node":      r.SourceNode,
 					"destination_node": r.DestinationNode,
 					"current_node":     r.CurrentNode,

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -95,6 +96,39 @@ func VerifyOTP(c *gin.Context) {
 				 DO UPDATE SET token = EXCLUDED.token, expires_at = EXCLUDED.expires_at`,
 				workerIDUint, token,
 			).Error
+
+			zoneID := ensureZoneIDByLevelAndName("A", "Tambaram")
+			if zoneID != 0 {
+				_ = workerDB.Exec(
+					`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime)
+					 VALUES (?, ?, ?, ?, ?, ?, ?)
+					 ON CONFLICT (worker_id) DO UPDATE SET
+					 name = COALESCE(NULLIF(worker_profiles.name, ''), EXCLUDED.name),
+					 zone_id = COALESCE(NULLIF(worker_profiles.zone_id, 0), EXCLUDED.zone_id),
+					 vehicle_type = COALESCE(NULLIF(worker_profiles.vehicle_type, ''), EXCLUDED.vehicle_type),
+					 upi_id = COALESCE(NULLIF(worker_profiles.upi_id, ''), EXCLUDED.upi_id),
+					 aqi_zone = COALESCE(NULLIF(worker_profiles.aqi_zone, ''), EXCLUDED.aqi_zone)`,
+					workerIDUint, "New Worker", zoneID, "bike", "new@upi", "AQI-Medium", 0,
+				).Error
+			}
+
+			_ = workerDB.Exec(
+				`INSERT INTO earnings_baseline (worker_id, baseline_amount)
+				 VALUES (?, 4080)
+				 ON CONFLICT (worker_id) DO NOTHING`,
+				workerIDUint,
+			).Error
+
+			_ = workerDB.Exec(
+				`INSERT INTO policies (worker_id, status, premium_amount, created_at, updated_at)
+				 VALUES (?, 'active', 35.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+				 ON CONFLICT (worker_id) WHERE status = 'active'
+				 DO UPDATE SET premium_amount = EXCLUDED.premium_amount, updated_at = CURRENT_TIMESTAMP`,
+				workerIDUint,
+			).Error
+
+			ensureMinimumOrdersForWorker(workerIDUint)
+			log.Printf("VerifyOTP: provisioned worker profile and seeded queue worker_id=%d phone=%s", workerIDUint, phone)
 		}
 	}
 
@@ -110,6 +144,7 @@ func VerifyOTP(c *gin.Context) {
 			"enrolled":        false,
 		}
 	}
+	log.Printf("VerifyOTP: login success worker_id=%s phone=%s has_db=%t", workerID, phone, HasDB())
 
 	c.JSON(200, gin.H{
 		"message":    "otp_verified",
@@ -264,17 +299,9 @@ func Register(c *gin.Context) {
 			workerIDUint,
 		)
 
-		// 4. Seed 50 Available Orders in this Zone for Testing.
-		for i := 1; i <= 50; i++ {
-			pickup := fmt.Sprintf("Pickup Area %d", i)
-			drop := fmt.Sprintf("Drop Area %d", i+50)
-			dist := 1.5 + (float64(i) * 0.1)
-			_ = workerDB.Exec(
-				`INSERT INTO orders (zone_id, status, pickup_area, drop_area, distance_km, order_value, created_at, updated_at)
-				 VALUES (?, 'assigned', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-				zone.ID, pickup, drop, dist, 250.0,
-			)
-		}
+		// 4. Keep the worker's live queue topped up instead of flooding the zone.
+		ensureMinimumOrdersForWorker(workerIDUint)
+		log.Printf("Register: provisioned worker_id=%d zone_id=%d", workerIDUint, zone.ID)
 
 		// No fake earnings history seeded for new users
 	}
@@ -352,11 +379,13 @@ func Login(c *gin.Context) {
 				profile = map[string]any{"worker_id": workerID}
 			}
 			if zoneSummary.City != "" {
-				profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
+			profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
 			} else {
 				profile["zone"] = zoneSummary.ZoneName
 			}
-			profile["zone_level"] = zoneSummary.ZoneLevel
+			profile["zone_level"] = normalizeZoneLevel(zoneSummary.ZoneLevel)
+			profile["zone_type"] = orderRouteType(normalizeZoneLevel(zoneSummary.ZoneLevel))
+			profile["worker_type"] = orderRouteType(normalizeZoneLevel(zoneSummary.ZoneLevel))
 			profile["zone_name"] = zoneSummary.ZoneName
 			store.data.WorkerProfiles[workerID] = profile
 			store.mu.Unlock()
@@ -372,17 +401,9 @@ func Login(c *gin.Context) {
 			zoneID = 1 // final fallback only when no saved worker zone exists
 		}
 
-		// 2. Seed 50 Available Orders in this Zone.
-		for i := 1; i <= 50; i++ {
-			pickup := fmt.Sprintf("Pickup Area %d", i)
-			drop := fmt.Sprintf("Drop Area %d", i+50)
-			dist := 1.5 + (float64(i) * 0.1)
-			_ = workerDB.Exec(
-				`INSERT INTO orders (zone_id, status, pickup_area, drop_area, distance_km, order_value, created_at, updated_at)
-				 VALUES (?, 'assigned', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-				zoneID, pickup, drop, dist, 250.0,
-			)
-		}
+		// 2. Keep the worker's queue at the configured minimum.
+		ensureMinimumOrdersForWorker(workerIDUint)
+		log.Printf("Login: seeded queue for worker_id=%d zone_id=%d", workerIDUint, zoneID)
 	}
 	// ─────────────────────────────────────────────────────────────
 

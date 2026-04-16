@@ -978,6 +978,15 @@ func applyWorkerEarningsIncrement(tx *gorm.DB, workerID uint, amount float64) er
 	}
 
 	if err := tx.Exec(`
+		INSERT INTO earnings_records (worker_id, date, hours_worked, amount_earned)
+		VALUES (?, CURRENT_DATE, 8, ?)
+		ON CONFLICT (worker_id, date) DO UPDATE SET
+			amount_earned = earnings_records.amount_earned + EXCLUDED.amount_earned
+	`, workerID, amount).Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec(`
 		UPDATE worker_profiles
 		SET total_earnings_lifetime = COALESCE(total_earnings_lifetime, 0) + ?, updated_at = CURRENT_TIMESTAMP
 		WHERE worker_id = ?

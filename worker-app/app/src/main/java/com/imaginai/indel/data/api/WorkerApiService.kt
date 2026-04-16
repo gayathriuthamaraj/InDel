@@ -39,17 +39,17 @@ interface WorkerApiService {
     suspend fun getZonePaths(@Query("type") type: String): Response<ZonePathResponse>
 
     // Orders & Delivery
-    @GET("api/v1/demo/orders/available")
-    suspend fun getAvailableOrders(@Query("path") path: String? = null): Response<OrderListResponse>
+    @GET("api/v1/worker/orders/available")
+    suspend fun getAvailableOrders(@Query("path") path: String?): Response<OrderListResponse>
 
     @GET("api/v1/worker/orders/assigned")
-    suspend fun getAssignedOrders(@Query("path") path: String? = null): Response<OrderListResponse>
+    suspend fun getAssignedOrders(@Query("path") path: String?): Response<OrderListResponse>
 
     @GET("api/v1/worker/orders")
-    suspend fun getAllOrders(@Query("path") path: String? = null): Response<OrderListResponse>
+    suspend fun getAllOrders(@Query("path") path: String?): Response<OrderListResponse>
 
     @GET("api/v1/worker/batches")
-    suspend fun getAvailableBatches(@Query("limit") limit: Int = 100): Response<BatchListResponse>
+    suspend fun getAvailableBatches(@Query("limit") limit: Int): Response<BatchListResponse>
 
     @GET("api/v1/worker/batches/assigned")
     suspend fun getAssignedBatches(): Response<BatchListResponse>
@@ -160,7 +160,7 @@ interface WorkerApiService {
     suspend fun getWallet(): Response<WalletResponse>
 
     @GET("api/v1/worker/payouts")
-    suspend fun getPayouts(@Query("limit") limit: Int = 10): Response<PayoutListResponse>
+    suspend fun getPayouts(@Query("limit") limit: Int): Response<PayoutListResponse>
 
     // Notifications
     @GET("api/v1/worker/notifications")

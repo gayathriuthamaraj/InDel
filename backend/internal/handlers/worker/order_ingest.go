@@ -154,7 +154,7 @@ func normalizeZoneLevelValue(raw, fromCity, toCity, fromState, toState string) s
 	switch compact {
 	case "A", "ZONEA", "LOCAL", "SAMECITY":
 		return "A"
-	case "B", "ZONEB", "INTRAZONE", "INTRASTATE":
+	case "B", "ZONEB", "INTRAZONE", "INTRASTATE", "INTERCITY", "SAMESTATE", "REGIONAL":
 		return "B"
 	case "C", "ZONEC", "INTERSTATE":
 		return "C"
@@ -172,7 +172,7 @@ func zoneTypeFromZoneLevel(zoneLevel string) string {
 	case "A":
 		return "same-city"
 	case "B":
-		return "intra-state"
+		return "inter-city"
 	case "C":
 		return "inter-state"
 	default:
@@ -187,7 +187,7 @@ func zoneLevelFromZoneType(zoneType string, fromCity, toCity, fromState, toState
 	switch compact {
 	case "A", "ZONEA", "LOCAL", "SAMECITY":
 		return "A"
-	case "B", "ZONEB", "INTRAZONE", "INTRASTATE":
+	case "B", "ZONEB", "INTRAZONE", "INTRASTATE", "INTERCITY", "SAMESTATE", "REGIONAL":
 		return "B"
 	case "C", "ZONEC", "INTERSTATE":
 		return "C"
