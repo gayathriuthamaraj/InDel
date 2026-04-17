@@ -23,6 +23,13 @@
 
 ---
 
+## Pitch Deck
+
+You can view our complete project pitch deck here:
+
+[View Pitch Deck](https://drive.google.com/file/d/1xtUFPMNEktznhHQtsVwRI5vB8clwfVZw/view?usp=sharing)
+
+---
 ## The Problem Nobody Has Solved
 
 India has **15+ million gig delivery workers**. Every rupee they earn depends on one thing: completing orders.
