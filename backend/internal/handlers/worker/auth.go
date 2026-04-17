@@ -184,16 +184,23 @@ func Register(c *gin.Context) {
 	workerID := fmt.Sprintf("worker-%s", phone)
 	if HasDB() {
 		var existing models.User
-		err := workerDB.Where("phone = ? OR email = ?", phone, email).First(&existing).Error
+		query := workerDB.Where("phone = ?", phone)
+		if email != "" {
+			query = query.Or("email = ?", email)
+		}
+		err := query.First(&existing).Error
 		if err == gorm.ErrRecordNotFound {
 			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 			newUser := models.User{Phone: phone, Email: email, Role: "worker", PasswordHash: string(hashedPassword)}
 			if createErr := workerDB.Create(&newUser).Error; createErr == nil {
 				existing = newUser
 			}
-		} else {
+		} else if err == nil {
 			c.JSON(400, gin.H{"error": "user_already_exists"})
 			return
+		} else {
+		    c.JSON(500, gin.H{"error": "database_error"})
+		    return
 		}
 		if existing.ID != 0 {
 			workerID = fmt.Sprintf("%d", existing.ID)

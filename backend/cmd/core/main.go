@@ -23,6 +23,11 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
+	// Initialize Redis
+	if _, err := database.InitRedis(cfg); err != nil {
+		log.Printf("Redis unavailable: %v", err)
+	}
+
 	// Initialize database
 	db, err := database.InitDB(cfg)
 	if err != nil {

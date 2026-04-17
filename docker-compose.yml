@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -8,57 +7,77 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: indel
     ports:
-      - "5432:5432"
+    - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+    - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U indel -d indel"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U indel -d indel
       interval: 5s
       timeout: 5s
       retries: 20
-
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+  redis:
+    image: redis:7-alpine
+    ports:
+    - 6379:6379
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
   db-migrate:
     image: migrate/migrate:v4.17.1
     command:
-      [
-        "-path",
-        "/migrations",
-        "-database",
-        "postgres://indel:${POSTGRES_PASSWORD:-password}@postgres:5432/indel?sslmode=disable",
-        "up"
-      ]
+    - -path
+    - /migrations
+    - -database
+    - postgres://indel:${POSTGRES_PASSWORD:-password}@postgres:5432/indel?sslmode=disable
+    - up
     volumes:
-      - ./migrations:/migrations
+    - ./migrations:/migrations
     depends_on:
       postgres:
         condition: service_healthy
-    restart: "no"
-
+    restart: 'no'
   kafka:
     image: confluentinc/cp-kafka:7.4.0
-    depends_on:
-      - zookeeper
+    depends_on: []
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     ports:
-      - "9092:9092"
+    - 9092:9092
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list > /dev/null 2>&1"]
+      test:
+      - CMD-SHELL
+      - kafka-topics --bootstrap-server localhost:9092 --list > /dev/null 2>&1
       interval: 10s
       timeout: 10s
       retries: 15
       start_period: 20s
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    ports:
-      - "2181:2181"
-
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
   core:
     build:
       context: ./backend
@@ -67,18 +86,19 @@ services:
         SERVICE: core
     environment:
       INDEL_ENV: production
-      INDEL_ALLOWED_ORIGINS: "*"
+      INDEL_ALLOWED_ORIGINS: '*'
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: indel
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: indel
       KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis:6379
       RAZORPAY_API_KEY: ${RAZORPAY_API_KEY:-}
       RAZORPAY_API_SECRET: ${RAZORPAY_API_SECRET:-}
       RAZORPAY_MODE: ${RAZORPAY_MODE:-test}
     ports:
-      - "8000:8000"
+    - 8000:8000
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,13 +106,21 @@ services:
         condition: service_completed_successfully
       kafka:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8000/health >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://localhost:8000/health >/dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 20s
-
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
   worker-gateway:
     build:
       context: ./backend
@@ -101,17 +129,18 @@ services:
         SERVICE: worker-gateway
     environment:
       INDEL_ENV: production
-      INDEL_ALLOWED_ORIGINS: "*"
+      INDEL_ALLOWED_ORIGINS: '*'
       SERVICE: worker-gateway
       CORE_URL: http://core:8000
-      PREMIUM_ML_URL: http://premium-ml:8000/ml/v1/premium/calculate
+      PREMIUM_ML_URL: http://ml-service:8000
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: indel
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: indel
+      REDIS_URL: redis:6379
     ports:
-      - "8001:8001"
+    - 8001:8001
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,15 +148,18 @@ services:
         condition: service_completed_successfully
       core:
         condition: service_healthy
-      premium-ml:
+      redis:
+        condition: service_healthy
+      ml-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8001/health >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://localhost:8001/health >/dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 20s
-
   insurer-gateway:
     build:
       context: ./backend
@@ -136,7 +168,7 @@ services:
         SERVICE: insurer-gateway
     environment:
       INDEL_ENV: production
-      INDEL_ALLOWED_ORIGINS: "*"
+      INDEL_ALLOWED_ORIGINS: '*'
       SERVICE: insurer-gateway
       CORE_URL: http://core:8000
       DB_HOST: postgres
@@ -145,8 +177,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: indel
       KAFKA_BROKERS: kafka:9092
+      REDIS_URL: redis:6379
     ports:
-      - "8002:8002"
+    - 8002:8002
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,13 +187,16 @@ services:
         condition: service_completed_successfully
       core:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8002/health >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://localhost:8002/health >/dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 20s
-
   platform-gateway:
     build:
       context: ./backend
@@ -169,7 +205,7 @@ services:
         SERVICE: platform-gateway
     environment:
       INDEL_ENV: production
-      INDEL_ALLOWED_ORIGINS: "*"
+      INDEL_ALLOWED_ORIGINS: '*'
       SERVICE: platform-gateway
       CORE_URL: http://core:8000
       DB_HOST: postgres
@@ -177,8 +213,9 @@ services:
       DB_USER: indel
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: indel
+      REDIS_URL: redis:6379
     ports:
-      - "8003:8003"
+    - 8003:8003
     depends_on:
       postgres:
         condition: service_healthy
@@ -186,19 +223,22 @@ services:
         condition: service_completed_successfully
       core:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8003/health >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://localhost:8003/health >/dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 20s
-
   api-gateway:
     image: nginx:1.27-alpine
     ports:
-      - "8004:80"
+    - 8004:80
     volumes:
-      - ./infra/nginx/api-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    - ./infra/nginx/api-gateway.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       worker-gateway:
         condition: service_healthy
@@ -207,12 +247,13 @@ services:
       insurer-gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/health >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://127.0.0.1/health >/dev/null 2>&1 || exit 1
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 10s
-
   platform-dashboard:
     build:
       context: ./platform-dashboard
@@ -220,74 +261,54 @@ services:
       args:
         VITE_PLATFORM_API_URL: ${PLATFORM_API_URL:-http://localhost:8004}
     ports:
-      - "5175:5175"
+    - 5175:5175
     depends_on:
       api-gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:5175 >/dev/null 2>&1 || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -q -O - http://localhost:5175 >/dev/null 2>&1 || exit 1
       interval: 15s
       timeout: 5s
       retries: 20
       start_period: 20s
-
-  premium-ml:
-    build:
-      context: ./ml
-      dockerfile: premium/Dockerfile
-    ports:
-      - "9001:8000"
-    environment:
-      SERVICE_PORT: 8000
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 20s
-
-  fraud-ml:
-    build:
-      context: ./ml
-      dockerfile: fraud/Dockerfile
-    ports:
-      - "9002:8000"
-    environment:
-      SERVICE_PORT: 8000
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 20s
-
-  forecast-ml:
-    build:
-      context: ./ml
-      dockerfile: forecast/Dockerfile
-    ports:
-      - "9003:8000"
-    environment:
-      SERVICE_PORT: 8000
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 20s
-
   backend-worker-tests:
     image: golang:1.22
     working_dir: /app/backend
-    command: ["sh", "-c", "go test ./internal/handlers/worker -v"]
+    command:
+    - sh
+    - -c
+    - go test ./internal/handlers/worker -v
     volumes:
-      - ./:/app
+    - ./:/app
     depends_on:
       db-migrate:
         condition: service_completed_successfully
-    restart: "no"
+    restart: 'no'
     profiles:
-      - test
-
+    - test
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    ports:
+    - 9000:8000
+    environment:
+      SERVICE_PORT: 8000
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health',
+        timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 volumes:
-  postgres_data:
+  postgres_data: null

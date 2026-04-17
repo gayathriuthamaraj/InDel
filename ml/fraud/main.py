@@ -1,23 +1,17 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime
 
-from scorer import FraudScorer
+try:
+    from scorer import FraudScorer
+except ImportError:
+    from fraud.scorer import FraudScorer
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="InDel Fraud Detection Service — 3-Layer Stack")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter()
 scorer = FraudScorer()
 
 # ─── Schemas ────────────────────────────────────────────────────────────────
@@ -63,8 +57,8 @@ class FraudResponse(BaseModel):
 
 # ─── Health ─────────────────────────────────────────────────────────────────
 
-@app.get("/health")
-def health():
+@router.get("/fraud/health")
+def health_fraud():
     return {
         "status": "ok", 
         "service": "fraud-ml", 
@@ -74,7 +68,7 @@ def health():
 
 # ─── Score endpoint ──────────────────────────────────────────────────────────
 
-@app.post("/ml/v1/fraud/score", response_model=FraudResponse)
+@router.post("/ml/v1/fraud/score", response_model=FraudResponse)
 def score_claim(request: FraudRequest):
     result = scorer.score(request)
     return FraudResponse(

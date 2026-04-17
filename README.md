@@ -77,8 +77,27 @@ We are already inside the profitable band — before scale.
 | Requirement | InDel Implementation | Status |
 |---|---|---|
 | **Advanced Fraud Detection** | 3-Layer Stacked Threat Engine — IsolationForest + DBSCAN + Postgres Hard Rules across 6 behavioral dimensions | ✅ Fully Implemented |
-| **Instant Payout System** | Kafka + Zookeeper async pipeline → Razorpay UPI, idempotent offsets, 5× exponential retry | ✅ Fully Implemented |
+| **Instant Payout System** | Native KRaft-mode Kafka async pipeline → Razorpay UPI, idempotent offsets, 5× exponential retry | ✅ Fully Implemented |
 | **Intelligent Dashboards** | Worker: multilingual SHAP audit + earnings protection · Insurer: Prophet 7-day reserve analytics + live fraud queue | ✅ Fully Implemented |
+| **Edge-Resilient Mobile App** | Offline-first Android architecture powered by Room databases dynamically synced with secure auth boundaries preventing cross-worker state bleed. | ✅ Fully Implemented |
+
+---
+
+## Increasing Efficiency of Resource Utilization
+
+To evolve from a functional hackathon submission to a heavily resilient, production-ready architecture, we significantly restructured the system footprint based on edge-performance and resource consumption.
+
+### 1. Unified Machine Learning Container (FastAPI / XGBoost / Prophet)
+Instead of deploying three highly disjointed Python microservices (Premium Pricing, Fraud Detection, Forecaster) that natively inflated the infrastructure by artificially multiplying Python interpreter memory overhead—we entirely refactored the ML environment. All inference tools now share a single dense **FastAPI** container (`ml-service`), dropping computational footprint by two-thirds without compromising parallel throughput.
+
+### 2. High-Performance Messaging Protocol (Kafka KRaft Mode)
+Zookeeper acts as a significant memory burden. We've stripped out external Kafka coordination services and fully migrated to **Zookeeper-less KRaft Mode**. Kafka now natively manages partition leadership via quorum, shedding immense JVM latency and permitting the entire orchestration suite to run cleanly on bounded compute.
+
+### 3. Defensive Actuarial Boundaries
+Dynamic Machine Learning struggles intrinsically with "Cold Start" user distributions. Recognizing that new workers generated wild extrapolations from our XGBoost regressor, we introduced a mathematical bounding wrapper layer directly to the inference API. Out-of-bounds calculations instantly clamp to stable base premiums (e.g. ₹49), guaranteeing logical actuarial safety against systemic risks.
+
+### 4. Zero-Contamination Offline-First Sync (Android Room DB)
+Gig delivery platforms share a notorious edge-case: multi-account logins on identical hardware. We hardened the existing offline-first Android interface by systematically purging the underlying encrypted **Room Databases** dynamically on token generation/revocation. Dashboard rendering states are mathematically isolated per-user natively, fully eliminating cross-state ghost profiles.
 
 ---
 
@@ -286,7 +305,7 @@ InDel decouples claim approval from financial execution entirely via **Apache Ka
 | Horizontal scaling | Additional consumer instances spin up during surges, pick up unconsumed partitions automatically |
 | Persistent audit log | Every payout attempt retained — sent, succeeded, retried, failed. Regulatory-grade trail. |
 
-Zookeeper manages broker registration, partition leader election, and offset tracking. Broker restart? New leader elected automatically. No manual intervention. No lost messages.
+**KRaft Mode (Zookeeper-less Integration):** InDel utilizes Kafka's modern KRaft protocol to manage broker registration and partition leader election natively inside Kafka itself. This eradicates the massive JVM overhead previously associated with external coordination services. Broker restarts? The native KRaft controller enforces new leader election automatically via quorum. No manual intervention. No lost messages.
 
 Five thousand workers claiming simultaneously during a citywide curfew: **handled.**
 
@@ -333,28 +352,39 @@ COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.demo.yml up --build -d
 
 | Container | Role | Port |
 |---|---|---|
-| `indel-api` | Go / Gin REST API | — |
-| `postgres` | PostgreSQL, migrations pre-applied | — |
-| `zookeeper` | Kafka coordination & leader election | — |
-| `kafka` | Async payout broker | — |
-| `ml-premium` | XGBoost pricing server | :9001 |
-| `ml-fraud` | IsolationForest + DBSCAN | :9002 |
-| `ml-forecast` | Prophet forecasting | :9003 |
+| `indel-api` | Go / Gin REST API (Worker, Insurer, Platform gateways) | — |
+| `postgres` | PostgreSQL, strict 1.0 CPU/ 1GB limits, migrations pre-applied | :5432 |
+| `kafka` | Native KRaft async payout broker, stripped memory footprint | :9092 |
+| `ml-service` | Unified Python FastAPI (XGBoost Pricing, Fraud, Forecast) | :9000 |
 
-`COMPOSE_PARALLEL_LIMIT=1` enforces startup order — Zookeeper before Kafka, Kafka before API. The demo compose launches **pre-seeded** with workers, zones, and disruption history. No manual setup. No configuration. One command.
+`COMPOSE_PARALLEL_LIMIT=1` enforces startup order logically. The entire environment forces aggressive container limit clamping (`deploy.resources.limits`) meaning massive scalability fits comfortably onto constrained single-server footprints. The demo compose launches **pre-seeded** with workers, zones, and disruption history. No manual setup. No configuration. One command.
 
 ---
 
 ## The Dashboards
 
+
 ### Platform Dashboard — for Operators
-Real-time zone telemetry, live order flow, worker GPS distribution, and the **Chaos Engine** — simulate demand collapse or inject weather/AQI signals to fire the full claim pipeline without waiting for a real flood.
+The primary administrative command center governing all continuous telemetry natively.
+- **Platform Command & Worker Directory:** Monitor live order queues, geographic zone assignments, and track strict policy statuses (`Live | On Shift` vs `Offline`).
+- **Analytics & Disruption Intelligence:** Visualize 7-day multi-city forecast metadata and monitor global claim-generation vs. manual-review queues in real-time.
+- **The Chaos Engine:** A dedicated systems-testing panel. Select any tracked zone (e.g., Bhopal) and instantly trigger a `COLLAPSE DEMAND` event, or inject mock `Rain` and `Curfew` signals to validate the end-to-end Kafka payout pipeline safely without waiting for a real-world disaster.
+
+<img width="1920" height="1080" alt="platform" src="https://github.com/user-attachments/assets/42574167-adbf-4871-b5fc-af469a730621" />
 
 ### Insurer Dashboard — for Providers
-Premium pool health, loss ratio by zone and city, live fraud queue with full `violations[]` JSON inline, and **Prophet Reserve Analytics** — 7-day forward claim volume prediction per zone using OpenWeatherMap forecast signals. Actuaries know exactly how much capital to hold before the next monsoon week arrives.
+The financial control center built specifically for actuaries and risk-management operators.
+- **Pool Posture & Overview:** Monitor live capital liquidity, total premium accumulation versus payout liabilities, and track geographic 'Zone Net Flow' curves natively.
+- **Global Claims Stream:** A real-time ledger of every automated disruption payout across the entire ecosystem, instantly classifying transactional states natively (e.g. `APPROVED`, `PAID`, or `MANUAL_REVIEW`).
+- **Fraud Analysis Queue:** The human-in-the-loop audit portal. Underwriters review high-risk claims directly seeing the exact ML-identified signal (e.g., `NO_LIVE_WINDOW_ACTIVITY`) alongside the specific anomaly score, empowering them to quickly `Approve` or `Reject` flagged events.
+- **Plan Status Management:** A visualization mapping active subscriber distribution across multiple zones, coupled with manual administrative controls to start or terminate individual coverage plans natively. 
+
+<img width="1920" height="1080" alt="FotoJet" src="https://github.com/user-attachments/assets/a7863870-45d5-4e0a-b2c1-3581f6a1b704" />
+
 
 ### Worker App — for Delivery Partners
-Coverage status, this week's AI-computed premium, earnings vs protected baseline, active disruption alerts, claim history, continuity reward progress, and the **Maintenance Check** self-service SHAP audit — all on one screen. Payment via Razorpay UPI.
+Coverage status, this week's AI-computed premium, earnings vs protected baseline, active disruption alerts, claim history, continuity reward progress, and the **Maintenance Check** self-service SHAP audit — all on one screen. Payment via Razorpay UPI.<br>
+<img width="2715" height="1920" alt="orders" src="https://github.com/user-attachments/assets/b0e39c5e-0a68-4246-b163-899d25cc3b08" /> <br> <img width="3000" height="1920" alt="fraud" src="https://github.com/user-attachments/assets/fe3787ee-4907-434d-ab9e-2e8a5015e407" /> <br> <img width="2578" height="1920" alt="multi" src="https://github.com/user-attachments/assets/7b74f2fb-b144-4708-93a6-6890939fa57c" /> <br> <img width="1024" height="1536" alt="app screen" src="https://github.com/user-attachments/assets/ed9123cb-4826-4691-848a-5f2e02eb4c3d" />
 
 ---
 

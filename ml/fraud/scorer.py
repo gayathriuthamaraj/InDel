@@ -50,14 +50,21 @@ class FraudScorer:
                 "routing": "auto_reject"
             }
 
-        # Rule 2: Worker completed deliveries during claimed disruption window
-        if request.deliveries_during_disruption > 2:
+        # Rule 2: Worker completed excessive deliveries during disruption (implausible disruption)
+        if request.deliveries_during_disruption > 10:
             signals.append({
-                "name": "active_during_disruption",
-                "impact": 0.80,
-                "description": f"Worker completed {request.deliveries_during_disruption} deliveries during claimed disruption window."
+                "name": "implausible_activity_during_disruption",
+                "impact": 0.85,
+                "description": f"Worker completed {request.deliveries_during_disruption} deliveries (threshold: 10). Implausible for a disrupted zone."
             })
-            score += 0.80
+            score += 0.85
+        elif request.deliveries_during_disruption < 2:
+            signals.append({
+                "name": "insufficient_participation",
+                "impact": 0.35,
+                "description": f"Worker completed only {request.deliveries_during_disruption} deliveries (minimum 2 required for auto-payout)."
+            })
+            score += 0.35
 
         # ── ML Fallback / Pipeline ─────────────────────────────────────────
         # Prepare the feature array mathematically equivalent to training data
