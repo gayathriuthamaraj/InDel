@@ -58,7 +58,7 @@ func main() {
 		port = "8001"
 	}
 
-	addr := fmt.Sprintf(":%s", port)
+	addr := fmt.Sprintf("0.0.0.0:%s", port)
 	log.Printf("Worker Gateway listening on %s", addr)
 	if err := router.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

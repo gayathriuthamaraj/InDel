@@ -6,6 +6,7 @@ import com.imaginai.indel.data.model.*
 import com.imaginai.indel.data.repository.EarningsRepository
 import com.imaginai.indel.data.repository.PolicyRepository
 import com.imaginai.indel.data.repository.WorkerRepository
+import android.util.Log
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,13 +21,17 @@ class HomeViewModel @Inject constructor(
     private val earningsRepository: EarningsRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "HomeViewModel"
+    }
+
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    private val _isOnline = MutableStateFlow(true)
+    private val _isOnline = MutableStateFlow(false)
     val isOnline = _isOnline.asStateFlow()
 
     init {
@@ -58,6 +63,7 @@ class HomeViewModel @Inject constructor(
             val notificationsRes = workerRepository.getNotifications()
 
             if (profileRes.isSuccessful && policyRes.isSuccessful && earningsRes.isSuccessful && notificationsRes.isSuccessful) {
+                val worker = profileRes.body()!!.worker
                 val summary = earningsRes.body()!!
                 val earnings = Earnings(
                     thisWeekActual = summary.thisWeekActual.toDouble(),
@@ -70,9 +76,11 @@ class HomeViewModel @Inject constructor(
                 val latestDisruption = notificationsRes.body()
                     ?.notifications
                     ?.firstOrNull { it.type.equals("disruption_alert", ignoreCase = true) }
+
+                _isOnline.value = worker.isOnline ?: false
                 
                 _uiState.value = HomeUiState.Success(
-                    worker = profileRes.body()!!.worker,
+                    worker = worker,
                     policy = policyRes.body()!!.policy,
                     earnings = earnings,
                     hasDisruptionAlert = latestDisruption != null,
@@ -87,8 +95,24 @@ class HomeViewModel @Inject constructor(
     }
 
     fun toggleOnlineStatus(online: Boolean) {
-        _isOnline.value = online
-        // In a real app, you'd call an API here: workerRepository.updateStatus(online)
+        viewModelScope.launch {
+            val previous = _isOnline.value
+            _isOnline.value = online
+
+            try {
+                val response = workerRepository.updateOnlineStatus(online)
+                if (response.isSuccessful) {
+                    _isOnline.value = response.body()?.online ?: online
+                    fetchData()
+                } else {
+                    _isOnline.value = previous
+                    Log.w(TAG, "toggleOnlineStatus failed status=${response.code()}")
+                }
+            } catch (e: Exception) {
+                _isOnline.value = previous
+                Log.w(TAG, "toggleOnlineStatus exception=${e.message}")
+            }
+        }
     }
 
     private fun startAutoRefresh() {

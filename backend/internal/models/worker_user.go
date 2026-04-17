@@ -29,8 +29,39 @@ type WorkerProfile struct {
 	UPIId                 string
 	AQIZone               string
 	TotalEarningsLifetime float64
+	IsOnline              bool      `gorm:"column:is_online;default:true"`
+	LastActiveAt          time.Time `gorm:"column:last_active_at"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
+}
+
+const WorkerStatusStalenessThreshold = 15 * time.Minute
+
+func (wp WorkerProfile) IsStaleAt(now time.Time) bool {
+	return IsWorkerStatusStale(wp.IsOnline, wp.LastActiveAt, now)
+}
+
+func (wp WorkerProfile) EffectiveOnlineStatus(now time.Time) bool {
+	return EffectiveWorkerOnlineStatus(wp.IsOnline, wp.LastActiveAt, now)
+}
+
+func IsWorkerStatusStale(isOnline bool, lastActiveAt, now time.Time) bool {
+	if !isOnline {
+		return false
+	}
+	// If marked online but NEVER pinged (zero time), do not treat as stale
+	// to avoid penalizing new workers or missing data.
+	if lastActiveAt.IsZero() {
+		return false
+	}
+	if now.IsZero() {
+		now = time.Now()
+	}
+	return now.Sub(lastActiveAt) > WorkerStatusStalenessThreshold
+}
+
+func EffectiveWorkerOnlineStatus(isOnline bool, lastActiveAt, now time.Time) bool {
+	return isOnline && !IsWorkerStatusStale(isOnline, lastActiveAt, now)
 }
 
 type Zone struct {

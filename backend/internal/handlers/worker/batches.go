@@ -580,6 +580,15 @@ func AcceptBatch(c *gin.Context) {
 			}
 		}
 
+		// Update activity status to keep worker Live on dashboard
+		if err := tx.Exec(`
+			UPDATE worker_profiles 
+			SET is_online = true, last_active_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+			WHERE worker_id = ?
+		`, workerIDUint).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -928,6 +937,15 @@ func DeliverBatch(c *gin.Context) {
 			return err
 		}
 
+		// Update activity status to keep worker Live on dashboard
+		if err := tx.Exec(`
+			UPDATE worker_profiles 
+			SET is_online = true, last_active_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+			WHERE worker_id = ?
+		`, workerIDUint).Error; err != nil {
+			return err
+		}
+
 		batchCompleted = true
 		return nil
 	})
@@ -979,7 +997,7 @@ func applyWorkerEarningsIncrement(tx *gorm.DB, workerID uint, amount float64) er
 
 	if err := tx.Exec(`
 		INSERT INTO earnings_records (worker_id, date, hours_worked, amount_earned)
-		VALUES (?, CURRENT_DATE, 8, ?)
+		VALUES (?, CURRENT_DATE, 0, ?)
 		ON CONFLICT (worker_id, date) DO UPDATE SET
 			amount_earned = earnings_records.amount_earned + EXCLUDED.amount_earned
 	`, workerID, amount).Error; err != nil {

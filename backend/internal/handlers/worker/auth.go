@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -100,15 +101,15 @@ func VerifyOTP(c *gin.Context) {
 			zoneID := ensureZoneIDByLevelAndName("A", "Tambaram")
 			if zoneID != 0 {
 				_ = workerDB.Exec(
-					`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime)
-					 VALUES (?, ?, ?, ?, ?, ?, ?)
+					`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime, is_online, last_active_at)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 					 ON CONFLICT (worker_id) DO UPDATE SET
 					 name = COALESCE(NULLIF(worker_profiles.name, ''), EXCLUDED.name),
 					 zone_id = COALESCE(NULLIF(worker_profiles.zone_id, 0), EXCLUDED.zone_id),
 					 vehicle_type = COALESCE(NULLIF(worker_profiles.vehicle_type, ''), EXCLUDED.vehicle_type),
 					 upi_id = COALESCE(NULLIF(worker_profiles.upi_id, ''), EXCLUDED.upi_id),
 					 aqi_zone = COALESCE(NULLIF(worker_profiles.aqi_zone, ''), EXCLUDED.aqi_zone)`,
-					workerIDUint, "New Worker", zoneID, "bike", "new@upi", "AQI-Medium", 0,
+					workerIDUint, "New Worker", zoneID, "bike", "new@upi", "AQI-Medium", 0, false, time.Now(),
 				).Error
 			}
 
@@ -142,7 +143,17 @@ func VerifyOTP(c *gin.Context) {
 			"upi_id":          "new@upi",
 			"coverage_status": "inactive",
 			"enrolled":        false,
+			"online":          false,
+			"is_online":       false,
+			"last_active_at":  time.Now(),
 		}
+	} else {
+		store.data.WorkerProfiles[workerID]["last_active_at"] = time.Now()
+	}
+
+	if HasDB() {
+		workerIDUint, _ := parseWorkerID(workerID)
+		_ = workerDB.Model(&models.WorkerProfile{}).Where("worker_id = ?", workerIDUint).Update("last_active_at", time.Now()).Error
 	}
 	log.Printf("VerifyOTP: login success worker_id=%s phone=%s has_db=%t", workerID, phone, HasDB())
 
@@ -224,6 +235,9 @@ func Register(c *gin.Context) {
 			"upi_id":          "new@upi",
 			"coverage_status": "active",
 			"enrolled":        true,
+			"online":          false,
+			"is_online":       false,
+			"last_active_at":  time.Now(),
 		}
 	}
 	store.data.WorkerProfiles[workerID]["name"] = username
@@ -233,6 +247,7 @@ func Register(c *gin.Context) {
 	store.data.WorkerProfiles[workerID]["zone_name"] = zoneName
 	store.data.WorkerProfiles[workerID]["coverage_status"] = "active"
 	store.data.WorkerProfiles[workerID]["enrolled"] = true
+	store.data.WorkerProfiles[workerID]["last_active_at"] = time.Now()
 
 	// ─── DB Seeding for Demo "Real Data" ──────────────────────────────
 	if HasDB() {
@@ -271,15 +286,16 @@ func Register(c *gin.Context) {
 
 		// 2. Create Worker Profile in DB (Starting at 0 earnings).
 		_ = workerDB.Exec(
-			`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime)
-			 VALUES (?, ?, ?, ?, ?, ?, ?)
+			`INSERT INTO worker_profiles (worker_id, name, zone_id, vehicle_type, upi_id, aqi_zone, total_earnings_lifetime, is_online, last_active_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 			 ON CONFLICT (worker_id) DO UPDATE SET
 			 name = EXCLUDED.name,
 			 zone_id = EXCLUDED.zone_id,
 			 vehicle_type = EXCLUDED.vehicle_type,
 			 upi_id = EXCLUDED.upi_id,
-			 aqi_zone = EXCLUDED.aqi_zone`,
-			workerIDUint, username, zone.ID, "bike", "demo@upi", "AQI-Medium", 0,
+			 aqi_zone = EXCLUDED.aqi_zone,
+			 last_active_at = EXCLUDED.last_active_at`,
+			workerIDUint, username, zone.ID, "bike", "demo@upi", "AQI-Medium", 0, false, time.Now(),
 		)
 
 		// 3. Set Earnings Baseline.
@@ -379,7 +395,7 @@ func Login(c *gin.Context) {
 				profile = map[string]any{"worker_id": workerID}
 			}
 			if zoneSummary.City != "" {
-			profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
+				profile["zone"] = formatZoneDisplay(zoneSummary.ZoneName, zoneSummary.City)
 			} else {
 				profile["zone"] = zoneSummary.ZoneName
 			}
@@ -387,9 +403,17 @@ func Login(c *gin.Context) {
 			profile["zone_type"] = orderRouteType(normalizeZoneLevel(zoneSummary.ZoneLevel))
 			profile["worker_type"] = orderRouteType(normalizeZoneLevel(zoneSummary.ZoneLevel))
 			profile["zone_name"] = zoneSummary.ZoneName
+			profile["last_active_at"] = time.Now()
+			if _, exists := profile["is_online"]; !exists {
+				if online, ok := profile["online"].(bool); ok {
+					profile["is_online"] = online
+				}
+			}
 			store.data.WorkerProfiles[workerID] = profile
 			store.mu.Unlock()
 		}
+
+		_ = workerDB.Model(&models.WorkerProfile{}).Where("worker_id = ?", workerIDUint).Update("last_active_at", time.Now()).Error
 
 		// 1. Get user's zone.
 		var zoneID uint
@@ -435,4 +459,42 @@ func shouldExposeTestingOTP() bool {
 		return false
 	}
 	return strings.EqualFold(strings.TrimSpace(os.Getenv("INDEL_EXPOSE_TEST_OTP")), "true")
+}
+
+// Logout invalidates the session and marks worker offline
+func Logout(c *gin.Context) {
+	workerID, ok := requireAuth(c)
+	if !ok {
+		return
+	}
+
+	authHeader := c.GetHeader("Authorization")
+	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+
+	if HasDB() {
+		workerIDUint, parseErr := parseWorkerID(workerID)
+		if parseErr == nil {
+			// 1. Mark Offline
+			_ = workerDB.Model(&models.WorkerProfile{}).Where("worker_id = ?", workerIDUint).Updates(map[string]any{
+				"is_online":      false,
+				"last_active_at": time.Now(),
+			}).Error
+
+			// 2. Invalidate Token
+			_ = workerDB.Exec("DELETE FROM auth_tokens WHERE token = ?", token).Error
+		}
+	}
+
+	store.mu.Lock()
+	// 1. Mark Offline in store
+	if profile, exists := store.data.WorkerProfiles[workerID]; exists {
+		profile["online"] = false
+		profile["is_online"] = false
+		profile["last_active_at"] = time.Now()
+	}
+	// 2. Clear from token map
+	delete(store.data.TokenToWorkerID, token)
+	store.mu.Unlock()
+
+	c.JSON(200, gin.H{"message": "logged_out"})
 }

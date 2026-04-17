@@ -30,6 +30,7 @@ type Config struct {
 	LogLevel               string
 	PremiumMLURL           string
 	FraudMLURL             string
+	FraudServiceURL        string
 	ForecastMLURL          string
 }
 
@@ -54,6 +55,7 @@ func Load() *Config {
 		LogLevel:               envOrDefault("LOG_LEVEL", "info"),
 		PremiumMLURL:           os.Getenv("PREMIUM_ML_URL"),
 		FraudMLURL:             os.Getenv("FRAUD_ML_URL"),
+		FraudServiceURL:        os.Getenv("FRAUD_SERVICE_URL"),
 		ForecastMLURL:          os.Getenv("FORECAST_ML_URL"),
 	}
 }

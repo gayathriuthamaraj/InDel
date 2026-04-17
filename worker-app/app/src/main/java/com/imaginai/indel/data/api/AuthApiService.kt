@@ -17,4 +17,7 @@ interface AuthApiService {
 
     @POST("api/v1/auth/otp/verify")
     suspend fun verifyOtp(@Body request: OtpVerifyRequest): Response<OtpVerifyResponse>
+
+    @POST("api/v1/auth/logout")
+    suspend fun logout(): Response<SimpleMessageResponse>
 }

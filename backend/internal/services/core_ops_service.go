@@ -1,9 +1,11 @@
 package services
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"database/sql"
 	"fmt"
 	"log"
 	"math"
@@ -14,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Shravanthi20/InDel/backend/internal/claimeval"
 	"github.com/Shravanthi20/InDel/backend/internal/models"
 	"github.com/Shravanthi20/InDel/backend/pkg/razorpay"
 	"gorm.io/gorm"
@@ -182,9 +185,9 @@ func (s *CoreOpsService) RunWeeklyCycle(now time.Time) (*WeeklyCycleResult, erro
 	type cycleWorker struct {
 		WorkerID       uint
 		ZoneID         uint
-		RiskRating     float64
-		VehicleType    string
-		BaselineAmount float64
+		RiskRating     float64      `gorm:"column:risk_rating"`
+		VehicleType    string       `gorm:"column:vehicle_type"`
+		BaselineAmount float64      `gorm:"column:baseline_amount"`
 	}
 
 	var workers []cycleWorker
@@ -274,8 +277,10 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 
 	type eligibleWorker struct {
 		WorkerID       uint
-		BaselineAmount float64
-		ActualEarnings float64
+		BaselineAmount float64      `gorm:"column:baseline_amount"`
+		ActualEarnings float64      `gorm:"column:actual_earnings"`
+		IsOnline       bool         `gorm:"column:is_online"`
+		LastActiveAt   sql.NullTime `gorm:"column:last_active_at"`
 	}
 
 	weekStart, _ := weekBounds(now.UTC())
@@ -283,7 +288,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 	// Check for workers in the disrupted zone who have ACTIVE protection plans
 	// This ensures claims are only generated for workers currently enrolled in the protection policy
 	if err := s.DB.Table("worker_profiles wp").
-		Select("wp.worker_id, COALESCE(eb.baseline_amount, 5000.0) AS baseline_amount, COALESCE(wes.total_earnings, 0) AS actual_earnings").
+		Select("wp.worker_id, COALESCE(eb.baseline_amount, 5000.0) AS baseline_amount, COALESCE(wes.total_earnings, 0) AS actual_earnings, COALESCE(wp.is_online, false) AS is_online, wp.last_active_at").
 		Joins("INNER JOIN policies p ON p.worker_id = wp.worker_id AND p.status = 'active'").
 		Joins("LEFT JOIN earnings_baseline eb ON eb.worker_id = wp.worker_id").
 		Joins("LEFT JOIN weekly_earnings_summary wes ON wes.worker_id = wp.worker_id AND wes.week_start = ?", weekStart).
@@ -317,49 +322,71 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 			continue
 		}
 
-		// NEW REALISTIC FORMULA FROM README:
-		// Expected = HourlyBaseline * DurationHours
-		// HourlyBaseline = WeeklyBaseline / 40.0 (Assuming 40-hour work week)
-		// For demo: default duration to 4 hours if missing.
-		durationHours := 4.0
-		if disruption.StartTime != nil && disruption.EndTime != nil {
-			durationHours = disruption.EndTime.Sub(*disruption.StartTime).Hours()
-		} else if disruption.ConfirmedAt != nil {
-			// If only ConfirmedAt is present, let's assume it lasts 4 hours.
-			durationHours = 4.0
+		// NEW BULLETPROOF EVALUATION: Use the centralized claimeval package
+		source := claimeval.ClaimSource{
+			WorkerID:       worker.WorkerID,
+			DisruptionID:   disruption.ID,
+			DisruptionType: disruption.Type,
+			ZoneID:         disruption.ZoneID,
+			StartTime:      disruption.StartTime,
+			EndTime:        disruption.EndTime,
+			ConfirmedAt:    disruption.ConfirmedAt,
+			Now:            now,
+			// Pre-fetched data
+			IsOnline:       &worker.IsOnline,
+			LastActiveAt:   func() *time.Time { if worker.LastActiveAt.Valid { t := worker.LastActiveAt.Time; return &t }; return nil }(),
+			BaselineAmount: &worker.BaselineAmount,
+			ActualEarnings: &worker.ActualEarnings,
 		}
-		
-		hourlyBaseline := worker.BaselineAmount / 40.0
-		expectedEarnings := hourlyBaseline * durationHours
-		loss := math.Max(expectedEarnings-worker.ActualEarnings, 0)
-		log.Printf("[CLAIMS] workerID=%d expectedEarnings=%.2f actualEarnings=%.2f rawLoss=%.2f", worker.WorkerID, expectedEarnings, worker.ActualEarnings, loss)
 
-		if loss <= 0 {
-			log.Printf("[CLAIMS] SKIP workerID=%d reason=zero_loss", worker.WorkerID)
+		activity, err := claimeval.AdaptClaimActivity(context.Background(), s.DB, source)
+		if err != nil {
+			log.Printf("[CLAIMS] ERROR adapting activity for workerID=%d: %v", worker.WorkerID, err)
+			skipped++
+			continue
+		}
+
+		outcome := claimeval.EvaluateDetailed(context.Background(), activity)
+		
+		if !outcome.Eligible {
+			log.Printf("[CLAIMS] SKIP workerID=%d reason=%v", worker.WorkerID, strings.Join(outcome.Reasons, ", "))
 			skipped++
 			continue
 		}
 
 		status := "approved"
-		fraudVerdict := "clear"
-		fraudScore := 0.19 // Default low fraud score for legitimate disruptions
-
-		// DEMO MODE: Disable manual review threshold (set to 100k)
-		if loss > 100000 {
+		if outcome.Decision == claimeval.DecisionDelay {
 			status = "manual_review"
-			fraudVerdict = "review"
-			fraudScore = 0.66 // Higher fraud score for large claims
+		} else if outcome.Decision == claimeval.DecisionReject {
+			log.Printf("[CLAIMS] REJECT workerID=%d reasons=%v", worker.WorkerID, outcome.Reasons)
+			skipped++
+			continue
 		}
-		log.Printf("[CLAIMS] workerID=%d claimAmount=%.2f status=%s", worker.WorkerID, round2(loss*0.85), status)
 
-		claim := models.Claim{DisruptionID: disruptionID, WorkerID: worker.WorkerID, ClaimAmount: round2(loss * 0.85), Status: status, FraudVerdict: fraudVerdict, CreatedAt: now.UTC(), UpdatedAt: now.UTC()}
+		claim := models.Claim{
+			DisruptionID: disruptionID,
+			WorkerID:     worker.WorkerID,
+			ClaimAmount:  round2(outcome.Loss * 0.85), // Applying the 0.85 payout ratio from legacy
+			Status:       status,
+			FraudVerdict: strings.ToLower(string(outcome.Decision)),
+			CreatedAt:    now.UTC(),
+			UpdatedAt:    now.UTC(),
+		}
 		if err := s.DB.Create(&claim).Error; err != nil {
 			log.Printf("[CLAIMS] ERROR creating claim for workerID=%d: %v", worker.WorkerID, err)
 			return nil, err
 		}
-		log.Printf("[CLAIMS] ✅ claim created claimID=%d workerID=%d amount=%.2f", claim.ID, worker.WorkerID, claim.ClaimAmount)
+		log.Printf("[CLAIMS] ✅ claim created claimID=%d workerID=%d amount=%.2f status=%s", claim.ID, worker.WorkerID, claim.ClaimAmount, status)
 
-		score := models.ClaimFraudScore{ClaimID: claim.ID, IsolationForestScore: fraudScore, DbscanScore: fraudScore, FinalVerdict: fraudVerdict, RuleViolations: "[]"}
+		// Persist the detailed fraud signals for the Story-Telling UI
+		ruleViolations, _ := json.Marshal(outcome.Reasons)
+		score := models.ClaimFraudScore{
+			ClaimID:              claim.ID,
+			IsolationForestScore: outcome.FraudScore,
+			DbscanScore:          outcome.FraudScore,
+			FinalVerdict:         strings.ToLower(string(outcome.Decision)),
+			RuleViolations:       string(ruleViolations),
+		}
 		if err := s.DB.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "claim_id"}}, DoUpdates: clause.AssignmentColumns([]string{"isolation_forest_score", "dbscan_score", "final_verdict", "rule_violations"})}).Create(&score).Error; err != nil {
 			return nil, err
 		}
@@ -498,6 +525,22 @@ func (s *CoreOpsService) QueueClaimPayout(claimID uint) (*PayoutResult, error) {
 		}, nil
 	} else if err != gorm.ErrRecordNotFound {
 		return nil, err
+	}
+
+	if fraudLayerEnabled() {
+		outcome, err := s.runPrePayoutEvaluation(context.Background(), claim, time.Now().UTC())
+		if err != nil {
+			logFailOpen(claim.ID, err)
+		} else if outcome != nil && outcome.Decision != "APPROVE" {
+			status := decisionToPayoutStatus(outcome.Decision)
+			return &PayoutResult{
+				ClaimID:        fmt.Sprintf("clm_%d", claim.ID),
+				WorkerID:       fmt.Sprintf("wkr_%d", claim.WorkerID),
+				AmountINR:      round2(claim.ClaimAmount),
+				Status:         status,
+				IdempotencyKey: fmt.Sprintf("pay_clm_%d", claim.ID),
+			}, nil
+		}
 	}
 
 	// Validate worker has an active policy before queueing a new payout.

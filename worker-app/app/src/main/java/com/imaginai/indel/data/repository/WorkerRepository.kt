@@ -40,6 +40,11 @@ class WorkerRepository @Inject constructor(
 
     suspend fun getProfile() = workerApiService.getProfile()
 
+    suspend fun updateOnlineStatus(online: Boolean) =
+        workerApiService.updateOnlineStatus(OnlineStatusRequest(online))
+
+    suspend fun heartbeat() = workerApiService.heartbeat()
+
     suspend fun getPolicy() = workerApiService.getPolicy()
 
     suspend fun updateProfile(

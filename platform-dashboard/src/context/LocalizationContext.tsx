@@ -71,6 +71,10 @@ export type TranslationKey =
   | 'pages.workers.showingNodes'
   | 'pages.workers.prev'
   | 'pages.workers.next'
+  | 'pages.workers.lastSeen'
+  | 'pages.workers.neverSeen'
+  | 'pages.workers.lastUpdated'
+  | 'pages.workers.refresh'
   // Zones page
   | 'pages.zones.title'
   | 'pages.zones.selectLevel'
@@ -195,6 +199,10 @@ const enTranslations: Record<TranslationKey, string> = {
   'pages.workers.showingNodes': 'Showing {filtered} of {total} nodes',
   'pages.workers.prev': 'PREV',
   'pages.workers.next': 'NEXT',
+  'pages.workers.lastSeen': 'Last seen',
+  'pages.workers.neverSeen': 'Never seen',
+  'pages.workers.lastUpdated': 'Last updated',
+  'pages.workers.refresh': 'REFRESH',
   // Zones page
   'pages.zones.title': 'Zone Operations & Disruption Control',
   'pages.zones.selectLevel': 'Select Level',
@@ -298,6 +306,10 @@ const taTranslations: Record<TranslationKey, string> = {
   'pages.workers.showingNodes': '{total} இல் {filtered} பதிவுகள் காட்டப்படுகிறது',
   'pages.workers.prev': 'முந்தையது',
   'pages.workers.next': 'அடுத்தது',
+  'pages.workers.lastSeen': 'கடைசியாக பார்த்தது',
+  'pages.workers.neverSeen': 'இதுவரை பார்த்ததில்லை',
+  'pages.workers.lastUpdated': 'கடைசியாக புதுப்பிக்கப்பட்டது',
+  'pages.workers.refresh': 'புதுப்பி',
 }
 
 const hiTranslations: Record<TranslationKey, string> = {
@@ -349,6 +361,10 @@ const hiTranslations: Record<TranslationKey, string> = {
   'pages.workers.showingNodes': '{total} में से {filtered} नोड्स दिखाए जा रहे हैं',
   'pages.workers.prev': 'पिछला',
   'pages.workers.next': 'अगला',
+  'pages.workers.lastSeen': 'अंतिम बार देखा गया',
+  'pages.workers.neverSeen': 'कभी नहीं देखा गया',
+  'pages.workers.lastUpdated': 'अंतिम बार अपडेट किया गया',
+  'pages.workers.refresh': 'ताज़ा करें',
 }
 
 const translations: TranslationTable = {

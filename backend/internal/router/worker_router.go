@@ -14,11 +14,14 @@ func SetupWorkerRoutes(router *gin.Engine) {
 	v1.POST("/auth/login", worker.Login)
 	v1.POST("/auth/otp/send", worker.SendOTP)
 	v1.POST("/auth/otp/verify", worker.VerifyOTP)
+	v1.POST("/auth/logout", worker.Logout)
 
 	// Worker protected surface.
 	v1.POST("/worker/onboard", worker.Onboard)
+	v1.POST("/worker/heartbeat", worker.Heartbeat)
 	v1.GET("/worker/profile", worker.GetProfile)
 	v1.PUT("/worker/profile", worker.UpdateProfile)
+	v1.PATCH("/worker/status", worker.UpdateOnlineStatus)
 
 	v1.GET("/worker/policy", worker.GetPolicy)
 	v1.POST("/worker/policy/enroll", worker.EnrollPolicy)

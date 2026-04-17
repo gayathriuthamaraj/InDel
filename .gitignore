@@ -23,7 +23,6 @@ worker-app/.env
 *~
 vendor/
 .gocache/
-.gocache/
 
 # Python
 __pycache__/

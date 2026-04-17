@@ -100,26 +100,53 @@ func TestGenerateClaimsAndQueueProcessPayouts(t *testing.T) {
 	weekStart, weekEnd := weekBounds(now)
 
 	zone := models.Zone{Name: "Rohini", City: "Delhi", State: "Delhi", RiskRating: 0.7}
-	if err := db.Create(&zone).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&zone).Error; err != nil {
+		t.Fatal(err)
+	}
 	for _, workerID := range []uint{11, 12} {
-		if err := db.Create(&models.User{ID: workerID, Phone: fmt.Sprintf("+919900000%d", workerID), Role: "worker"}).Error; err != nil { t.Fatal(err) }
-		if err := db.Create(&models.WorkerProfile{WorkerID: workerID, Name: "Worker", ZoneID: zone.ID, VehicleType: "bike", UPIId: "w@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil { t.Fatal(err) }
-		if err := db.Create(&models.Policy{WorkerID: workerID, Status: "active", PremiumAmount: 22}).Error; err != nil { t.Fatal(err) }
-		if err := db.Create(&models.EarningsBaseline{WorkerID: workerID, BaselineAmount: 4000, LastUpdatedAt: now}).Error; err != nil { t.Fatal(err) }
-		if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil { t.Fatal(err) }
+		if err := db.Create(&models.User{ID: workerID, Phone: fmt.Sprintf("+919900000%d", workerID), Role: "worker"}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.WorkerProfile{WorkerID: workerID, Name: "Worker", ZoneID: zone.ID, VehicleType: "bike", UPIId: "w@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.Policy{WorkerID: workerID, Status: "active", PremiumAmount: 22}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.EarningsBaseline{WorkerID: workerID, BaselineAmount: 4000, LastUpdatedAt: now}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil {
+			t.Fatal(err)
+		}
+		// Add history and evidence for worker to pass fraud check
+		if err := db.Create(&models.EarningsRecord{WorkerID: workerID, Date: now.Add(-24 * time.Hour), HoursWorked: 6, AmountEarned: 500, CreatedAt: now.Add(-24 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.Order{WorkerID: workerID, ZoneID: zone.ID, OrderValue: 120, CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	start := now.Add(-2 * time.Hour)
 	confirmed := start.Add(15 * time.Minute)
 	disruption := models.Disruption{ZoneID: zone.ID, Type: "heavy_rain", Severity: "high", Confidence: 0.88, Status: "confirmed", StartTime: &start, ConfirmedAt: &confirmed}
-	if err := db.Create(&disruption).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&disruption).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	claimResult, err := service.GenerateClaimsForDisruption(disruption.ID, now)
-	if err != nil { t.Fatalf("generate claims failed: %v", err) }
-	if claimResult.ClaimsGenerated != 2 { t.Fatalf("expected 2 generated claims, got %+v", claimResult) }
+	if err != nil {
+		t.Fatalf("generate claims failed: %v", err)
+	}
+	if claimResult.ClaimsGenerated != 2 {
+		t.Fatalf("expected 2 generated claims, got %+v", claimResult)
+	}
 
 	var claims []models.Claim
-	if err := db.Order("worker_id asc").Find(&claims).Error; err != nil { t.Fatal(err) }
+	if err := db.Order("worker_id asc").Find(&claims).Error; err != nil {
+		t.Fatal(err)
+	}
 	for _, claim := range claims {
 		if _, err := service.QueueClaimPayout(claim.ID); err != nil {
 			t.Fatalf("queue payout failed for claim %d: %v", claim.ID, err)
@@ -127,13 +154,17 @@ func TestGenerateClaimsAndQueueProcessPayouts(t *testing.T) {
 	}
 
 	process1, err := service.ProcessQueuedPayouts(now)
-	if err != nil { t.Fatalf("process payouts failed: %v", err) }
+	if err != nil {
+		t.Fatalf("process payouts failed: %v", err)
+	}
 	if process1.Processed != 2 || process1.Succeeded != 1 || process1.Failed != 1 || process1.Retried != 1 {
 		t.Fatalf("unexpected process1 result: %+v", process1)
 	}
 
 	process2, err := service.ProcessQueuedPayouts(now.Add(10 * time.Minute))
-	if err != nil { t.Fatalf("second payout processing failed: %v", err) }
+	if err != nil {
+		t.Fatalf("second payout processing failed: %v", err)
+	}
 	if process2.Succeeded != 1 || process2.Failed != 0 {
 		t.Fatalf("unexpected process2 result: %+v", process2)
 	}
@@ -179,22 +210,56 @@ func TestAutoProcessDisruptionScopesProcessingToThatDisruption(t *testing.T) {
 
 	zoneA := models.Zone{Name: "Tambaram", City: "Chennai", State: "Tamil Nadu", RiskRating: 0.62}
 	zoneB := models.Zone{Name: "Adyar", City: "Chennai", State: "Tamil Nadu", RiskRating: 0.55}
-	if err := db.Create(&zoneA).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&zoneB).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&zoneA).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&zoneB).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	workerA := models.User{ID: 2, Phone: "+919900000002", Role: "worker"}
 	workerB := models.User{ID: 3, Phone: "+919900000003", Role: "worker"}
-	if err := db.Create(&workerA).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&workerB).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&workerA).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&workerB).Error; err != nil {
+		t.Fatal(err)
+	}
 
-	if err := db.Create(&models.WorkerProfile{WorkerID: workerA.ID, Name: "Worker A", ZoneID: zoneA.ID, VehicleType: "bike", UPIId: "a@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.WorkerProfile{WorkerID: workerB.ID, Name: "Worker B", ZoneID: zoneB.ID, VehicleType: "bike", UPIId: "b@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.Policy{WorkerID: workerA.ID, Status: "active", PremiumAmount: 22}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.Policy{WorkerID: workerB.ID, Status: "active", PremiumAmount: 22}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.EarningsBaseline{WorkerID: workerA.ID, BaselineAmount: 2000, LastUpdatedAt: now}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.EarningsBaseline{WorkerID: workerB.ID, BaselineAmount: 1800, LastUpdatedAt: now}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerA.ID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerB.ID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&models.WorkerProfile{WorkerID: workerA.ID, Name: "Worker A", ZoneID: zoneA.ID, VehicleType: "bike", UPIId: "a@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.WorkerProfile{WorkerID: workerB.ID, Name: "Worker B", ZoneID: zoneB.ID, VehicleType: "bike", UPIId: "b@upi", AQIZone: "medium", TotalEarningsLifetime: 100000}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.Policy{WorkerID: workerA.ID, Status: "active", PremiumAmount: 22}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.Policy{WorkerID: workerB.ID, Status: "active", PremiumAmount: 22}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.EarningsBaseline{WorkerID: workerA.ID, BaselineAmount: 2000, LastUpdatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.EarningsBaseline{WorkerID: workerB.ID, BaselineAmount: 1800, LastUpdatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerA.ID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerB.ID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	// Add orders and earnings for Worker A and Worker B to pass fraud check
+	for _, workerID := range []uint{workerA.ID, workerB.ID} {
+		if err := db.Create(&models.EarningsRecord{WorkerID: workerID, Date: now.Add(-24 * time.Hour), HoursWorked: 6, AmountEarned: 500, CreatedAt: now.Add(-24 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.Order{WorkerID: workerID, ZoneID: zoneA.ID, OrderValue: 120, CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
+	}
 
 	startA := now.Add(-2 * time.Hour)
 	startB := now.Add(-3 * time.Hour)
@@ -202,13 +267,21 @@ func TestAutoProcessDisruptionScopesProcessingToThatDisruption(t *testing.T) {
 	confirmedB := startB.Add(10 * time.Minute)
 	disruptionA := models.Disruption{ZoneID: zoneA.ID, Type: "heavy_rain", Severity: "high", Confidence: 0.88, Status: "confirmed", StartTime: &startA, ConfirmedAt: &confirmedA}
 	disruptionB := models.Disruption{ZoneID: zoneB.ID, Type: "zone_curfew", Severity: "high", Confidence: 0.91, Status: "confirmed", StartTime: &startB, ConfirmedAt: &confirmedB}
-	if err := db.Create(&disruptionA).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&disruptionB).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&disruptionA).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&disruptionB).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	otherClaim := models.Claim{DisruptionID: disruptionB.ID, WorkerID: workerB.ID, ClaimAmount: 600, Status: "queued_for_payout", FraudVerdict: "clear", CreatedAt: now, UpdatedAt: now}
-	if err := db.Create(&otherClaim).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&otherClaim).Error; err != nil {
+		t.Fatal(err)
+	}
 	otherPayout := models.Payout{ClaimID: otherClaim.ID, WorkerID: workerB.ID, Amount: 600, Status: "queued", IdempotencyKey: "pay_other_claim", RazorpayStatus: "queued"}
-	if err := db.Create(&otherPayout).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&otherPayout).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	result, err := service.AutoProcessDisruption(disruptionA.ID, now)
 	if err != nil {
@@ -227,6 +300,74 @@ func TestAutoProcessDisruptionScopesProcessingToThatDisruption(t *testing.T) {
 	}
 }
 
+func TestQueueClaimPayoutWithFraudLayerDelay(t *testing.T) {
+	db := setupCoreOpsTestDB(t)
+	service := NewCoreOpsService(db)
+	now := time.Date(2026, 4, 2, 10, 0, 0, 0, time.UTC)
+
+	t.Setenv("FRAUD_LAYER_ENABLED", "true")
+	t.Setenv("FRAUD_ML_MOCK_SCORE", "0.45")
+	t.Setenv("FRAUD_ML_MOCK_ERROR", "")
+
+	claim := seedEvaluationClaimFixture(t, db, 501, now)
+	result, err := service.QueueClaimPayout(claim.ID)
+	if err != nil {
+		t.Fatalf("queue payout failed: %v", err)
+	}
+	if result.Status != "manual_review" {
+		t.Fatalf("expected manual_review, got %+v", result)
+	}
+
+	assertNoPayoutForClaim(t, db, claim.ID)
+	assertClaimState(t, db, claim.ID, "manual_review", "review")
+	assertFraudScoreState(t, db, claim.ID, 0.45, "manual_review")
+}
+
+func TestQueueClaimPayoutWithFraudLayerReject(t *testing.T) {
+	db := setupCoreOpsTestDB(t)
+	service := NewCoreOpsService(db)
+	now := time.Date(2026, 4, 3, 10, 0, 0, 0, time.UTC)
+
+	t.Setenv("FRAUD_LAYER_ENABLED", "true")
+	t.Setenv("FRAUD_ML_MOCK_SCORE", "0.91")
+	t.Setenv("FRAUD_ML_MOCK_ERROR", "")
+
+	claim := seedEvaluationClaimFixture(t, db, 601, now)
+	result, err := service.QueueClaimPayout(claim.ID)
+	if err != nil {
+		t.Fatalf("queue payout failed: %v", err)
+	}
+	if result.Status != "rejected" {
+		t.Fatalf("expected rejected, got %+v", result)
+	}
+
+	assertNoPayoutForClaim(t, db, claim.ID)
+	assertClaimState(t, db, claim.ID, "rejected", "fraud")
+	assertFraudScoreState(t, db, claim.ID, 0.91, "flagged")
+}
+
+func TestQueueClaimPayoutWithFraudLayerFallsBackToApprove(t *testing.T) {
+	db := setupCoreOpsTestDB(t)
+	service := NewCoreOpsService(db)
+	now := time.Date(2026, 4, 4, 10, 0, 0, 0, time.UTC)
+
+	t.Setenv("FRAUD_LAYER_ENABLED", "true")
+	t.Setenv("FRAUD_ML_MOCK_ERROR", "true")
+	t.Setenv("FRAUD_ML_MOCK_SCORE", "")
+
+	claim := seedEvaluationClaimFixture(t, db, 701, now)
+	result, err := service.QueueClaimPayout(claim.ID)
+	if err != nil {
+		t.Fatalf("queue payout failed: %v", err)
+	}
+	if result.Status != "queued" {
+		t.Fatalf("fallback path should still queue payout, got %+v", result)
+	}
+
+	assertClaimState(t, db, claim.ID, "queued_for_payout", "clear")
+	assertFraudScoreState(t, db, claim.ID, 0.10, "clear")
+}
+
 func TestPayoutReconciliationMath(t *testing.T) {
 	db := setupCoreOpsTestDB(t)
 	service := NewCoreOpsService(db)
@@ -234,14 +375,24 @@ func TestPayoutReconciliationMath(t *testing.T) {
 
 	claim1 := models.Claim{ID: 1, WorkerID: 1, ClaimAmount: 500, Status: "paid"}
 	claim2 := models.Claim{ID: 2, WorkerID: 2, ClaimAmount: 300, Status: "queued_for_payout"}
-	if err := db.Create(&claim1).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&claim2).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&claim1).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&claim2).Error; err != nil {
+		t.Fatal(err)
+	}
 	processedAt := now
-	if err := db.Create(&models.Payout{ClaimID: 1, WorkerID: 1, Amount: 500, Status: "processed", IdempotencyKey: "pay1", ProcessedAt: &processedAt, CreatedAt: now}).Error; err != nil { t.Fatal(err) }
-	if err := db.Create(&models.Payout{ClaimID: 2, WorkerID: 2, Amount: 300, Status: "retry_pending", IdempotencyKey: "pay2", CreatedAt: now}).Error; err != nil { t.Fatal(err) }
+	if err := db.Create(&models.Payout{ClaimID: 1, WorkerID: 1, Amount: 500, Status: "processed", IdempotencyKey: "pay1", ProcessedAt: &processedAt, CreatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Create(&models.Payout{ClaimID: 2, WorkerID: 2, Amount: 300, Status: "retry_pending", IdempotencyKey: "pay2", CreatedAt: now}).Error; err != nil {
+		t.Fatal(err)
+	}
 
 	result, err := service.GetPayoutReconciliation(now.Add(-time.Hour), now.Add(time.Hour))
-	if err != nil { t.Fatalf("reconciliation failed: %v", err) }
+	if err != nil {
+		t.Fatalf("reconciliation failed: %v", err)
+	}
 	if result.Counts["processed"] != 1 || result.Counts["retry_pending"] != 1 {
 		t.Fatalf("unexpected counts: %+v", result.Counts)
 	}
@@ -250,6 +401,127 @@ func TestPayoutReconciliationMath(t *testing.T) {
 	}
 	if !result.ReconciliationOK || result.MismatchCount != 0 {
 		t.Fatalf("expected reconciliation ok, got %+v", result)
+	}
+}
+
+func seedEvaluationClaimFixture(t *testing.T, db *gorm.DB, baseID uint, now time.Time) models.Claim {
+	t.Helper()
+
+	zone := models.Zone{ID: baseID, Name: fmt.Sprintf("Zone-%d", baseID), City: "Chennai", State: "Tamil Nadu", RiskRating: 0.62}
+	if err := db.Create(&zone).Error; err != nil {
+		t.Fatalf("seed zone: %v", err)
+	}
+
+	user := models.User{ID: baseID, Phone: fmt.Sprintf("+91990001%04d", baseID), Role: "worker", CreatedAt: now, UpdatedAt: now}
+	if err := db.Create(&user).Error; err != nil {
+		t.Fatalf("seed user: %v", err)
+	}
+
+	if err := db.Create(&models.WorkerProfile{
+		WorkerID:              user.ID,
+		Name:                  "Eval Worker",
+		ZoneID:                zone.ID,
+		VehicleType:           "two_wheeler",
+		UPIId:                 "eval@upi",
+		AQIZone:               "medium",
+		TotalEarningsLifetime: 120000,
+		CreatedAt:             now,
+		UpdatedAt:             now,
+	}).Error; err != nil {
+		t.Fatalf("seed profile: %v", err)
+	}
+
+	if err := db.Create(&models.Policy{WorkerID: user.ID, Status: "active", PremiumAmount: 22, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+		t.Fatalf("seed policy: %v", err)
+	}
+
+	if err := db.Create(&models.EarningsBaseline{WorkerID: user.ID, BaselineAmount: 4000, LastUpdatedAt: now, CreatedAt: now, UpdatedAt: now}).Error; err != nil {
+		t.Fatalf("seed baseline: %v", err)
+	}
+
+	start := now.Add(-2 * time.Hour)
+	confirmed := start.Add(15 * time.Minute)
+	disruption := models.Disruption{
+		ID:          baseID,
+		ZoneID:      zone.ID,
+		Type:        "heavy_rain",
+		Severity:    "high",
+		Confidence:  0.88,
+		Status:      "confirmed",
+		StartTime:   &start,
+		ConfirmedAt: &confirmed,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+	if err := db.Create(&disruption).Error; err != nil {
+		t.Fatalf("seed disruption: %v", err)
+	}
+
+	previousDate := start.Add(-24 * time.Hour)
+	if err := db.Create(&models.EarningsRecord{WorkerID: user.ID, Date: previousDate, HoursWorked: 6, AmountEarned: 720, CreatedAt: previousDate}).Error; err != nil {
+		t.Fatalf("seed before earnings: %v", err)
+	}
+	if err := db.Create(&models.EarningsRecord{WorkerID: user.ID, Date: start, HoursWorked: 4, AmountEarned: 100, CreatedAt: start}).Error; err != nil {
+		t.Fatalf("seed during earnings: %v", err)
+	}
+
+	if err := db.Create(&models.Order{WorkerID: user.ID, ZoneID: zone.ID, OrderValue: 120, CreatedAt: start.Add(-90 * time.Minute), UpdatedAt: start.Add(-90 * time.Minute)}).Error; err != nil {
+		t.Fatalf("seed before order: %v", err)
+	}
+	if err := db.Create(&models.Order{WorkerID: user.ID, ZoneID: zone.ID, OrderValue: 80, CreatedAt: start.Add(20 * time.Minute), UpdatedAt: start.Add(20 * time.Minute)}).Error; err != nil {
+		t.Fatalf("seed during order: %v", err)
+	}
+
+	claim := models.Claim{
+		ID:           baseID,
+		DisruptionID: disruption.ID,
+		WorkerID:     user.ID,
+		ClaimAmount:  220,
+		Status:       "approved",
+		FraudVerdict: "clear",
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
+	if err := db.Create(&claim).Error; err != nil {
+		t.Fatalf("seed claim: %v", err)
+	}
+
+	return claim
+}
+
+func assertNoPayoutForClaim(t *testing.T, db *gorm.DB, claimID uint) {
+	t.Helper()
+	var count int64
+	if err := db.Model(&models.Payout{}).Where("claim_id = ?", claimID).Count(&count).Error; err != nil {
+		t.Fatalf("count payouts: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("expected no payout for claim %d, found %d", claimID, count)
+	}
+}
+
+func assertClaimState(t *testing.T, db *gorm.DB, claimID uint, status string, verdict string) {
+	t.Helper()
+	var claim models.Claim
+	if err := db.First(&claim, claimID).Error; err != nil {
+		t.Fatalf("load claim: %v", err)
+	}
+	if claim.Status != status || claim.FraudVerdict != verdict {
+		t.Fatalf("unexpected claim state: %+v", claim)
+	}
+}
+
+func assertFraudScoreState(t *testing.T, db *gorm.DB, claimID uint, expectedScore float64, verdict string) {
+	t.Helper()
+	var score models.ClaimFraudScore
+	if err := db.Where("claim_id = ?", claimID).First(&score).Error; err != nil {
+		t.Fatalf("load fraud score: %v", err)
+	}
+	if round2(score.IsolationForestScore) != round2(expectedScore) {
+		t.Fatalf("unexpected fraud score: %+v", score)
+	}
+	if score.FinalVerdict != verdict {
+		t.Fatalf("unexpected fraud verdict: %+v", score)
 	}
 }
 

@@ -2,18 +2,31 @@ package worker
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/Shravanthi20/InDel/backend/internal/models"
+	"github.com/Shravanthi20/InDel/backend/internal/services"
+	"github.com/Shravanthi20/InDel/backend/pkg/razorpay"
 	"gorm.io/gorm"
 )
 
 var workerDB *gorm.DB
+var workerCoreOps *services.CoreOpsService
 
 // SetDB registers the DB handle for worker handlers.
 func SetDB(db *gorm.DB) {
 	workerDB = db
+	if db == nil {
+		workerCoreOps = nil
+		return
+	}
+	workerCoreOps = services.NewCoreOpsService(db)
+	workerCoreOps.SetRazorpayClient(razorpay.NewRazorpayClient(
+		os.Getenv("RAZORPAY_KEY_ID"),
+		os.Getenv("RAZORPAY_KEY_SECRET"),
+	))
 }
 
 // HasDB returns true if the workerDB is set (exported for other packages)
