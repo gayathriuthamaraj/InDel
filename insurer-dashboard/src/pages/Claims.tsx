@@ -57,10 +57,10 @@ export default function Claims() {
                   <td className="py-4 text-right">
                     <span
                       className={`rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-widest leading-none ${
-                        row.fraud_verdict === 'safe' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                        row.fraud_verdict === 'safe' || row.fraud_verdict === 'approve' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
-                      {row.fraud_verdict === 'safe' ? t('pages.claims.safe') : t('pages.claims.flagged')}
+                      {row.fraud_verdict === 'safe' || row.fraud_verdict === 'approve' ? t('pages.claims.safe') : t('pages.claims.flagged')}
                     </span>
                   </td>
                 </tr>

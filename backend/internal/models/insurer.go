@@ -62,7 +62,8 @@ type FraudQueueItem struct {
 	WorkerID     uint    `json:"worker_id"`
 	Status       string  `json:"status"`
 	FraudVerdict string  `json:"fraud_verdict"`
-	FraudScore   float64 `json:"fraud_score"`
+	FraudScore   float64  `json:"fraud_score"`
+	Violations   []string `json:"violations"`
 	CreatedAt    string  `json:"created_at"`
 }
 

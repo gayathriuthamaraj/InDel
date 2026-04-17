@@ -689,11 +689,11 @@ func (s *InsurerService) GetFraudQueue(offset, limit int) ([]models.FraudQueueIt
 	baseQuery := s.DB.Table("claims c").
 		Select("c.id AS claim_id, COALESCE(cfs.final_verdict, 'pending') AS final_verdict, COALESCE(cfs.isolation_forest_score, 0.0) AS score, COALESCE(CAST(cfs.rule_violations as text), '[]') AS violations, CAST(c.created_at as text) AS created_at").
 		Joins("LEFT JOIN claim_fraud_scores cfs ON cfs.claim_id = c.id").
-		Where("COALESCE(cfs.final_verdict, 'pending') IN ('flagged', 'manual_review', 'pending')")
+		Where("COALESCE(cfs.final_verdict, 'pending') IN ('flagged', 'manual_review', 'pending', 'delay') AND c.status = 'manual_review'")
 
 	_ = s.DB.Table("claims c").
 		Joins("LEFT JOIN claim_fraud_scores cfs ON cfs.claim_id = c.id").
-		Where("COALESCE(cfs.final_verdict, 'pending') IN ('flagged', 'manual_review', 'pending')").
+		Where("COALESCE(cfs.final_verdict, 'pending') IN ('flagged', 'manual_review', 'pending', 'delay') AND c.status = 'manual_review'").
 		Count(&total).Error
 
 	_ = baseQuery.Order("cfs.isolation_forest_score DESC, c.created_at DESC").
@@ -703,11 +703,24 @@ func (s *InsurerService) GetFraudQueue(offset, limit int) ([]models.FraudQueueIt
 
 	results := make([]models.FraudQueueItem, 0, len(rows))
 	for _, row := range rows {
+		var factors []models.FraudFactor
+		if row.Violations != "[]" && row.Violations != "" {
+			_ = json.Unmarshal([]byte(row.Violations), &factors)
+		}
+		var finalTags []string
+		for _, f := range factors {
+			finalTags = append(finalTags, strings.ToUpper(f.Name))
+		}
+		if len(finalTags) == 0 {
+			finalTags = append(finalTags, "MANUAL_REVIEW")
+		}
+
 		results = append(results, models.FraudQueueItem{
 			ClaimID:      row.ClaimID,
 			Status:       "manual_review", // Contextual
 			FraudVerdict: row.FinalVerdict,
 			FraudScore:   row.Score,
+			Violations:   finalTags,
 			CreatedAt:    row.CreatedAt,
 		})
 	}

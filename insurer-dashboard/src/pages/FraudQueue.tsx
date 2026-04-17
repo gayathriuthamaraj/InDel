@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getFraudQueue, type FraudQueueRow } from '../api/insurer'
+import { getFraudQueue, reviewClaim, type FraudQueueRow } from '../api/insurer'
 import { PageShell, Panel } from './OperationsShared'
 import { useLocalization } from '../context/LocalizationContext'
 
@@ -9,13 +9,26 @@ export default function FraudQueue() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadQueue = () => {
     setLoading(true)
     getFraudQueue({ page: 1, limit: 20 })
       .then((payload) => setRows(payload.data ?? []))
       .catch((err) => setError(err?.message ?? 'Failed to load fraud queue'))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadQueue()
   }, [])
+
+  const handleAction = async (id: number, status: string, verdict: string) => {
+    try {
+      await reviewClaim(id, status, verdict)
+      loadQueue()
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to perform action')
+    }
+  }
 
   return (
     <PageShell
@@ -42,9 +55,19 @@ export default function FraudQueue() {
                   <tr key={row.claim_id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-none">
                     <td className="py-5 font-bold text-slate-900 dark:text-white">#{row.claim_id}</td>
                     <td className="py-5">
-                      <span className="rounded bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800">
-                        {row.status}
-                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {row.violations && row.violations.length > 0 ? (
+                          row.violations.map((v, i) => (
+                            <span key={i} className="rounded bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800">
+                              {v}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="rounded bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800">
+                            {row.status}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-5 text-right font-black text-slate-900 dark:text-white">
                       <div className="flex items-center justify-end gap-3">
@@ -58,7 +81,24 @@ export default function FraudQueue() {
                       </div>
                     </td>
                     <td className="py-5 text-right text-[9px] font-black uppercase tracking-[0.2em]">
-                      <span className={row.fraud_verdict === 'safe' ? 'text-emerald-600' : 'text-rose-600'}>{row.fraud_verdict}</span>
+                      {row.fraud_verdict === 'delay' || row.status === 'manual_review' ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleAction(row.claim_id, 'approved', 'safe')}
+                            className="rounded bg-emerald-500/10 px-3 py-1 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleAction(row.claim_id, 'rejected', 'fraud')}
+                            className="rounded bg-rose-500/10 px-3 py-1 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className={row.fraud_verdict === 'safe' || row.fraud_verdict === 'approve' ? 'text-emerald-600' : 'text-rose-600'}>{row.fraud_verdict}</span>
+                      )}
                     </td>
                   </tr>
                 ))}
