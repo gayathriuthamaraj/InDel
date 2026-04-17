@@ -124,14 +124,17 @@ export default function HeroSection() {
           >
             Try It Out →
           </motion.a>
-          <a
+          <motion.a
             href={PITCH_DECK_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-3.5 rounded-xl border border-white/70 bg-white/10 text-white hover:bg-white/20 hover:text-primary text-sm font-semibold transition-all ml-2"
+            className="px-8 py-3.5 rounded-xl border border-white/20 text-white/80 hover:border-white/50 hover:text-white text-sm font-semibold transition-all"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            style={{ marginLeft: '0.5rem' }}
           >
-            Pitch Deck
-          </a>
+            Pitch Deck →
+          </motion.a>
         </motion.div>
       </div>
 
