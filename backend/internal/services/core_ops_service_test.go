@@ -119,6 +119,13 @@ func TestGenerateClaimsAndQueueProcessPayouts(t *testing.T) {
 		if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil {
 			t.Fatal(err)
 		}
+		// Add history and evidence for worker to pass fraud check
+		if err := db.Create(&models.EarningsRecord{WorkerID: workerID, Date: now.Add(-24 * time.Hour), HoursWorked: 6, AmountEarned: 500, CreatedAt: now.Add(-24 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.Order{WorkerID: workerID, ZoneID: zone.ID, OrderValue: 120, CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	start := now.Add(-2 * time.Hour)
@@ -242,6 +249,16 @@ func TestAutoProcessDisruptionScopesProcessingToThatDisruption(t *testing.T) {
 	}
 	if err := db.Create(&models.WeeklyEarningsSummary{WorkerID: workerB.ID, WeekStart: weekStart, WeekEnd: weekEnd, TotalEarnings: 0, ClaimEligible: true}).Error; err != nil {
 		t.Fatal(err)
+	}
+
+	// Add orders and earnings for Worker A and Worker B to pass fraud check
+	for _, workerID := range []uint{workerA.ID, workerB.ID} {
+		if err := db.Create(&models.EarningsRecord{WorkerID: workerID, Date: now.Add(-24 * time.Hour), HoursWorked: 6, AmountEarned: 500, CreatedAt: now.Add(-24 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
+		if err := db.Create(&models.Order{WorkerID: workerID, ZoneID: zoneA.ID, OrderValue: 120, CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)}).Error; err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	startA := now.Add(-2 * time.Hour)
