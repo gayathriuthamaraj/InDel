@@ -18,6 +18,7 @@ services:
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       FRAUD_LAYER_ENABLED: 'true'
       FRAUD_SERVICE_URL: http://ml-service:8000
+      PREMIUM_ML_URL: http://ml-service:8000
     ports:
     - 8000:8000
     depends_on:

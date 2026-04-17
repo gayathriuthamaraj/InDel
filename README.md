@@ -99,12 +99,6 @@ Dynamic Machine Learning struggles intrinsically with "Cold Start" user distribu
 ### 4. Zero-Contamination Offline-First Sync (Android Room DB)
 Gig delivery platforms share a notorious edge-case: multi-account logins on identical hardware. We hardened the existing offline-first Android interface by systematically purging the underlying encrypted **Room Databases** dynamically on token generation/revocation. Dashboard rendering states are mathematically isolated per-user natively, fully eliminating cross-state ghost profiles.
 
-### Tech Stack Applied
-* **Backend:** FastAPI (Python), REST Unified Orchestration
-* **AI:** XGBoost, `joblib` artifacts
-* **Streaming Ecosystem:** Apache Kafka (KRaft Protocol)
-* **Client Architecture:** Android Kotlin (Room Persistence Library, Flow Architecture)
-
 ---
 
 ## The Core Insight: Verify Economic Reality, Not GPS
