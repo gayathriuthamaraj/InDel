@@ -1,11 +1,11 @@
-# Guide for Evaluation of Phase 2
+# Guide for Evaluation of Phase 3
 
 This document is the evaluator runbook for **InDel — Insure, Deliver** (Guidewire DEVTrails 2026, Team ImaginAI).
 
-It explains exactly what is needed and how to run the complete Phase 2 implementation locally: backend services, dashboards, and Android worker app.
+It explains exactly what is needed and how to run the complete Phase 3 implementation locally: backend services, dashboards, and Android worker app.
 
 > [!IMPORTANT]
-> For Phase 2 evaluation, we are not distributing a standalone APK. We kindly request evaluators to run the Worker App using the provided project setup (Android Studio + local backend services) so the full integrated workflow can be verified.
+> For Phase 3 evaluation, we are not distributing a standalone APK. We kindly request evaluators to run the Worker App using the provided project setup (Android Studio + local backend services) so the full integrated asynchronous workflow (Kafka + Razorpay) can be verified.
 
 ---
 
@@ -14,15 +14,7 @@ It explains exactly what is needed and how to run the complete Phase 2 implement
 - Project: InDel — Insure, Deliver
 - Team: ImaginAI
 - Hackathon: Guidewire DEVTrails 2026
-- Phase: Phase 2 (Implementation)
-
-### Team Members
-
-- Shravanthi S: Core Policy, Premium Cycle, Payout and Data Operations
-- Gayathri U: Delivery Management and DevOps
-- Rithanya K A: ML Services (Training and Serving)
-- Saravana Priyaa C R: Platform Integration, Disruption Engine
-- Subikha MV: Insurer System, Claims Intelligence and System Design
+- Phase: Phase 3 (Scale & Optimize)
 
 ---
 
@@ -45,15 +37,15 @@ Install all prerequisites before running anything.
 
 ---
 
-## 3. Repository Layout (What Runs in Phase 2)
+## 3. Repository Layout (What Runs in Phase 3)
 
-- `backend/`: Go services (core, worker-gateway, insurer-gateway, platform-gateway)
+- `backend/`: Go services (core, worker-gateway, insurer-gateway, platform-gateway, razorpay engine)
 - `platform-dashboard/`: React + Vite dashboard for platform ops
 - `insurer-dashboard/`: React + Vite dashboard for insurer ops
 - `worker-app/`: Native Android app (Kotlin)
 - `migrations/`: Database schema migrations
 - `ml/`: Premium, fraud, and forecast model services
-- `docker-compose.demo.yml`: Recommended compose file for evaluation/demo
+- `docker-compose.demo.yml`: Recommended compose orchestration for evaluation
 
 ---
 
@@ -62,7 +54,7 @@ Install all prerequisites before running anything.
 InDel/
 │
 ├── .env                ← MASTER (Docker + backend + ML)
-├── docker-compose.yml
+├── docker-compose.demo.yml
 │
 ├── platform-dashboard/
 │   └── .env           ← VITE_PLATFORM_API_URL
@@ -71,92 +63,64 @@ InDel/
 │   └── .env           ← VITE_INSURER_API_URL
 │
 ├── worker-app/
-│   └── (hardcoded / config)
+│   └── .env           ← API_BASE_URL
 ```
-Create a root `.env` file in the `InDel/` directory.
+Create a root `.env` file in the `InDel/` directory by copying the `.env.demo.example`.
 
 Minimum values for local demo:
 
 ```env
-# PostgreSQL
-POSTGRES_USER=indel
-POSTGRES_PASSWORD=<your_db_password>
-POSTGRES_DB=indel
-DB_USER=indel
-DB_PASSWORD=<your_db_password>
-DB_NAME=indel
+# Network (Critical: Use your machine's LAN IP, e.g. 192.168.1.x, do NOT use localhost)
+HOST_IP=<your_lan_ip>
+LAN_IP=<your_lan_ip>
+API_BASE_URL=http://<your_lan_ip>:8003/
 
-# Network
-HOST_IP=<your_local_ip>
-API_BASE_URL=http://<your_local_ip>:8001/
-API_BASE_URL1=http://<your_local_ip>:8003/
+# Database
+POSTGRES_PASSWORD=demo_password
+DB_PASSWORD=demo_password
 
-# ML Services (Local Access from Host)
-PREMIUM_ML_URL=http://<your_local_ip>:9001
-FRAUD_ML_URL=http://<your_local_ip>:9002
-FORECAST_ML_URL=http://<your_local_ip>:9003
+# NGINX Gateway & Vite Endpoints (Ports default to 8004 for reverse proxy)
+PLATFORM_API_URL=http://<your_lan_ip>:8004
+VITE_PLATFORM_API_URL=http://<your_lan_ip>:8004
+VITE_INSURER_API_URL=http://<your_lan_ip>:8004
+VITE_CORE_API_URL=http://<your_lan_ip>:8004
 
-# Disruption APIs
-OPENWEATHERMAP_API_KEY=<your_openweathermap_api_key>
-OPENAQ_API_KEY=<your_openaq_api_key>
+# CORS Permissions
+INDEL_ALLOWED_ORIGINS=http://<your_lan_ip>:5176,http://<your_lan_ip>:5175,http://<your_lan_ip>:5173
 
-# Firebase
-FIREBASE_API_KEY=<your_firebase_api_key>
-FIREBASE_PROJECT_ID=<your_project_id>
-FIREBASE_PROJECT_NUMBER=<your_project_number>
-FIREBASE_STORAGE_BUCKET=<your_storage_bucket>
-FIREBASE_APP_ID=<your_app_id>
-FIREBASE_SERVER_KEY=<your_server_key>
+# Roles & Security Configuration
+INDEL_DEMO_RESET_KEY=change-me-demo-reset-key
+INDEL_DEMO_ALLOWED_ROLES=worker,admin,platform_admin,ops_manager
+INDEL_DEMO_DESTRUCTIVE_ROLES=admin,platform_admin
+INDEL_CORE_INTERNAL_ALLOWED_ROLES=worker,admin,platform_admin,ops_manager
+INDEL_PLATFORM_OPERATOR_ALLOWED_ROLES=worker,admin,platform_admin,ops_manager
+INDEL_PLATFORM_WEBHOOK_ALLOWED_ROLES=worker,admin,platform_admin,ops_manager
+INDEL_PLATFORM_WEBHOOK_KEY=change-me-platform-webhook-key
 
-# Kafka
-KAFKA_BROKERS=kafka:9092
-
-# Insurer Dashboard
-VITE_INSURER_API_URL=http://<your_local_ip>:8002
-VITE_CORE_API_URL=http://<your_local_ip>:8000
-
-# Platform Dashboard
-VITE_PLATFORM_API_URL=http://<your_local_ip>:8003
-
-# Razorpay Test Keys
-TEST_KEY_ID=<your_razorpay_test_key_id>
-TEST_KEY_SECRET=<your_razorpay_test_key_secret>
+# Razorpay Test Keys (Required for Live API Execution)
+RAZORPAY_KEY_ID=<your_razorpay_key_id>
+RAZORPAY_KEY_SECRET=<your_razorpay_key_secret>
 ```
 
 Notes:
 
-- On Windows, if port binding errors happen with `HOST_IP=127.0.0.1`, use your machine local IPv4 (example: `192.168.x.x`).
+- If port binding errors happen on Windows with `127.0.0.1`, use your machine's local IPv4 (example: `192.168.x.x`).
+- Do NOT commit your `.env` file to version control.
+
 ---
 
-### 4.1 Payment Integration — Demo Mode (Minimal Setup)
+### 4.1 Payment Integration — Razorpay Setup
 
 > [!NOTE]
-> Razorpay runs in **Mock Mode** by default for backend payouts.
+> The backend executes real asynchronous transfers using the Razorpay API in Test Mode. The Go backend listens to the Kafka topic and triggers the payout automatically.
 
-- All financial transactions are automatically simulated
-- The backend detects missing keys and switches to mock mode seamlessly
-- Payout IDs in dashboards will appear as `rzp_mock_...`
-- Worker wallets update in real time — identical behavior to a live environment
+### Worker App — Secure Key Passing
+We have eliminated hardcoded API keys from the Android application entirely.
+You **do not** need to edit Kotlin files natively.
 
-> [!IMPORTANT]
-> The backend runs fully in Mock Mode and requires no Razorpay credentials.
-> However, the Worker App uses the Razorpay Android SDK for payment UI rendering,
-> which requires a valid test key to load correctly.
-
-### Worker App — One-Time Key Setup
-
-1. Open this file in Android Studio:
-   `worker-app/app/src/main/java/com/imaginai/indel/MainActivity.kt`
-
-2. Find this line (around line 41):
-```kotlin
-   val razorpayKeyId = "rzp_test_REPLACE_WITH_YOUR_KEY"
-```
-
-3. Replace the placeholder with your Razorpay **test** key ID from the [Razorpay Dashboard](https://dashboard.razorpay.com/).
-
-> Only the payment UI rendering requires this key. All actual payout logic and
-> verification runs through the mock backend — no real money is involved.
+1. Ensure you have populated your Root `.env` file with your `RAZORPAY_KEY_ID`.
+2. When you run Gradle Sync in Android Studio for the `worker-app`, the build configuration automatically pulls this `.env` variable securely into `BuildConfig.RAZORPAY_KEY_ID`.
+3. If the app fails to open the Razorpay Checkout, simply confirm your `.env` is populated correctly and Rebuild the app.
 
 ---
 
@@ -225,15 +189,12 @@ npm install
 npm run dev
 ```
 
+> **Mandatory Setup for Evaluator:**
+> Before running, ensure `/platform-dashboard/.env` contains your LAN IP:
+> `VITE_PLATFORM_API_URL=http://<your_lan_ip>:8004`
+
 Expected local URL (Vite):
-
-- http://127.0.0.1:5173 (or next available port shown in terminal)
-
-If required, set API endpoint in `platform-dashboard/.env`:
-
-```env
-VITE_PLATFORM_API_URL=http://127.0.0.1:8003
-```
+- http://127.0.0.1:5173 (or next available port)
 
 ---
 
@@ -247,16 +208,15 @@ npm install
 npm run dev
 ```
 
+> **Mandatory Setup for Evaluator:**
+> Before running, ensure `/insurer-dashboard/.env` matches your LAN IP mapping exactly:
+> `VITE_INSURER_API_URL=http://<your_lan_ip>:8004`
+> `VITE_CORE_API_URL=http://<your_lan_ip>:8004`
+> `VITE_PLATFORM_API_URL=http://<your_lan_ip>:8004`
+> `VITE_ENABLE_API_DEBUG=true`
+
 Expected local URL (Vite):
-
-- http://127.0.0.1:5175 (or next available port shown in terminal)
-
-If required, set API endpoints in `insurer-dashboard/.env`:
-
-```env
-VITE_INSURER_API_URL=http://127.0.0.1:8002
-VITE_CORE_API_URL=http://127.0.0.1:8000
-```
+- http://127.0.0.1:5175 (or next available port)
 
 ---
 
@@ -272,6 +232,11 @@ VITE_CORE_API_URL=http://127.0.0.1:8000
 
 1. Open `worker-app/` in Android Studio.
 2. Wait for Gradle sync to complete.
+
+> **Mandatory Setup for Evaluator:**
+> Before running, ensure `/worker-app/.env` contains your LAN IP targeting the API gateway (Port 8003):
+> `API_BASE_URL=http://<your_lan_ip>:8003/`
+
 3. Select emulator/device.
 4. Run the app.
 
@@ -296,7 +261,7 @@ If app APIs use localhost, replace backend host with your machine LAN IP (same W
 
 > [!IMPORTANT]
 > Nothing happens automatically. A disruption must be manually triggered
-> to activate the full claims → fraud check → payout pipeline.
+> to activate the full claims → fraud check → Kafka payout pipeline.
 
 ### Steps
 
@@ -318,30 +283,37 @@ The system validates the disruption using multi-signal logic:
 
 Once confirmed, the automated pipeline kicks in:
 
-1. Claims are generated
-2. Fraud check runs
-3. Payout is processed via Kafka
+1. Base claims are generated
+2. Behavioral ML checks execute (`IsolationForest` / `DBSCAN`)
+3. `auto_approved` claims publish to Kafka and execute via Razorpay
 4. Worker wallet is updated in real time
 
-You can verify each stage on the **Insurer Dashboard** and in the **Worker App**.
+---
 
-### Bonus: Dynamic Premium Behavior
+### 11.1 Evaluating the 3-Layer Threat Engine (What to Look For)
 
-Trigger disruptions multiple times to observe adaptive risk scoring:
+### 11.1 Evaluating the Threat Engine (How to Test Fraud Scenarios)
 
-- Risk score updates after each disruption
-- Future premiums increase based on zone instability
-- This reflects the ML-driven premium adjustment model in action
-  
+> [!IMPORTANT]
+>The system does NOT rely on pre-seeded mock claims to demonstrate fraud tracking. You must actively simulate the worker behaviors to prove the AI fraud engine intercepts malicious vectors. 
 
-### Verifying the Payout (What to Look For)
+**Before** triggering the disruption (Step 11), simulate these behaviors using the Worker App or Batch Simulator:
+
+1. **The Good Worker (Active & Insured)**: Open the Worker App, **pay the weekly premium via Razorpay**, and then take/complete an order normally. *(Use PIN: `1234` to verify the delivery).*
+   → *Outcome:* After disruption, they show as `Paid` in the Insurer Dashboard. The system verified their active premium status and their legitimate order routing successfully.
+2. **The Fraud Worker (Idle/Ghost)**: Log in, but sit completely idle and take **zero orders** before the disaster strikes.
+   → *Outcome:* After disruption, they are intercepted into `Manual Review` natively. The ML and TTL gate catch the anomaly (e.g., `NO_LIVE_WINDOW_ACTIVITY`).
+3. **The Uninsured/Offline Worker**: Log in but do NOT pay the premium (or remain completely offline).
+   → *Outcome:* Completely ignored by the pipeline. They do not appear in the payout stream or the manual review queue at all, proving the policy gating works.
+
+### 11.2 Verifying the Payout Execution
 
 After the pipeline runs, confirm end-to-end by checking:
 
-1. **Insurer Dashboard** → Claims — the auto-generated claim should show status `Paid`
-2. **Worker App** → Wallet / Payouts — a credit entry with a mock transaction ID (`rzp_mock_...`) will appear
+1. **Insurer Dashboard** → Claims stream — the auto-generated claim should show status `Paid` or `Manual Review`
+2. **Worker App** → Wallet / Payouts — the credit entry will actively appear
 3. **Backend logs** — you should see:
-   - `Razorpay client initialized (Mock Mode: true)`
+   - `Kafka consumer initiating Razorpay transfer...`
    - `Payout processed for worker...`
 
 To check logs:
@@ -396,6 +368,4 @@ Then run:
 
 ---
 
-## 14. Scope Note
-
-This guide is focused on **Phase 2 implementation evaluation**. It prioritizes reproducible local execution and validation over production deployment concerns.
+**Guidewire DEVTrails 2026 — Phase 3 Submission**
