@@ -1,7 +1,3 @@
-Got it — no fictional character story, no generic narrative. Just sharp, punchy, real. Here's your copy-paste README:
-
----
-
 # InDel — Insure, Deliver
 
 > **The rain starts at 11:40 AM. Orders stop. Income collapses. The worker does nothing.**
