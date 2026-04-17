@@ -26,6 +26,9 @@ func main() {
 
 	// Optional DB integration for platform webhooks.
 	cfg := config.Load()
+	if _, err := database.InitRedis(cfg); err != nil {
+		log.Printf("Redis unavailable: %v", err)
+	}
 	db, err := database.InitDB(cfg)
 	if err != nil {
 		log.Printf("Platform Gateway DB unavailable, using fallback mode: %v", err)

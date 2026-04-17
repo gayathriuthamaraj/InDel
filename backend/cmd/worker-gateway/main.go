@@ -26,6 +26,9 @@ func main() {
 
 	// Initialize DB and seed minimal worker demo data if available.
 	cfg := config.Load()
+	if _, err := database.InitRedis(cfg); err != nil {
+		log.Printf("Redis unavailable: %v", err)
+	}
 	db, err := database.InitDB(cfg)
 	if err != nil {
 		log.Printf("Worker Gateway DB unavailable, using in-memory fallback: %v", err)

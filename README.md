@@ -77,8 +77,33 @@ We are already inside the profitable band — before scale.
 | Requirement | InDel Implementation | Status |
 |---|---|---|
 | **Advanced Fraud Detection** | 3-Layer Stacked Threat Engine — IsolationForest + DBSCAN + Postgres Hard Rules across 6 behavioral dimensions | ✅ Fully Implemented |
-| **Instant Payout System** | Kafka + Zookeeper async pipeline → Razorpay UPI, idempotent offsets, 5× exponential retry | ✅ Fully Implemented |
+| **Instant Payout System** | Native KRaft-mode Kafka async pipeline → Razorpay UPI, idempotent offsets, 5× exponential retry | ✅ Fully Implemented |
 | **Intelligent Dashboards** | Worker: multilingual SHAP audit + earnings protection · Insurer: Prophet 7-day reserve analytics + live fraud queue | ✅ Fully Implemented |
+| **Edge-Resilient Mobile App** | Offline-first Android architecture powered by Room databases dynamically synced with secure auth boundaries preventing cross-worker state bleed. | ✅ Fully Implemented |
+
+---
+
+## Increasing Efficiency of Resource Utilization
+
+To evolve from a functional hackathon submission to a heavily resilient, production-ready architecture, we significantly restructured the system footprint based on edge-performance and resource consumption.
+
+### 1. Unified Machine Learning Container (FastAPI / XGBoost / Prophet)
+Instead of deploying three highly disjointed Python microservices (Premium Pricing, Fraud Detection, Forecaster) that natively inflated the infrastructure by artificially multiplying Python interpreter memory overhead—we entirely refactored the ML environment. All inference tools now share a single dense **FastAPI** container (`ml-service`), dropping computational footprint by two-thirds without compromising parallel throughput.
+
+### 2. High-Performance Messaging Protocol (Kafka KRaft Mode)
+Zookeeper acts as a significant memory burden. We've stripped out external Kafka coordination services and fully migrated to **Zookeeper-less KRaft Mode**. Kafka now natively manages partition leadership via quorum, shedding immense JVM latency and permitting the entire orchestration suite to run cleanly on bounded compute.
+
+### 3. Defensive Actuarial Boundaries
+Dynamic Machine Learning struggles intrinsically with "Cold Start" user distributions. Recognizing that new workers generated wild extrapolations from our XGBoost regressor, we introduced a mathematical bounding wrapper layer directly to the inference API. Out-of-bounds calculations instantly clamp to stable base premiums (e.g. ₹49), guaranteeing logical actuarial safety against systemic risks.
+
+### 4. Zero-Contamination Offline-First Sync (Android Room DB)
+Gig delivery platforms share a notorious edge-case: multi-account logins on identical hardware. We hardened the existing offline-first Android interface by systematically purging the underlying encrypted **Room Databases** dynamically on token generation/revocation. Dashboard rendering states are mathematically isolated per-user natively, fully eliminating cross-state ghost profiles.
+
+### Tech Stack Applied
+* **Backend:** FastAPI (Python), REST Unified Orchestration
+* **AI:** XGBoost, `joblib` artifacts
+* **Streaming Ecosystem:** Apache Kafka (KRaft Protocol)
+* **Client Architecture:** Android Kotlin (Room Persistence Library, Flow Architecture)
 
 ---
 
@@ -286,7 +311,7 @@ InDel decouples claim approval from financial execution entirely via **Apache Ka
 | Horizontal scaling | Additional consumer instances spin up during surges, pick up unconsumed partitions automatically |
 | Persistent audit log | Every payout attempt retained — sent, succeeded, retried, failed. Regulatory-grade trail. |
 
-Zookeeper manages broker registration, partition leader election, and offset tracking. Broker restart? New leader elected automatically. No manual intervention. No lost messages.
+**KRaft Mode (Zookeeper-less Integration):** InDel utilizes Kafka's modern KRaft protocol to manage broker registration and partition leader election natively inside Kafka itself. This eradicates the massive JVM overhead previously associated with external coordination services. Broker restarts? The native KRaft controller enforces new leader election automatically via quorum. No manual intervention. No lost messages.
 
 Five thousand workers claiming simultaneously during a citywide curfew: **handled.**
 
@@ -333,15 +358,12 @@ COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.demo.yml up --build -d
 
 | Container | Role | Port |
 |---|---|---|
-| `indel-api` | Go / Gin REST API | — |
-| `postgres` | PostgreSQL, migrations pre-applied | — |
-| `zookeeper` | Kafka coordination & leader election | — |
-| `kafka` | Async payout broker | — |
-| `ml-premium` | XGBoost pricing server | :9001 |
-| `ml-fraud` | IsolationForest + DBSCAN | :9002 |
-| `ml-forecast` | Prophet forecasting | :9003 |
+| `indel-api` | Go / Gin REST API (Worker, Insurer, Platform gateways) | — |
+| `postgres` | PostgreSQL, strict 1.0 CPU/ 1GB limits, migrations pre-applied | :5432 |
+| `kafka` | Native KRaft async payout broker, stripped memory footprint | :9092 |
+| `ml-service` | Unified Python FastAPI (XGBoost Pricing, Fraud, Forecast) | :9000 |
 
-`COMPOSE_PARALLEL_LIMIT=1` enforces startup order — Zookeeper before Kafka, Kafka before API. The demo compose launches **pre-seeded** with workers, zones, and disruption history. No manual setup. No configuration. One command.
+`COMPOSE_PARALLEL_LIMIT=1` enforces startup order logically. The entire environment forces aggressive container limit clamping (`deploy.resources.limits`) meaning massive scalability fits comfortably onto constrained single-server footprints. The demo compose launches **pre-seeded** with workers, zones, and disruption history. No manual setup. No configuration. One command.
 
 ---
 

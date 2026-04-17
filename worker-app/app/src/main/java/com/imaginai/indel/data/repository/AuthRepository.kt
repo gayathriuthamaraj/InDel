@@ -2,6 +2,7 @@ package com.imaginai.indel.data.repository
 
 import com.imaginai.indel.data.api.AuthApiService
 import com.imaginai.indel.data.local.PreferencesDataStore
+import com.imaginai.indel.data.local.dao.WorkerDao
 import com.imaginai.indel.data.model.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -9,7 +10,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val authApiService: AuthApiService,
-    private val preferencesDataStore: PreferencesDataStore
+    private val preferencesDataStore: PreferencesDataStore,
+    private val workerDao: WorkerDao
 ) {
     suspend fun register(
         username: String,
@@ -23,6 +25,7 @@ class AuthRepository @Inject constructor(
     ).also { response ->
         if (response.isSuccessful) {
             response.body()?.let {
+                workerDao.clearProfile()
                 preferencesDataStore.saveAuthToken(it.token)
                 preferencesDataStore.saveWorkerId(it.workerId)
             }
@@ -33,6 +36,7 @@ class AuthRepository @Inject constructor(
         authApiService.login(LoginRequest(phone = identifier, password = password)).also { response ->
             if (response.isSuccessful) {
                 response.body()?.let {
+                    workerDao.clearProfile()
                     preferencesDataStore.saveAuthToken(it.token)
                     preferencesDataStore.saveWorkerId(it.workerId)
                 }
@@ -45,6 +49,7 @@ class AuthRepository @Inject constructor(
         authApiService.verifyOtp(OtpVerifyRequest(phone, otp)).also { response ->
             if (response.isSuccessful) {
                 response.body()?.let {
+                    workerDao.clearProfile()
                     preferencesDataStore.saveAuthToken(it.token)
                     preferencesDataStore.saveWorkerId(it.workerId)
                 }
@@ -60,6 +65,7 @@ class AuthRepository @Inject constructor(
         } catch (e: Exception) {
             // Ignore error to ensure local preferences are still cleared
         }
+        workerDao.clearProfile()
         preferencesDataStore.clearAll()
     }
 }

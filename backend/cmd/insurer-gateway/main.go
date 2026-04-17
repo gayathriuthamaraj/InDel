@@ -27,6 +27,9 @@ func main() {
 
 	// Optional DB wiring for live aggregate metrics.
 	cfg := config.Load()
+	if _, err := database.InitRedis(cfg); err != nil {
+		log.Printf("Redis unavailable: %v", err)
+	}
 	var svc *services.InsurerService
 	db, err := database.InitDB(cfg)
 	if err != nil {

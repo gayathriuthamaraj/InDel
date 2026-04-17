@@ -32,6 +32,7 @@ type Config struct {
 	FraudMLURL             string
 	FraudServiceURL        string
 	ForecastMLURL          string
+	RedisURL               string
 }
 
 func Load() *Config {
@@ -57,5 +58,6 @@ func Load() *Config {
 		FraudMLURL:             os.Getenv("FRAUD_ML_URL"),
 		FraudServiceURL:        os.Getenv("FRAUD_SERVICE_URL"),
 		ForecastMLURL:          os.Getenv("FORECAST_ML_URL"),
+		RedisURL:               envOrDefault("REDIS_URL", "localhost:6379"),
 	}
 }

@@ -4,11 +4,14 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from prophet_model import ProphetForecaster
+try:
+    from prophet_model import ProphetForecaster
+except ImportError:
+    from forecast.prophet_model import ProphetForecaster
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("forecast-ml")
@@ -79,30 +82,7 @@ def train_all_zones():
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    log.info("Starting forecast-ml — training Prophet models...")
-    train_all_zones()
-    log.info("All zone models ready.")
-    yield
-
-
-app = FastAPI(
-    title="InDel Forecast Service",
-    description=(
-        "Facebook Prophet-based disruption probability forecasting. "
-        "Reserve planning only — not individual claim decisioning."
-    ),
-    version="2.0.0",
-    lifespan=lifespan,
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter()
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -128,8 +108,8 @@ class ForecastResponse(BaseModel):
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
-@app.get("/health")
-def health():
+@router.get("/forecast/health")
+def health_forecast():
     return {
         "status": "ok",
         "service": "forecast-ml",
@@ -139,13 +119,13 @@ def health():
     }
 
 
-@app.get("/model-info")
+@router.get("/forecast/model-info")
 def model_info():
     """Explicit model metadata: scope, limitations, retraining cadence, upgrade path."""
     return MODEL_INFO
 
 
-@app.get("/zones")
+@router.get("/forecast/zones")
 def available_zones():
     """Lists zones with per-zone model status."""
     return {
@@ -158,7 +138,7 @@ def available_zones():
     }
 
 
-@app.post("/forecast", response_model=ForecastResponse)
+@router.post("/forecast", response_model=ForecastResponse)
 def generate_forecast(request: ForecastRequest):
     """
     Returns a 7-day disruption probability forecast for the given zone.

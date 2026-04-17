@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import { getMoneyExchange, getOverview, getPoolHealth } from '../api/insurer'
 import { PageShell, Panel, StatCard } from './OperationsShared'
@@ -59,29 +60,28 @@ const portfolioTrend = [
 
 export default function Overview() {
   const { t } = useLocalization()
-  const [overview, setOverview] = useState<OverviewData | null>(null)
-  const [pool, setPool] = useState<PoolHealth | null>(null)
-  const [moneyExchange, setMoneyExchange] = useState<MoneyExchangeSummary | null>(null)
   const [levelFilter, setLevelFilter] = useState('ALL')
   const [zoneFilter, setZoneFilter] = useState('')
   const [refreshTick, setRefreshTick] = useState(0)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const params = {
-      level: levelFilter === 'ALL' ? '' : levelFilter,
-      zone: zoneFilter.trim(),
-    }
+  const params = {
+    level: levelFilter === 'ALL' ? '' : levelFilter,
+    zone: zoneFilter.trim(),
+  }
 
-    Promise.all([getOverview(), getPoolHealth(), getMoneyExchange(params)])
-      .then(([overviewData, poolHealth, moneyExchangeData]) => {
-        setOverview(overviewData)
-        setPool(poolHealth)
-        setMoneyExchange(moneyExchangeData)
-        setError(null)
-      })
-      .catch((err) => setError(err?.message ?? 'Failed to load overview'))
-  }, [levelFilter, zoneFilter, refreshTick])
+  const { data: overview, error: overviewErr, refetch: refetchOverview } = useQuery<OverviewData>({ queryKey: ['overview'], queryFn: getOverview })
+  const { data: pool, error: poolErr, refetch: refetchPool } = useQuery<PoolHealth>({ queryKey: ['poolHealth'], queryFn: getPoolHealth })
+  const { data: moneyExchange, error: mxErr, refetch: refetchMx } = useQuery<MoneyExchangeSummary>({ queryKey: ['moneyExchange', params], queryFn: () => getMoneyExchange(params) })
+
+  const handleRefresh =() => {
+    refetchOverview()
+    refetchPool()
+    refetchMx()
+    setRefreshTick((v) => v + 1)
+  }
+
+  const errorObj = overviewErr || poolErr || mxErr
+  const error = errorObj ? (errorObj as Error).message : null
 
   const claimsDistribution = [
     { name: t('pages.overview.pending'), value: overview?.pending_claims ?? 0, color: '#f97316' },
@@ -131,7 +131,7 @@ export default function Overview() {
           <div className="flex items-end">
             <button
               type="button"
-              onClick={() => setRefreshTick((value) => value + 1)}
+              onClick={handleRefresh}
               className="rounded bg-slate-900 px-4 py-2 text-xs font-black uppercase tracking-widest text-white"
             >
               {t('pages.overview.refresh')}

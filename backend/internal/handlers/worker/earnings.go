@@ -21,7 +21,7 @@ func GetEarnings(c *gin.Context) {
 				TotalEarnings float64 `gorm:"column:total_earnings"`
 			}
 			rows := make([]historyRow, 0)
-			_ = workerDB.Raw("SELECT week_start::text, total_earnings FROM weekly_earnings_summary WHERE worker_id = ? ORDER BY week_end DESC LIMIT 4", workerIDUint).Scan(&rows).Error
+			_ = workerDB.Raw("SELECT CAST(week_start AS TEXT) as week_start, total_earnings FROM weekly_earnings_summary WHERE worker_id = ? ORDER BY week_end DESC LIMIT 4", workerIDUint).Scan(&rows).Error
 
 			history := make([]gin.H, 0, len(rows))
 			for _, row := range rows {
@@ -82,7 +82,7 @@ func GetEarningsHistory(c *gin.Context) {
 				TotalEarnings float64 `gorm:"column:total_earnings"`
 			}
 			rows := make([]row, 0)
-			_ = workerDB.Raw("SELECT week_start::text, total_earnings FROM weekly_earnings_summary WHERE worker_id = ? ORDER BY week_end DESC LIMIT 12", workerIDUint).Scan(&rows).Error
+			_ = workerDB.Raw("SELECT CAST(week_start AS TEXT) as week_start, total_earnings FROM weekly_earnings_summary WHERE worker_id = ? ORDER BY week_end DESC LIMIT 12", workerIDUint).Scan(&rows).Error
 
 			history := make([]gin.H, 0, len(rows))
 			for _, r := range rows {

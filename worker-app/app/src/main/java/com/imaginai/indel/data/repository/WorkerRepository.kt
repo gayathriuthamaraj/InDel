@@ -2,16 +2,24 @@ package com.imaginai.indel.data.repository
 
 import com.imaginai.indel.data.api.WorkerApiService
 import com.imaginai.indel.data.api.PlatformApiService
+import com.imaginai.indel.data.local.dao.WorkerDao
+import com.imaginai.indel.data.local.entity.WorkerEntity
 import com.imaginai.indel.data.model.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class WorkerRepository @Inject constructor(
     private val workerApiService: WorkerApiService,
-    private val platformApiService: PlatformApiService
+    private val platformApiService: PlatformApiService,
+    private val workerDao: WorkerDao
 ) {
-    // Profile
+    // Local Offline Profile Flow
+    fun getProfileFlow(): Flow<WorkerProfile?> {
+        return workerDao.getWorkerProfileFlow().map { it.firstOrNull()?.toNetworkModel() }
+    }
     suspend fun onboard(
         name: String,
         zoneLevel: String? = null,
@@ -38,7 +46,19 @@ class WorkerRepository @Inject constructor(
         )
     )
 
-    suspend fun getProfile() = workerApiService.getProfile()
+    suspend fun getProfile(): retrofit2.Response<WorkerProfileResponse> {
+        val response = workerApiService.getProfile()
+        if (response.isSuccessful) {
+            response.body()?.worker?.let { worker ->
+                workerDao.insertWorkerProfile(WorkerEntity.fromNetworkModel(worker))
+            }
+        }
+        return response
+    }
+
+    suspend fun clearLocalProfile() {
+        workerDao.clearProfile()
+    }
 
     suspend fun updateOnlineStatus(online: Boolean) =
         workerApiService.updateOnlineStatus(OnlineStatusRequest(online))

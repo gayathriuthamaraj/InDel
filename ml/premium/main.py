@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import pandas as pd
@@ -14,21 +14,12 @@ try:
     from shap_explainer import SHAPExplainer
 except ImportError:
     # Handle the case where the script is run from a different directory
-    from ml.premium.model import PremiumModel
-    from ml.premium.shap_explainer import SHAPExplainer
+    from premium.model import PremiumModel
+    from premium.shap_explainer import SHAPExplainer
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="InDel Premium Prediction Service - V1")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter()
 
 # --- Schemas ---
 
@@ -95,17 +86,15 @@ def load_model_instance():
     else:
         print(f"Warning: Model artifacts not found at {MODEL_PATH}. Prediction endpoints will fail.")
 
-@app.on_event("startup")
-def startup_event():
-    load_model_instance()
+# Startup handled in root
 
 # --- Endpoints ---
 
-@app.get("/health")
-def health():
+@router.get("/premium/health")
+def health_premium():
     return {"status": "ok", "service": "premium-ml", "model_loaded": model is not None}
 
-@app.post("/ml/v1/premium/calculate", response_model=PremiumResponse)
+@router.post("/ml/v1/premium/calculate", response_model=PremiumResponse)
 def calculate_premium(request: PremiumRequest):
     if model is None:
         # Try to reload
@@ -122,9 +111,13 @@ def calculate_premium(request: PremiumRequest):
     # Explain
     explainability = explainer.explain(df)[0]
     
+    # Enforce actuarial floor/ceiling (e.g., Rs. 49 base minimum for new out-of-distribution workers)
+    final_premium = round(float(premium[0]), 2)
+    final_premium = max(49.0, min(250.0, final_premium))
+    
     response_data = PremiumData(
         worker_id=request.worker_id,
-        premium_inr=round(float(premium[0]), 2),
+        premium_inr=final_premium,
         risk_score=round(float(risk[0]), 3),
         explainability=explainability,
         model_version=MODEL_VERSION
@@ -138,7 +131,7 @@ def calculate_premium(request: PremiumRequest):
         )
     )
 
-@app.post("/ml/v1/premium/batch-calculate", response_model=BatchPremiumResponse)
+@router.post("/ml/v1/premium/batch-calculate", response_model=BatchPremiumResponse)
 def batch_calculate_premium(requests: List[PremiumRequest]):
     if model is None:
         load_model_instance()
@@ -156,9 +149,12 @@ def batch_calculate_premium(requests: List[PremiumRequest]):
     
     results = []
     for i, request in enumerate(requests):
+        final_premium = round(float(premiums[i]), 2)
+        final_premium = max(49.0, min(250.0, final_premium))
+        
         results.append(PremiumData(
             worker_id=request.worker_id,
-            premium_inr=round(float(premiums[i]), 2),
+            premium_inr=final_premium,
             risk_score=round(float(risks[i]), 3),
             explainability=all_explainability[i],
             model_version=MODEL_VERSION
