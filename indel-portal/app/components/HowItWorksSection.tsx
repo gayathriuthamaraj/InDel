@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion";
 const steps = [
   {
     id: 1,
-    icon: "🌧️",
+      icon: "",
     title: "Environmental Signal",
     detail: "OpenWeatherMap / AQI / zone closure fires a structured webhook event into the InDel disruption pipeline.",
     tag: "External Trigger",
@@ -12,7 +12,7 @@ const steps = [
   },
   {
     id: 2,
-    icon: "📉",
+      icon: "",
     title: "Order Velocity Collapse",
     detail: "Zone order volume drops >30% versus the 4-week sliding baseline — confirmed by InDel's own telemetry, not platform data.",
     tag: "Internal Signal",
@@ -20,7 +20,7 @@ const steps = [
   },
   {
     id: 3,
-    icon: "🔒",
+      icon: "",
     title: "Multi-Signal Lock",
     detail: "Both signals must align within a time-lag window. Rain with no delivery impact? Nothing fires. Order drop under clear skies? Nothing fires.",
     tag: "Dual-Lock Validation",
@@ -28,7 +28,7 @@ const steps = [
   },
   {
     id: 4,
-    icon: "🛡️",
+      icon: "",
     title: "TTL Eligibility Scan",
     detail: "Each worker's lastActiveAt timestamp is checked against a hardcoded 15-minute backward window. Ghost logins stripped automatically.",
     tag: "Anti-Fraud Gate",
@@ -36,7 +36,7 @@ const steps = [
   },
   {
     id: 5,
-    icon: "🤖",
+      icon: "",
     title: "3-Layer Fraud Check",
     detail: "IsolationForest anomaly scoring → DBSCAN spatial cluster check → Postgres hard rules. Low-risk: instant. High-risk: manual queue with full violations JSON.",
     tag: "ML Fraud Engine",
@@ -44,7 +44,7 @@ const steps = [
   },
   {
     id: 6,
-    icon: "💸",
+      icon: "",
     title: "Kafka → Razorpay → UPI",
     detail: "Approved claim queued as a Kafka event. 5× exponential retry. Idempotency key prevents duplicates. Worker receives money — same day.",
     tag: "Instant Payout",

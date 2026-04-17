@@ -15,7 +15,7 @@ export default function DemoSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <span className="section-tag">🎬 Product Demo</span>
+          <span className="section-tag">Product Demo</span>
         </motion.div>
 
         <motion.h2
@@ -47,7 +47,7 @@ export default function DemoSection() {
           style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}
         >
           <iframe
-            src="https://www.youtube.com/embed/R1_1X-f7-MM"
+            src={import.meta.env.VITE_YOUTUBE_DEMO_URL}
             title="InDel Demo — 2 Minute Walkthrough"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -64,9 +64,9 @@ export default function DemoSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           {[
-            { label: "Platform Dashboard", link: "https://indel-platform-dashboard.onrender.com", icon: "🗺️", desc: "Live zone telemetry & Chaos Engine" },
-            { label: "Insurer Dashboard", link: "https://indel-urn9.onrender.com", icon: "📊", desc: "Loss ratio, fraud queue & Prophet forecast" },
-            { label: "GitHub Repository", link: "https://github.com/Shravanthi20/InDel", icon: "⚙️", desc: "Full source code & setup guide" },
+            { label: "Platform Dashboard", link: import.meta.env.VITE_PLATFORM_DASHBOARD_URL, desc: "Live zone telemetry & Chaos Engine" },
+            { label: "Insurer Dashboard", link: import.meta.env.VITE_INSURER_DASHBOARD_URL, desc: "Loss ratio, fraud queue & Prophet forecast" },
+            { label: "GitHub Repository", link: import.meta.env.VITE_GITHUB_REPO_URL, desc: "Full source code & setup guide" },
           ].map((item, i) => (
             <a
               key={i}
@@ -75,7 +75,7 @@ export default function DemoSection() {
               rel="noopener noreferrer"
               className="glass-dark rounded-xl p-5 flex flex-col gap-2 card-hover group"
             >
-              <span className="text-2xl">{item.icon}</span>
+              {/* <span className="text-2xl">{item.icon}</span> */}
               <span className="font-semibold text-white text-sm group-hover:text-primary-light transition-colors">{item.label} →</span>
               <span className="text-white/40 text-xs">{item.desc}</span>
             </a>

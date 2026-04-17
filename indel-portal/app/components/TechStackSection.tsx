@@ -1,5 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
+import {
+  IconPhone, IconWeather, IconChaos, IconLightning, IconSearch, IconTimer, IconDatabase, IconChart, IconLab, IconCrystalBall, IconMail, IconLink, IconMoney
+} from "./TechIcons";
 
 const layers = [
   {
@@ -7,9 +10,9 @@ const layers = [
     color: "border-blue-200 bg-blue-50",
     labelColor: "text-blue-600",
     nodes: [
-      { name: "Worker Mobile Telemetry", icon: "📱" },
-      { name: "Environmental Webhooks\n(IMD / AQI / OpenWeatherMap)", icon: "🌤️" },
-      { name: "Chaos Engine\n(Telemetry Simulator)", icon: "🌀" },
+      { name: "Worker Mobile Telemetry", icon: <IconPhone /> },
+      { name: "Environmental Webhooks\n(IMD / AQI / OpenWeatherMap)", icon: <IconWeather /> },
+      { name: "Chaos Engine\n(Telemetry Simulator)", icon: <IconChaos /> },
     ],
   },
   {
@@ -17,10 +20,10 @@ const layers = [
     color: "border-primary/30 bg-primary-light/40",
     labelColor: "text-primary-dark",
     nodes: [
-      { name: "Gin REST Handlers & Routing", icon: "⚡" },
-      { name: "Disruption Engine\n(Multi-Signal Validation)", icon: "🔍" },
-      { name: "TTL Security Gate\n(15-min Window)", icon: "⏱️" },
-      { name: "PostgreSQL\n(Primary Store)", icon: "🗄️" },
+      { name: "Gin REST Handlers & Routing", icon: <IconLightning /> },
+      { name: "Disruption Engine\n(Multi-Signal Validation)", icon: <IconSearch /> },
+      { name: "TTL Security Gate\n(15-min Window)", icon: <IconTimer /> },
+      { name: "PostgreSQL\n(Primary Store)", icon: <IconDatabase /> },
     ],
   },
   {
@@ -28,9 +31,9 @@ const layers = [
     color: "border-purple-200 bg-purple-50",
     labelColor: "text-purple-700",
     nodes: [
-      { name: "ml-premium\nXGBoost + SHAP :9001", icon: "📊" },
-      { name: "ml-fraud\nIsolationForest + DBSCAN :9002", icon: "🔬" },
-      { name: "ml-forecast\nProphet Forecasting :9003", icon: "🔮" },
+      { name: "ml-premium\nXGBoost + SHAP :9001", icon: <IconChart /> },
+      { name: "ml-fraud\nIsolationForest + DBSCAN :9002", icon: <IconLab /> },
+      { name: "ml-forecast\nProphet Forecasting :9003", icon: <IconCrystalBall /> },
     ],
   },
   {
@@ -38,9 +41,9 @@ const layers = [
     color: "border-green-200 bg-green-50",
     labelColor: "text-green-700",
     nodes: [
-      { name: "Kafka Async\nPayout Engine", icon: "📨" },
-      { name: "Zookeeper\nCoordination", icon: "🔗" },
-      { name: "Razorpay\nUPI Payout Rails", icon: "💸" },
+      { name: "Kafka Async\nPayout Engine", icon: <IconMail /> },
+      { name: "Zookeeper\nCoordination", icon: <IconLink /> },
+      { name: "Razorpay\nUPI Payout Rails", icon: <IconMoney /> },
     ],
   },
 ];

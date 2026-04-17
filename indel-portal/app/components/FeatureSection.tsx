@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { IconChaos, IconLab, IconGlobe, IconTimer } from "./AllSectionIcons";
 
 const features = [
   {
     id: "chaos",
-    icon: "🌀",
+    icon: <IconChaos />,
     badge: "Built for Demo",
     badgeColor: "bg-purple-100 text-purple-700",
     title: "Chaos Engine",
@@ -20,7 +21,7 @@ const features = [
   },
   {
     id: "fraud",
-    icon: "🔬",
+    icon: <IconLab />,
     badge: "ML-Powered",
     badgeColor: "bg-orange-100 text-orange-700",
     title: "3-Layer Fraud Engine",
@@ -36,7 +37,7 @@ const features = [
   },
   {
     id: "shap",
-    icon: "🌐",
+    icon: <IconGlobe />,
     badge: "Multilingual",
     badgeColor: "bg-blue-100 text-blue-700",
     title: "SHAP Explainability",
@@ -61,7 +62,7 @@ const features = [
   },
   {
     id: "ttl",
-    icon: "⏱️",
+    icon: <IconTimer />,
     badge: "Anti-Ghost Login",
     badgeColor: "bg-red-100 text-red-700",
     title: "TTL Security Gate",

@@ -1,24 +1,25 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { IconSpark, IconStatWorker, IconStatChart, IconStatBan } from "./AllSectionIcons";
 
 const problems = [
   {
     stat: "15M+",
     label: "Gig delivery workers in India",
     detail: "Every rupee earned depends on one thing: completing orders. One event wipes it out.",
-    icon: "👷",
+    icon: <IconStatWorker />,
   },
   {
     stat: "20–30%",
     label: "Monthly income lost per disruption",
     detail: "Floods. Hazardous AQI. Curfews. Zone closures. When any of these hit — income collapses.",
-    icon: "📉",
+    icon: <IconStatChart />,
   },
   {
     stat: "₹0",
     label: "Insurance products that cover this",
     detail: "Traditional insurance covers accidents and vehicles. Nothing covers lost earnings from disruption.",
-    icon: "🚫",
+    icon: <IconStatBan />,
   },
 ];
 
@@ -56,7 +57,7 @@ export default function ProblemSection() {
           transition={{ duration: 0.5 }}
         >
           <span className="section-tag bg-error/15 text-red-300 border border-error/20">
-            ⚡ The Problem Nobody Has Solved
+            <IconSpark /> The Problem Nobody Has Solved
           </span>
         </motion.div>
 
@@ -121,7 +122,7 @@ export default function ProblemSection() {
             <div className="absolute left-2.5 top-2 bottom-2 w-px bg-white/10" />
             {failurePoints.map((point, i) => (
               <div key={i} className="relative mb-6 last:mb-0 flex items-start gap-4">
-                <div className="absolute -left-6 + left-0 flex-shrink-0 w-5 h-5 rounded-full bg-error/20 border border-error/40 flex items-center justify-center text-red-400 text-xs font-bold mt-0.5">
+                <div className="absolute -left-6 flex-shrink-0 w-5 h-5 rounded-full bg-error/20 border border-error/40 flex items-center justify-center text-red-400 text-xs font-bold mt-0.5">
                   {i + 1}
                 </div>
                 <p className="text-white/60 text-sm leading-relaxed pl-8">{point}</p>

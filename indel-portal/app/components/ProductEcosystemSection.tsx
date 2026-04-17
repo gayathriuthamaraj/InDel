@@ -1,9 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { IconPhone, IconMap, IconChart, IconPuzzle } from "./AllSectionIcons";
 
 const products = [
   {
-    icon: "📱",
+    icon: <IconPhone />,
     title: "Worker App",
     subtitle: "For delivery partners",
     description: "Native Android app. Everything on one screen — no hunting through menus.",
@@ -24,7 +25,7 @@ const products = [
     highlightColor: "border-green-200",
   },
   {
-    icon: "🗺️",
+    icon: <IconMap />,
     title: "Platform Dashboard",
     subtitle: "For operators & platform admins",
     description: "Real-time zone telemetry and the Chaos Engine — simulate disruptions without waiting for actual events.",
@@ -44,7 +45,7 @@ const products = [
     highlightColor: "border-blue-200",
   },
   {
-    icon: "📊",
+    icon: <IconChart />,
     title: "Insurer Dashboard",
     subtitle: "For insurance providers",
     description: "Every number an actuary needs — live. Reserve planning, fraud queue, and 7-day Prophet disruption forecast.",
@@ -90,7 +91,7 @@ export default function ProductEcosystemSection() {
           transition={{ duration: 0.5 }}
         >
           <span className="section-tag bg-primary/10 text-primary border border-primary/20">
-            🧩 Product Ecosystem
+            <IconPuzzle /> Product Ecosystem
           </span>
         </motion.div>
 

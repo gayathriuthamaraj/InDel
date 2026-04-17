@@ -5,40 +5,40 @@ const team = [
   {
     name: "Shravanthi S",
     built: "Core Policy Logic · Disruption Sync Cycle · Payout & Data Operations",
-    emoji: "👩‍💻",
+      // emoji: "👩‍💻",
     color: "bg-pink-50 border-pink-100",
   },
   {
     name: "Gayathri U",
     built: "Delivery Management · Postgres Schema · DevOps & Docker Compositions",
-    emoji: "👩‍🔧",
+      // emoji: "👩‍🔧",
     color: "bg-blue-50 border-blue-100",
   },
   {
     name: "Rithanya K A",
     built: "Python FastAPI ML Services — XGBoost Training & Inference",
-    emoji: "👩‍🔬",
+      // emoji: "👩‍🔬",
     color: "bg-purple-50 border-purple-100",
   },
   {
     name: "Saravana Priyaa C R",
     built: "Platform Integration · Chaos Engine · Disruption Engine",
-    emoji: "👩‍🚀",
+      // emoji: "👩‍🚀",
     color: "bg-orange-50 border-orange-100",
   },
   {
     name: "Subikha MV",
     built: "Insurer System · Claims Intelligence & Overall System Design",
-    emoji: "👩‍⚖️",
+      // emoji: "👩‍⚖️",
     color: "bg-green-50 border-green-100",
   },
 ];
 
 const visionItems = [
-  { icon: "🌏", title: "10 cities by Q3", detail: "Expand to Bangalore, Delhi, Mumbai with localized zone data" },
-  { icon: "🤝", title: "Multi-insurer API", detail: "White-label B2B deployment — any IRDAI-registered insurer can deploy InDel" },
-  { icon: "🚀", title: "iOS Worker App", detail: "Kotlin Multiplatform → native iOS support for broader reach" },
-  { icon: "🧠", title: "gRPC ML Pipeline", detail: "Replace REST with gRPC for Go ↔ Python ML at production latencies" },
+  { icon: "", title: "10 cities by Q3", detail: "Expand to Bangalore, Delhi, Mumbai with localized zone data" },
+  { icon: "", title: "Multi-insurer API", detail: "White-label B2B deployment — any IRDAI-registered insurer can deploy InDel" },
+  { icon: "", title: "iOS Worker App", detail: "Kotlin Multiplatform → native iOS support for broader reach" },
+  { icon: "", title: "gRPC ML Pipeline", detail: "Replace REST with gRPC for Go ↔ Python ML at production latencies" },
 ];
 
 export default function TeamSection() {

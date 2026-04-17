@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import { IconChart } from "./AllSectionIcons";
 
 const zones = [
   {
@@ -73,7 +74,7 @@ export default function PricingIntelSection() {
           transition={{ duration: 0.5 }}
         >
           <span className="section-tag bg-primary/10 text-primary border border-primary/20">
-            📊 Dynamic Pricing Intelligence
+            <IconChart /> Dynamic Pricing Intelligence
           </span>
         </motion.div>
 
