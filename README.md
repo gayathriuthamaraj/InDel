@@ -1,23 +1,19 @@
 # InDel — Insure, Deliver
 
-> **When the rain falls, the orders stop. Workers lose income. Nothing protects them.**
-> InDel changes that — parametric income insurance, zero-touch and automated, built for India's gig economy.
+> **The rain starts at 11:40 AM. Orders stop. Income collapses. The worker does nothing.**
+> **At 5:30 PM, ₹527 hits their UPI. No form. No call. No claim. Just money.**
 
 <p align="center">
   <img src="https://img.shields.io/badge/Hackathon-Guidewire%20DEVTrails%202026-orange?style=flat-square" />
-  <img src="https://img.shields.io/badge/Persona-E--Commerce-blue?style=flat-square" />
-  <img src="https://img.shields.io/badge/Phase-2%20%E2%80%94%20Automation%20%26%20Protection-green?style=flat-square" />
+  <img src="https://img.shields.io/badge/Persona-E--Commerce%20Delivery-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/Phase-3%20%E2%80%94%20Scale%20%26%20Optimize-green?style=flat-square" />
   <img src="https://img.shields.io/badge/Stack-Go%20%7C%20React%20%7C%20Kafka%20%7C%20Docker-lightgrey?style=flat-square" />
   <img src="https://img.shields.io/badge/ML-XGBoost%20%7C%20SHAP%20%7C%20Prophet-purple?style=flat-square" />
 </p>
 
----
-
-## Get Started in Minutes
-
 <p align="center">
   <a href="https://www.youtube.com/watch?v=R1_1X-f7-MM">
-    <img src="https://img.shields.io/badge/🎥%20Quick%20Demo-2%20Min%20Walkthrough-red?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/🎥%20Demo-2%20Min%20Walkthrough-red?style=for-the-badge" />
   </a>
   &nbsp;&nbsp;
   <a href="./SETUP.md">
@@ -27,139 +23,227 @@
 
 ---
 
-## The Problem
+## The Problem Nobody Has Solved
 
-India has **15+ million gig delivery workers**. Their income is entirely contingent on completing orders. When a flood hits, when AQI crosses hazardous, when a curfew drops — deliveries stop. Income collapses. There is no fallback.
+India has **15+ million gig delivery workers**. Every rupee they earn depends on one thing: completing orders.
 
-Workers lose **20–30% of monthly income** during disruption events. Not a single insurance product on the market covers this.
+Floods. Hazardous AQI. Curfews. Zone closures. When any of these hit — deliveries stop, income collapses, and there is **zero fallback**. Workers lose **20–30% of monthly income** during disruption events.
 
-Traditional insurance covers accidents and vehicles. Existing parametric attempts need delivery platforms to share worker data — and those platforms have no incentive to. The result: unverifiable claims, weak fraud detection, no product that works at scale.
+Traditional insurance covers accidents and vehicles. Existing parametric attempts require delivery platforms to share worker data — platforms that have zero incentive to cooperate. The result is unverifiable claims, rampant fraud, and no product that works at scale.
 
-**InDel doesn't ask for that data. It owns it.**
+**The market gap is real. The workers are real. InDel is the answer.**
 
 ---
 
-## The InDel Approach
+## What Makes InDel Different
 
-InDel is a **B2B parametric income insurance platform** — built for insurance providers who want to reach an underserved, high-volume worker segment without building the data infrastructure themselves.
+Every other parametric system asks: *"Was the worker inside the disrupted zone?"*
+GPS is trivially spoofed. That question is the wrong one.
+
+**InDel asks: did this worker's economic reality collapse?**
 
 ```
 ❌ Old way:
-Insurer → requests data from Amzon/Flipkart → access denied → weak verification → fraud
+Insurer → requests data from Amazon / Flipkart
+→ access denied → weak verification → fraud → no product
 
 ✅ InDel way:
 Insurer deploys InDel → integrates with delivery platform via API
-→ delivery + insurance share one first-party data layer
-→ accurate verification → automated payouts → zero manual claims
+→ first-party data layer owned by InDel
+→ verified disruption → automated payout → zero manual claims
 ```
 
-The insurer gets a ready-to-deploy infrastructure. The worker gets protection that runs silently in the background. **They never file a claim. It just arrives.**
-
-> Numbers that matter — 1,000 workers, Chennai, one month:
-> **₹68,000** premiums collected · **₹44,000** payouts · **35% gross margin** · **~65% loss ratio** (industry benchmark: 70–85%)
+The insurer gets ready-to-deploy infrastructure. The worker gets protection that runs silently in the background. **They never file a claim. It just arrives.**
 
 ---
 
-## How the System Works
+## Numbers That Matter
+
+> **Pilot simulation — 1,000 workers, Chennai, one month**
+
+| Metric | Value |
+|---|---|
+| Premiums collected | ₹68,000 |
+| Payouts disbursed | ₹44,000 |
+| Gross margin | **35%** |
+| Loss ratio | **~65%** *(industry benchmark: 70–85%)* |
+
+We are already inside the profitable band — before scale.
+
+---
+
+## Phase 3 Deliverables — Every Box Checked
+
+| Requirement | InDel Implementation | Status |
+|---|---|---|
+| **Advanced Fraud Detection** | 3-Layer Stacked Threat Engine — IsolationForest + DBSCAN + Postgres Hard Rules across 6 behavioral dimensions | ✅ Fully Implemented |
+| **Instant Payout System** | Kafka + Zookeeper async pipeline → Razorpay UPI, idempotent offsets, 5× exponential retry | ✅ Fully Implemented |
+| **Intelligent Dashboards** | Worker: multilingual SHAP audit + earnings protection · Insurer: Prophet 7-day reserve analytics + live fraud queue | ✅ Fully Implemented |
+
+---
+
+## The Core Insight: Verify Economic Reality, Not GPS
+
+Five signals run simultaneously. **One signal is never enough.**
+
+| Trigger | Source | Fires When |
+|---|---|---|
+| `WEATHER_ALERT` | OpenWeatherMap | Rainfall / flood / extreme heat threshold crossed |
+| `AQI_ALERT` | OpenAQ / WAQI | Pollution exceeds hazardous levels |
+| `ORDER_DROP_DETECTED` | InDel internal telemetry | Zone order volume drops >30% vs sliding baseline |
+| `ZONE_CLOSURE_ALERT` | Traffic API / Govt alerts | Curfew, strike, or zone restriction detected |
+| `WORKER_ACTIVITY_UPDATE` | InDel platform | Login, acceptance, and completion pattern anomaly |
+
+A disruption is confirmed **only** when an external environmental signal and an internal order volume collapse align simultaneously — with a time-lag window that accounts for the real-world delay between rainfall starting and orders actually stopping.
+
+A heatwave with no delivery impact? Triggers nothing. An order slump under clear skies? Triggers nothing. InDel verifies **economic reality** — not atmospheric conditions.
+
+---
+
+## System Architecture
 
 ```mermaid
 graph TD
-    subgraph "External Layers"
-        WA[Worker Mobile App]
-        ES[External Signals — Weather / AQI]
+    subgraph "External Integration Layers"
+        WA[Worker Mobile Telemetry]
+        ES[Environmental Webhooks — IMD / AQI / OpenWeatherMap]
+        CE[Chaos Engine — Telemetry Simulator]
     end
 
-    subgraph "InDel Core"
-        API[Gin REST API]
-        DE[Disruption Engine]
-        CO[Core Ops Service]
-        DB[(PostgreSQL)]
+    subgraph "InDel Core — Golang / GORM"
+        API[Gin REST Handlers & Routing]
+        DE[Disruption Engine — Multi-Signal Validation]
+        CO[Core Ops Service — 15-min TTL Security Gate]
+        DB[(PostgreSQL Primary Store)]
     end
 
-    subgraph "Management"
-        PD[Platform Dashboard]
-        ID[Insurer Dashboard]
+    subgraph "Intelligence Layer"
+        ML1[ml-premium — XGBoost Pricing :9001]
+        ML2[ml-fraud — IsolationForest + DBSCAN :9002]
+        ML3[ml-forecast — Prophet Forecasting :9003]
     end
 
-    WA <-->|Real-time Tracking| API
-    ES -->|Event Ingestion| API
+    subgraph "Execution Layer"
+        ID[Insurer Review Dashboard]
+        PD[Platform Dashboard — Zone Telemetry]
+        KF[Kafka Async Payout Engine + Zookeeper]
+        RP[Razorpay UPI Payout Rails]
+    end
+
+    WA <-->|Heartbeat Tracking| API
+    ES -->|Event Pushes| API
+    CE -->|Simulated Signals| API
     API <--> DB
     DE <--> DB
     CO <--> DB
-    PD <-->|Simulation / Telemetry| API
-    ID <-->|Risk Management| API
-```
-
-From signal to payout — entirely automated:
-
-```mermaid
-sequenceDiagram
-    participant C as Chaos Engine
-    participant B as Disruption Engine
-    participant W as Worker Telemetry
-    participant G as Claim Generator
-    participant P as Payout Processor
-
-    C->>B: Inject Signal (e.g., Heavy Rain)
-    B->>B: Monitor Zone Baseline vs Actuals
-    W->>B: Report Drop in Order Volume
-    Note over B: Multi-Signal Validation
-    B->>B: Confirm Disruption Event
-    B->>G: Trigger Claim Scoping
-    G->>G: Identify Eligible Workers
-    G->>G: Calculate Income Loss
-    G->>B: Save Approved Claims
-    B->>P: Queue Asynchronous Payouts
-    P->>P: Process via Kafka → Razorpay / UPI
+    DE -->|Verified Event| KF
+    DB --> ID
+    DB --> PD
+    API <--> ML1
+    API <--> ML2
+    API <--> ML3
+    KF -->|Idempotent Transfer| RP
 ```
 
 ---
 
-## Worker Onboarding & Policy Management
+## Zero-Touch Claim Flow — Workers Do Nothing
 
-Workers register once. Coverage runs forever in the background — no renewals, no forms, no calls.
+```
+Environmental signal received — weather / AQI / curfew
+        ↓
+Order velocity collapse confirmed — >30% drop vs 4-week baseline
+        ↓
+Multi-signal lock engaged — both must align within time-lag window
+        ↓
+Zone scan — active policy + TTL heartbeat check + acceptance rate threshold
+        ↓
+Income loss computed automatically
+  Baseline  =  4-week average hourly earnings (InDel first-party data)
+  Loss      =  Expected earnings − Actual earnings during disruption window
+  Payout    =  Loss × coverage ratio (80–90%), capped at weekly maximum
+        ↓
+3-Layer fraud check runs independently
+  Layer 1 — Isolation Forest: anomaly score on 6-dimension claim vector
+  Layer 2 — DBSCAN: does this worker's behavior match their zone cluster?
+  Layer 3 — Hard rules: GPS in zone? Zero deliveries during the window?
+        ↓
+  Low-risk   →  auto-approved instantly
+  Medium     →  held for secondary validation
+  High-risk  →  manual review queue with full violations JSON
+        ↓
+Worker notified with SHAP breakdown in their language
+Payout: Kafka → Razorpay → UPI → worker's account
+```
 
-Onboarding captures name, home zone, preferred hours, vehicle type (EV or ICE — this affects pricing), UPI/bank details, and device ID for fraud prevention. Income protection is **opt-in**, surfaced as a clear separate choice. Once enrolled, everything is automatic.
+**A confirmed disruption event — Tambaram Flood, 11:40 AM to 5:30 PM:**
 
-**Policy states:**
+```
+Worker baseline earnings:     ₹120 / hour
+Expected over 5.83 hours:     ₹700
+Actual (2 partial orders):     ₹80
+Loss:                          ₹620
+Payout at 85% coverage:        ₹527  →  UPI, same day
+```
 
-| State | Trigger |
-|---|---|
-| **Active** | Premium paid, coverage running |
-| **Paused** | 1 missed weekly payment |
-| **Suspended** | 2+ consecutive missed weeks |
-| **Rewarded** | Consistent payments + no claims → reduced premium or extended payout ceiling |
-
-Cold-start workers (under 20 verified deliveries) use zone-average income baselines. Claims filed within the first 7 days of enrollment are auto-held for manual review — no gaming around known events.
+The worker received a notification. They never opened a form.
 
 ---
 
-## Dynamic Premium Calculation — The Intelligence Core
+## Fraud Defense: 3-Layer Stacked Threat Engine
 
-No flat rates. No city-wide averages. Every worker's premium is calculated fresh from their zone, their earnings history, and live environmental signals.
+InDel intercepts claim vectors across **6 behavioral dimensions:**
 
-### The Risk Score
+```
+[earnings_drop_ratio, avg_orders_per_hour, distance_routed,
+ claim_frequency, approval_ratio, zone_risk]
+```
 
-$$R = (V_o \times 0.24) + (V_e \times 0.22) + (D_r \times 0.20) + (S_{weather} \times 0.34)$$
+### Layer 1 — Isolation Forest Anomaly Filter
+Fraud syndicates push identical income loss claims across hundreds of accounts simultaneously. `IsolationForest(contamination='auto')` detects these — identical 6-dimension vectors generate anomalously short tree path-lengths. Score above `0.55` → structural claim delay. Genuine disruption creates uniquely staggered drops. Coordinated fraud creates near-identical vectors that the forest isolates immediately.
 
-| Variable | What it measures | Weight |
-|---|---|---|
-| $V_o$ | Order Volatility — how erratic zone demand is | 24% |
-| $V_e$ | Earnings Volatility — how stable this worker's income is | 22% |
-| $D_r$ | Disruption Rate — historical event frequency in this zone | 20% |
-| $S_{weather}$ | Aggregated Weather Signal — live rain, AQI, temperature | **34%** |
+### Layer 2 — DBSCAN Spatial Clustering
+During a verified flood, legitimate workers in a zone behave similarly — speeds drop, idle time rises, routing follows impaired road networks. DBSCAN clusters this behavior. Any worker whose telemetry diverges dramatically from the zone cluster is flagged as a noise point — catching sophisticated actors whose history looks clean but whose event-specific behavior is inexplicably wrong.
 
-Weather leads at 34% because it is the strongest predictor of delivery income loss across Indian urban zones. A waterlogged Tambaram in August is not the same risk as Koramangala in January — InDel prices accordingly.
+### Layer 3 — Postgres Hard Rules
+No AI needed. Completed deliveries logged during the claimed disruption window → **auto-rejected.** Worker GPS outside zone boundaries before the event → **auto-rejected.**
 
-### The Premium Formula
+Flagged claims are not dropped. They route to `manual_review` with a structured violations JSON:
 
-$$P = (E_{avg} \times 0.0375) \times (0.72 + R) \times VF$$
+```json
+{
+  "violations": [
+    "AI Anomaly Threshold breached — Isolation Forest score: 0.87",
+    "GPS Trace divergent from zone cluster (DBSCAN noise point)",
+    "2 deliveries completed during claimed disruption window"
+  ]
+}
+```
 
-- **$E_{avg}$** — worker's average daily earnings over 4 weeks, from InDel's own first-party records
-- **$R$** — the risk score above, recalculated monthly (continuous in production)
-- **$VF$** — Vehicle Factor 1.04–1.08: EVs carry a lower multiplier, rewarding sustainable delivery
+Human underwriters see the exact algorithmic reasoning. No database querying. No guesswork.
 
-**Same worker, different zones, different premiums:**
+---
+
+## Dynamic Pricing: Every Worker, Every Zone, Every Week
+
+No flat rates. No city-wide averages. Each premium is computed fresh.
+
+**Risk Score:**
+
+```
+R = (Order Volatility × 0.24) + (Earnings Volatility × 0.22)
+  + (Disruption Rate × 0.20) + (Weather Signal × 0.34)
+```
+
+Weather leads at **34%** — the strongest predictor of delivery income loss across Indian urban zones.
+
+**Premium Formula:**
+
+```
+P = (4-week avg daily earnings × 0.0375) × (0.72 + R) × Vehicle Factor
+```
+
+Vehicle Factor: **1.04 for EVs, 1.08 for ICE** — rewarding sustainable delivery.
 
 | Zone | Risk Level | Weekly Premium | Max Weekly Payout |
 |---|---|---|---|
@@ -167,9 +251,7 @@ $$P = (E_{avg} \times 0.0375) \times (0.72 + R) \times VF$$
 | Rohini, Delhi | Medium | ₹17 | ₹700 |
 | Koramangala, Bengaluru | Low | ₹12 | ₹600 |
 
-### SHAP Explainability — Every Premium is Auditable
-
-The XGBoost model is trained on 18 features: zone disruption history, monsoon proximity, rolling AQI averages, earnings variance, and more. Behind it sits full SHAP explainability — every premium breaks down to its contributing factors, surfaced to the worker in plain language:
+The XGBoost model trains on **18 features** — zone disruption history, monsoon proximity, rolling AQI averages, earnings variance, and more. Every premium is fully auditable via SHAP:
 
 ```
 Your premium this week: ₹18
@@ -179,245 +261,143 @@ Your premium this week: ₹18
   Base rate                   ₹7
 ```
 
-Available in all major Indian languages. This same breakdown powers the **Maintenance Check** — workers can see exactly why they pay what they pay and dispute it if something looks wrong.
+Available in **English, Tamil, and Hindi** — with icon-based visual cues for low-literacy users.
 
 ---
 
-## 5 Automated Disruption Triggers
+## TTL Gate: The Anti-Ghost-Login Defense
 
-InDel runs five signal types simultaneously via public and mock APIs. No polling — the system reacts to structured events as they arrive.
+When disruption is confirmed, the system checks every worker's `lastActiveAt` telemetry timestamp against a **hardcoded 15-minute backward-looking window**, locked to the millisecond of disruption confirmation.
 
-| Trigger | Source | Fires when |
-|---|---|---|
-| `WEATHER_ALERT` | OpenWeatherMap | Rainfall, flood, or extreme heat threshold crossed |
-| `AQI_ALERT` | OpenAQ / WAQI | Pollution exceeds hazardous levels |
-| `ORDER_DROP_DETECTED` | InDel internal telemetry | Zone order volume drops >30% vs sliding baseline |
-| `ZONE_CLOSURE_ALERT` | Traffic API / Govt alerts | Curfew, strike, or zone restriction detected |
-| `WORKER_ACTIVITY_UPDATE` | InDel platform | Login, acceptance, and completion pattern anomaly |
-
-**One signal is never enough.** A disruption is confirmed only when an external environmental signal and an internal order volume drop align simultaneously — within a time-lag window that accounts for the delay between, say, rainfall starting and orders actually collapsing.
-
-A heat wave with no delivery impact triggers nothing. An order slump under clear weather triggers nothing. InDel verifies **economic reality**, not atmospheric conditions.
+Dormant accounts that log in after seeing the rain? Stripped from eligibility arrays automatically. Payouts reach only workers who were genuinely on the ground when the disruption commenced.
 
 ---
 
-## Zero-Touch Claim Process — Workers Do Nothing
+## Kafka Payout Pipeline: Built for Mass Events
 
-The single most important UX decision in InDel: **workers never file a claim.**
+Synchronous API transfers during mass disruption = thread locking, gateway timeouts, duplicate calls, crashed backends.
 
-```
-Disruption confirmed by multi-signal validation
-        ↓
-Zone scan — active policy + logged in during event + acceptance rate above threshold?
-        ↓
-Income loss computed automatically
-  Baseline = 4-week average hourly earnings (InDel first-party)
-  Loss     = Expected − Actual earnings during disruption window
-  Payout   = Loss × coverage ratio (80–90%), capped at weekly max
-        ↓
-Three-layer fraud check runs independently
-  Layer 1 — Isolation Forest: anomaly detection on claim profile
-  Layer 2 — DBSCAN: does this worker's behaviour match their zone cluster?
-  Layer 3 — Hard rules: GPS in zone? No deliveries completed during the window?
-        ↓
-  Low-risk  → auto-approved instantly
-  Medium    → delayed for additional validation
-  High-risk → manual review queue
-        ↓
-Worker notified with full breakdown
-Payout queued → Kafka → Razorpay / UPI / wallet
-```
+InDel decouples claim approval from financial execution entirely via **Apache Kafka.**
 
-**A real example:**
+| Kafka Property | Why It Matters |
+|---|---|
+| Replayable offsets | Razorpay `503`? Kafka replays from last committed offset — no duplicates, no lost payouts |
+| Consumer group isolation | Payout processor and audit logger run as separate groups — audit never blocks payment |
+| Horizontal scaling | Additional consumer instances spin up during surges, pick up unconsumed partitions automatically |
+| Persistent audit log | Every payout attempt retained — sent, succeeded, retried, failed. Regulatory-grade trail. |
 
-> Worker in Tambaram, ₹120/hour average earnings. Flood logged 11:40 AM → 5:30 PM.
+Zookeeper manages broker registration, partition leader election, and offset tracking. Broker restart? New leader elected automatically. No manual intervention. No lost messages.
 
-```
-Expected:   ₹120 × 5.83 hrs = ₹700
-Actual:     2 partial orders = ₹80
-Loss:                          ₹620
-Payout:            85% of ₹620 = ₹527  →  UPI, same day
-```
-
-The worker received a notification. They never opened a form.
+Five thousand workers claiming simultaneously during a citywide curfew: **handled.**
 
 ---
 
-## Infrastructure — Kafka, Zookeeper & Docker
+## Multilingual SHAP Explainability — 3-Step Architecture
 
-This is what makes zero-touch at scale actually work.
+Raw SHAP JSON passed to a translation engine breaks syntax entirely. InDel solves this with a purpose-built pipeline:
 
-### Apache Kafka — Payout Durability Under Pressure
+1. **JSON Templating** — Go backend maps raw SHAP numerics into predefined English structural templates
+2. **Pre-verified Translation** — Tamil and Hindi structural templates stored statically, grammatically validated
+3. **Dynamic Value Injection** — numeric values injected into the correct-language template at runtime
 
-Every approved claim enters a Kafka topic as an event. During a mass disruption — a citywide flood, five zones hit simultaneously — thousands of payout events fire in minutes. Kafka handles this without touching the claim pipeline.
+Technical precision preserved. Native grammar maintained. No translation artifacts.
 
-**Why Kafka and not a simpler queue?**
+**Supported:** English · Tamil · Hindi + icon-based visual cues for low-literacy users.
 
-- **Replayable offsets:** If the payment gateway fails mid-batch, Kafka replays from the last committed offset — no duplicates, no dropped payouts.
-- **Consumer group isolation:** The payout processor and audit logger are separate consumer groups on the same topic. Audit capture never blocks payment throughput.
-- **Horizontal scaling:** Additional processor instances spin up during surges and pick up unconsumed partitions automatically.
-- **Persistent audit log:** Every payout attempt — sent, succeeded, retried, failed — is retained. This is a regulatory expectation for insurance products. Message queues that delete on consumption cannot guarantee the same.
+---
 
-### Apache Zookeeper — Kafka's Coordination Backbone
+## Razorpay Integration — Money Moves Both Ways
 
-Zookeeper manages broker registration, partition leader election, and consumer group offset tracking. In InDel's deployment, Zookeeper runs as a dedicated container alongside Kafka. If a broker container restarts, Zookeeper elects a new partition leader automatically — no manual intervention, no lost messages. Failover is transparent to the payout processor, which reconnects and resumes from its last committed offset.
+**Premium collection:** Workers pay weekly AI-computed premiums via Razorpay Android Checkout SDK directly in-app. Nothing silently drops.
 
-The demo environment runs one Zookeeper instance and one Kafka broker. Production would use a 3-node Zookeeper ensemble for full fault tolerance. This pairing — Kafka for durability, Zookeeper for coordination — is what guarantees a mass disruption event never pays a worker twice or misses them entirely.
+**Disruption payouts:**
 
-### Docker — The Entire Stack in One Command
+| Step | Action |
+|---|---|
+| 1 | Claim approved — income loss calculated |
+| 2 | Payout queued in Postgres with status `queued` |
+| 3 | Backend calls Razorpay `POST /v1/payouts` with worker UPI + amount |
+| 4 | Transient failures retried up to 5× with exponential backoff |
+| 5 | Idempotency key `pay_clm_<claim_id>` — zero duplicate payouts |
+| 6 | Status sync — `processed` on success, `failed` routes to human review |
 
-Every InDel service runs as a container. The full backend — API, database, message broker, coordination service, and three ML model servers — starts with:
+A **10-second heartbeat goroutine** continuously drains the payout queue. Workers receive money within seconds — not hours, not the next business day.
+
+---
+
+## Infrastructure — One Command, Fully Running
 
 ```bash
 COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.demo.yml up --build -d
 ```
 
-| Container | Role |
-|---|---|
-| `indel-api` | Go/Gin REST API |
-| `postgres` | PostgreSQL, migrations pre-applied |
-| `zookeeper` | Kafka coordination |
-| `kafka` | Async payout broker |
-| `ml-premium` | XGBoost pricing server (port 9001) |
-| `ml-fraud` | Isolation Forest + DBSCAN (port 9002) |
-| `ml-forecast` | Prophet forecasting (port 9003) |
+| Container | Role | Port |
+|---|---|---|
+| `indel-api` | Go / Gin REST API | — |
+| `postgres` | PostgreSQL, migrations pre-applied | — |
+| `zookeeper` | Kafka coordination & leader election | — |
+| `kafka` | Async payout broker | — |
+| `ml-premium` | XGBoost pricing server | :9001 |
+| `ml-fraud` | IsolationForest + DBSCAN | :9002 |
+| `ml-forecast` | Prophet forecasting | :9003 |
 
-`COMPOSE_PARALLEL_LIMIT=1` enforces startup order — Zookeeper before Kafka, Kafka before the API — preventing cold-start connection failures. The demo compose uses pre-seeded snapshots: the platform launches already populated with workers, zones, and disruption history. No manual setup. One command.
-
----
-
-With reliable event processing in place, the next critical layer is how money actually moves.
-
-## Payment Integration — Razorpay
-
-InDel moves money automatically — collecting premiums from workers and disbursing payouts the moment income is disrupted. No forms. No approvals. No waiting. Just automated rails powered by Razorpay.
-
----
-
-### Premium Collection — Worker → Razorpay
-
-Workers pay their weekly premium directly from the Android app.
-
-When a worker taps **Pay Now**, the app:
-- Fetches the AI-computed premium  
-- Launches Razorpay’s native Android Checkout SDK (amount in paise)  
-- On success, sends the Razorpay Payment ID to the backend for verification and recording  
-
-Failed or cancelled payments are surfaced clearly — nothing silently drops.
-
-**Files involved:**  
-`PremiumPayScreen.kt` · `PremiumPayViewModel.kt` · `MainActivity.kt`
-
----
-
-### Disruption Payouts — Backend → Worker's UPI
-
-When a disruption is confirmed and a claim is auto-approved, payouts are executed automatically — no user action required.
-
-1. **Claim generated** — income loss calculated and recorded (`approved`)  
-2. **Payout queued** — stored with status `queued`  
-3. **Razorpay Payouts API** — backend calls `POST /v1/payouts` with worker UPI + amount  
-4. **Retry logic** — transient failures retried up to 5 times (exponential backoff)  
-5. **Idempotency** — unique key (`pay_clm_<claim_id>`) guarantees no duplicate payouts  
-6. **Status sync** — success → `processed`, failure → `failed` for review  
-
-A **10-second heartbeat goroutine** (`core/main.go`) continuously drains the payout queue.  
-Workers receive money within seconds of disruption confirmation — not hours, not the next business day.
-
-**Files involved:**  
-`backend/pkg/razorpay/razorpay.go` (`CreatePayout`, `CheckPayoutStatus`, `IsTransientError`)  
-`backend/internal/services/core_ops_service.go` (`ProcessQueuedPayouts`, `QueueClaimPayout`)  
-`backend/cmd/core/main.go`
-
----
-
-### Credentials (Demo-Friendly)
-
-InDel uses Razorpay test mode for payments.
-
-- The **Worker App requires a Razorpay test key** to render the payment UI  
-- The **backend supports Mock Mode**, but providing Razorpay test credentials is recommended for a complete demo experience  
-
-> Full setup instructions in [SETUP.md → Section 4.1](./SETUP.md)
-
----
-
-## Claims Management & Fraud Defense
-
-A claim lifecycle runs entirely within InDel — auto-generated, fraud-scored, routed, paid, and logged without external tools or manual data entry.
-
-**Fraud defense is economic, not geographic.** GPS is spoofable. InDel doesn't ask "Was the worker in the zone?" — it asks "Did this worker experience a loss consistent with every other worker in this zone during this event?" That question is much harder to fake.
-
-| A genuine worker shows... | A fraudulent claim shows... |
-|---|---|
-| Earnings drop matching zone peer cluster | Activity pattern unchanged through the event |
-| Increased idle time as order volume collapses | Claim loss diverging from zone-wide trend |
-| Failed or reduced delivery attempts during window | GPS outside the affected zone at trigger time |
-
-Completed deliveries logged during a claimed window → auto-rejected. DBSCAN outliers whose behaviour diverges from the entire zone cluster → manual review.
-
-### Maintenance Check — Self-Service Claim Audit
-
-Workers can trigger a self-service audit (max 3/day) if they believe they missed a valid claim. The system calls the AI API with the worker's full activity record, zone signals, and SHAP breakdown — returning a plain-language explanation in the worker's preferred language. Simultaneously logged in the insurer's review queue for human follow-up. Supported across all major Indian languages, with icon-based visual cues for low-literacy users.
-
+`COMPOSE_PARALLEL_LIMIT=1` enforces startup order — Zookeeper before Kafka, Kafka before API. The demo compose launches **pre-seeded** with workers, zones, and disruption history. No manual setup. No configuration. One command.
 
 ---
 
 ## The Dashboards
 
 ### Platform Dashboard — for Operators
-
-Real-time zone telemetry, live order flow, worker GPS distribution — and the **Chaos Engine**: simulate demand collapse or inject weather/AQI signals to test the full claim pipeline without waiting for a real flood.
-
-![Platform Dashboard](https://github.com/user-attachments/assets/ac2e9e31-e48e-4197-87da-897e2b43f522)
+Real-time zone telemetry, live order flow, worker GPS distribution, and the **Chaos Engine** — simulate demand collapse or inject weather/AQI signals to fire the full claim pipeline without waiting for a real flood.
 
 ### Insurer Dashboard — for Providers
-
-Premium pool health, loss ratio by zone and city, fraud-flagged claims queue, 7-day Prophet disruption forecast for reserve planning. Every number an actuary needs, live.
-
-![Insurer Dashboard](https://github.com/user-attachments/assets/05366d69-5372-4e2c-9b37-2a3315cad851)
+Premium pool health, loss ratio by zone and city, live fraud queue with full `violations[]` JSON inline, and **Prophet Reserve Analytics** — 7-day forward claim volume prediction per zone using OpenWeatherMap forecast signals. Actuaries know exactly how much capital to hold before the next monsoon week arrives.
 
 ### Worker App — for Delivery Partners
+Coverage status, this week's AI-computed premium, earnings vs protected baseline, active disruption alerts, claim history, continuity reward progress, and the **Maintenance Check** self-service SHAP audit — all on one screen. Payment via Razorpay UPI.
 
-Coverage status, this week's premium, earnings vs protected income, active disruption alerts, claim history, continuity reward progress, and Maintenance Check — one screen. Payment via Razorpay UPI.
-
-<br><br>
-
-<img width="1050" height="2000" alt="image" src="https://github.com/user-attachments/assets/a1e568dd-b9c8-4ee2-9795-3a2e42ae6486" />
-
-<br><br>
-
-![Worker App](https://github.com/user-attachments/assets/6952f34b-4d44-4733-95a2-7124743cfd17)
-
-<br><br>
-
-![Worker Payment via Razorpay](https://github.com/user-attachments/assets/a28daa4a-dde4-4113-b9ac-5976bab20440)
 ---
 
 ## ML Under the Hood
 
 | Model | Algorithm | Job | Retraining |
 |---|---|---|---|
-| Premium Calculator | XGBoost + SHAP | Predicts income loss probability → weekly premium per worker | Monthly / continuous |
-| Fraud Detector | Isolation Forest + DBSCAN + Rules | Anomaly score + cluster fit + hard disqualifiers | Weekly |
-| Disruption Forecaster | Facebook Prophet | 7-day zone claim probability — insurer reserve planning only | Weekly |
+| Premium Calculator | XGBoost + SHAP (18 features) | Income loss probability → weekly premium per worker | Monthly / continuous |
+| Fraud Detector | IsolationForest + DBSCAN + Hard Rules | Anomaly score + cluster fit + hard disqualifiers | Weekly |
+| Disruption Forecaster | Facebook Prophet | 7-day zone claim probability for insurer reserve planning | Weekly |
 
 ---
 
-## Tech Stack
+## Full Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Backend | Go (Gin), PostgreSQL (GORM), JWT |
-| Frontend | React 18 (Vite), Tailwind CSS, Lucide Icons |
-| Mobile | Kotlin (Android) |
+| Backend | Go (`net/http`, Gin), PostgreSQL (GORM), JWT |
+| Frontend | React 18 (Vite + TypeScript), Tailwind CSS, Lucide Icons |
+| Mobile | Kotlin (Android), Razorpay Android SDK |
 | Async Messaging | Apache Kafka + Apache Zookeeper |
 | Containerisation | Docker, Docker Compose |
-| ML | XGBoost, SHAP, Isolation Forest, DBSCAN, Prophet (scikit-learn) |
-| Weather | OpenWeatherMap |
-| AQI | OpenAQ / WAQI |
-| Payments | Razorpay test mode / UPI simulator |
+| ML Serving | Python, FastAPI, `joblib` dynamic model state |
+| AI Algorithms | XGBoost, SHAP, IsolationForest, DBSCAN, Prophet |
+| Environmental APIs | OpenWeatherMap, OpenAQ / WAQI |
+| Payments | Razorpay Payouts SDK / UPI simulator |
 | Notifications | Firebase Cloud Messaging |
+| Explainability | SHAP TreeExplainer + Google Cloud Translation / IndicTrans2 |
+
+---
+
+## Policy Lifecycle — No Renewals, No Calls, No Forms
+
+Workers register once. Coverage runs forever in the background.
+
+| State | Trigger |
+|---|---|
+| **Active** | Premium paid, coverage running |
+| **Paused** | 1 missed weekly payment |
+| **Suspended** | 2+ consecutive missed payments |
+| **Rewarded** | Consistent payments + zero claims → reduced premium or extended payout ceiling |
+
+Cold-start workers (under 20 verified deliveries) use zone-average income baselines. Claims filed within the first 7 days of enrollment are auto-held for manual review — no gaming around known events.
 
 ---
 
@@ -427,15 +407,14 @@ Five people. One conviction: gig workers deserve financial protection that works
 
 | Name | Built |
 |---|---|
-| Shravanthi S | Core Policy, Premium Cycle, Payout & Data Operations |
-| Gayathri U | Delivery Management & DevOps |
-| Rithanya K A | ML Services — Training & Serving |
-| Saravana Priyaa C R | Platform Integration, Disruption Engine |
-| Subikha MV | Insurer System, Claims Intelligence & System Design |
+| Shravanthi S | Core Policy Logic, Disruption Sync Cycle, Payout & Data Operations |
+| Gayathri U | Delivery Management, Postgres Schema, DevOps & Docker Compositions |
+| Rithanya K A | Python FastAPI ML Services — XGBoost Training & Inference |
+| Saravana Priyaa C R | Platform Integration, Chaos Engine, Disruption Engine |
+| Subikha MV | Insurer System, Claims Intelligence & Overall System Design |
 
 ---
 
-<p align="center">
-  <i>Submitted for Guidewire DEVTrails 2026 — University Hackathon</i><br><br>
-  <i>Figures are illustrative estimates for design and modelling purposes. Production deployment requires IRDAI registration and KYC/AML compliance by the deploying insurer. All systems are idempotent — mass disruption events cannot produce duplicate claims or double payouts.</i>
-</p>
+<p align="center"><b>Guidewire DEVTrails 2026 — E-Commerce Delivery Persona — Phase 3: Scale & Optimize</b></p>
+
+<p align="center"><i>Figures are illustrative estimates for design and modelling purposes. Production deployment requires IRDAI registration and KYC/AML compliance by the deploying insurer. All systems are strictly idempotent — mass disruption events cannot produce duplicate claims or double payouts.</i></p>
