@@ -379,7 +379,7 @@ func (s *CoreOpsService) generateClaimsForDisruption(disruptionID uint, now time
 		log.Printf("[CLAIMS] ✅ claim created claimID=%d workerID=%d amount=%.2f status=%s", claim.ID, worker.WorkerID, claim.ClaimAmount, status)
 
 		// Persist the detailed fraud signals for the Story-Telling UI
-		ruleViolations, _ := json.Marshal(outcome.Reasons)
+		ruleViolations, _ := json.Marshal(outcome.Signals)
 		score := models.ClaimFraudScore{
 			ClaimID:              claim.ID,
 			IsolationForestScore: outcome.FraudScore,

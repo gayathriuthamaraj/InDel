@@ -219,7 +219,7 @@ func TestFraudQueueSelection(t *testing.T) {
 	db := setupMockDB()
 	r := setupRouter(db)
 
-	db.Exec("INSERT INTO claims (id) VALUES (1), (2), (3)")
+	db.Exec("INSERT INTO claims (id, status) VALUES (1, 'manual_review'), (2, 'approved'), (3, 'manual_review')")
 	db.Exec("INSERT INTO claim_fraud_scores (claim_id, final_verdict) VALUES (1, 'flagged'), (2, 'clear'), (3, 'manual_review')")
 
 	req, _ := http.NewRequest("GET", "/api/v1/insurer/claims/fraud-queue", nil)

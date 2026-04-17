@@ -24,7 +24,7 @@ func TestIsWorkerStatusStaleIgnoresOfflineAndZeroActivity(t *testing.T) {
 		t.Fatalf("expected offline workers to remain non-stale for status evaluation")
 	}
 
-	if IsWorkerStatusStale(true, time.Time{}, now) {
-		t.Fatalf("expected zero last-active timestamps to avoid false staleness")
+	if !IsWorkerStatusStale(true, time.Time{}, now) {
+		t.Fatalf("expected zero last-active timestamps to trigger staleness to prevent offline payouts")
 	}
 }

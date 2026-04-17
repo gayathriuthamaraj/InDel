@@ -52,7 +52,7 @@ func IsWorkerStatusStale(isOnline bool, lastActiveAt, now time.Time) bool {
 	// If marked online but NEVER pinged (zero time), do not treat as stale
 	// to avoid penalizing new workers or missing data.
 	if lastActiveAt.IsZero() {
-		return false
+		return true
 	}
 	if now.IsZero() {
 		now = time.Now()

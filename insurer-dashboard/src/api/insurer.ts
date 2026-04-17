@@ -56,6 +56,7 @@ export type FraudQueueRow = {
   status: string
   fraud_verdict: string
   fraud_score: number
+  violations?: string[]
   created_at: string
 }
 
@@ -78,6 +79,10 @@ export const getClaims = async (params?: {
 
 export const getClaimDetail = async <T = any>(claimId: string): Promise<T> =>
   unwrapSuccess<T>(await client.get<SuccessEnvelope<T>>(`/api/v1/insurer/claims/${claimId}`))
+
+export const reviewClaim = async (claimId: number, status: string, fraud_verdict: string, notes: string = ''): Promise<void> => {
+  await client.post(`/api/v1/insurer/claims/${claimId}/review`, { status, fraud_verdict, notes })
+}
 
 export const getFraudQueue = async (params?: {
   page?: number
