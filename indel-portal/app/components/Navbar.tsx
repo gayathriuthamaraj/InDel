@@ -1,36 +1,170 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-function scrollToSection(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) {
-  if (href.startsWith("#")) {
-    e.preventDefault();
-    const id = href.replace("#", "");
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  }
+function scrollTo(id: string) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+const navLinks = [
+  { label: "Problem", id: "problem" },
+  { label: "How It Works", id: "how-it-works" },
+  { label: "Features", id: "features" },
+  { label: "Technology", id: "tech" },
+  { label: "Demo", id: "demo" },
+];
+
 export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrolled(scrollTop > 40);
+      setScrollProgress(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0);
+
+      // Determine active section
+      const sections = navLinks.map((l) => l.id);
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && el.getBoundingClientRect().top <= 140) {
+          setActiveSection(sections[i]);
+          break;
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="flex justify-between items-center px-8 py-4 bg-primary-light/60 sticky top-0 z-50 shadow-sm border-b border-primary-light">
-      <a href="/" className="font-bold text-primary text-xl tracking-tight">InDel</a>
-      <div className="hidden md:flex gap-2">
-        <a href="#ecosystem" className="text-primary-dark hover:bg-primary-light hover:text-primary px-3 py-2 rounded transition font-medium" onClick={e => scrollToSection(e, "#ecosystem")}>Product</a>
-        <a href="#how-it-works" className="text-primary-dark hover:bg-primary-light hover:text-primary px-3 py-2 rounded transition font-medium" onClick={e => scrollToSection(e, "#how-it-works")}>How it Works</a>
-        <a href="#tech" className="text-primary-dark hover:bg-primary-light hover:text-primary px-3 py-2 rounded transition font-medium" onClick={e => scrollToSection(e, "#tech")}>Technology</a>
-        <a href="#demo" className="text-primary-dark hover:bg-primary-light hover:text-primary px-3 py-2 rounded transition font-medium" onClick={e => scrollToSection(e, "#demo")}>Demo</a>
-        <div className="relative group">
-          <button className="text-primary-dark hover:bg-primary-light hover:text-primary px-3 py-2 rounded transition font-medium">More ▾</button>
-          <div className="absolute left-0 mt-2 w-40 bg-surface border border-primary-light rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200 z-10">
-            <a href="#problem" className="block px-4 py-2 text-primary-dark hover:bg-primary-light/60" onClick={e => scrollToSection(e, "#problem")}>Problem</a>
-            <a href="#solution" className="block px-4 py-2 text-primary-dark hover:bg-primary-light/60" onClick={e => scrollToSection(e, "#solution")}>Solution</a>
-            <a href="#dashboard-preview" className="block px-4 py-2 text-primary-dark hover:bg-primary-light/60" onClick={e => scrollToSection(e, "#dashboard-preview")}>Dashboard</a>
-            <a href="#why" className="block px-4 py-2 text-primary-dark hover:bg-primary-light/60" onClick={e => scrollToSection(e, "#why")}>Why</a>
-            <a href="#vision" className="block px-4 py-2 text-primary-dark hover:bg-primary-light/60" onClick={e => scrollToSection(e, "#vision")}>Vision</a>
+    <>
+      {/* Scroll progress bar */}
+      <div className="fixed top-0 left-0 z-[60] h-0.5 bg-primary transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
+
+      <motion.nav
+        className={`fixed top-0.5 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "glass shadow-lg shadow-primary/5"
+            : "bg-transparent"
+        }`}
+        initial={{ y: -64 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className={`font-bold text-xl tracking-tight transition-colors duration-300 ${scrolled ? "text-primary-dark" : "text-white"}`}
+          >
+            <span className="text-primary">In</span>
+            <span>Del</span>
+          </button>
+
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => scrollTo(link.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  activeSection === link.id
+                    ? "bg-primary text-white"
+                    : scrolled
+                    ? "text-text-primary hover:bg-primary-light hover:text-primary"
+                    : "text-white/80 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                {link.label}
+              </button>
+            ))}
           </div>
+
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="https://indel-platform-dashboard.onrender.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                scrolled
+                  ? "text-primary border border-primary hover:bg-primary-light"
+                  : "text-white/80 border border-white/30 hover:bg-white/10"
+              }`}
+            >
+              Platform
+            </a>
+            <motion.a
+              href="#demo"
+              onClick={(e) => { e.preventDefault(); scrollTo("demo"); }}
+              className="px-5 py-2 rounded-lg bg-primary text-white text-sm font-semibold shadow-md shadow-primary/30 hover:bg-primary-dark transition-all duration-200"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+            >
+              Watch Demo
+            </motion.a>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className={`md:hidden p-2 rounded-lg transition-colors duration-200 ${scrolled ? "text-primary-dark hover:bg-primary-light" : "text-white hover:bg-white/10"}`}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <div className="w-5 flex flex-col gap-1.5">
+              <span className={`block h-0.5 transition-all duration-300 ${scrolled ? "bg-primary-dark" : "bg-white"} ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
+              <span className={`block h-0.5 transition-all duration-300 ${scrolled ? "bg-primary-dark" : "bg-white"} ${mobileOpen ? "opacity-0" : ""}`} />
+              <span className={`block h-0.5 transition-all duration-300 ${scrolled ? "bg-primary-dark" : "bg-white"} ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            </div>
+          </button>
         </div>
-      </div>
-    </nav>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              className="md:hidden glass border-t border-primary/10 px-6 py-4 flex flex-col gap-2"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {navLinks.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => { scrollTo(link.id); setMobileOpen(false); }}
+                  className="text-left px-4 py-3 rounded-lg text-sm font-medium text-text-primary hover:bg-primary-light hover:text-primary transition-all"
+                >
+                  {link.label}
+                </button>
+              ))}
+              <div className="mt-2 pt-2 border-t border-primary/10 flex flex-col gap-2">
+                <a
+                  href="https://indel-platform-dashboard.onrender.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-3 rounded-lg text-sm font-medium text-primary border border-primary text-center"
+                >
+                  Platform Dashboard
+                </a>
+                <a
+                  href="https://indel-urn9.onrender.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-3 rounded-lg text-sm font-medium bg-primary text-white text-center"
+                >
+                  Insurer Dashboard
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+    </>
   );
 }
