@@ -347,11 +347,24 @@ COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.demo.yml up --build -d
 
 ## The Dashboards
 
+
 ### Platform Dashboard — for Operators
-Real-time zone telemetry, live order flow, worker GPS distribution, and the **Chaos Engine** — simulate demand collapse or inject weather/AQI signals to fire the full claim pipeline without waiting for a real flood.
+The primary administrative command center governing all continuous telemetry natively.
+- **Platform Command & Worker Directory:** Monitor live order queues, geographic zone assignments, and track strict policy statuses (`Live | On Shift` vs `Offline`).
+- **Analytics & Disruption Intelligence:** Visualize 7-day multi-city forecast metadata and monitor global claim-generation vs. manual-review queues in real-time.
+- **The Chaos Engine:** A dedicated systems-testing panel. Select any tracked zone (e.g., Bhopal) and instantly trigger a `COLLAPSE DEMAND` event, or inject mock `Rain` and `Curfew` signals to validate the end-to-end Kafka payout pipeline safely without waiting for a real-world disaster.
+
+<img width="1920" height="1080" alt="platform" src="https://github.com/user-attachments/assets/42574167-adbf-4871-b5fc-af469a730621" />
 
 ### Insurer Dashboard — for Providers
-Premium pool health, loss ratio by zone and city, live fraud queue with full `violations[]` JSON inline, and **Prophet Reserve Analytics** — 7-day forward claim volume prediction per zone using OpenWeatherMap forecast signals. Actuaries know exactly how much capital to hold before the next monsoon week arrives.
+The financial control center built specifically for actuaries and risk-management operators.
+- **Pool Posture & Overview:** Monitor live capital liquidity, total premium accumulation versus payout liabilities, and track geographic 'Zone Net Flow' curves natively.
+- **Global Claims Stream:** A real-time ledger of every automated disruption payout across the entire ecosystem, instantly classifying transactional states natively (e.g. `APPROVED`, `PAID`, or `MANUAL_REVIEW`).
+- **Fraud Analysis Queue:** The human-in-the-loop audit portal. Underwriters review high-risk claims directly seeing the exact ML-identified signal (e.g., `NO_LIVE_WINDOW_ACTIVITY`) alongside the specific anomaly score, empowering them to quickly `Approve` or `Reject` flagged events.
+- **Plan Status Management:** A visualization mapping active subscriber distribution across multiple zones, coupled with manual administrative controls to start or terminate individual coverage plans natively. 
+
+<img width="1920" height="1080" alt="FotoJet" src="https://github.com/user-attachments/assets/a7863870-45d5-4e0a-b2c1-3581f6a1b704" />
+
 
 ### Worker App — for Delivery Partners
 Coverage status, this week's AI-computed premium, earnings vs protected baseline, active disruption alerts, claim history, continuity reward progress, and the **Maintenance Check** self-service SHAP audit — all on one screen. Payment via Razorpay UPI.
