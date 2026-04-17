@@ -123,45 +123,84 @@ A heatwave with no delivery impact? Triggers nothing. An order slump under clear
 
 ```mermaid
 graph TD
-    subgraph "External Integration Layers"
-        WA[Worker Mobile Telemetry]
-        ES[Environmental Webhooks — IMD / AQI / OpenWeatherMap]
-        CE[Chaos Engine — Telemetry Simulator]
+    subgraph "Clients"
+        WA["Worker App (Kotlin/Android)"]
+        ID["Insurer Dashboard (React)"]
+        PD["Platform Dashboard (React)"]
     end
 
-    subgraph "InDel Core — Golang / GORM"
-        API[Gin REST Handlers & Routing]
-        DE[Disruption Engine — Multi-Signal Validation]
-        CO[Core Ops Service — 15-min TTL Security Gate]
-        DB[(PostgreSQL Primary Store)]
+    subgraph "Entry Point"
+        AGW["API Gateway (Nginx :8004)"]
+    end
+
+    subgraph "API Gateways (Golang)"
+        WGW["Worker Gateway :8001"]
+        IGW["Insurer Gateway :8002"]
+        PGW["Platform Gateway :8003"]
+    end
+
+    subgraph "InDel Core & Storage"
+        CS["Core Service :8000"]
+        DB[("PostgreSQL")]
+        RD[("Redis Cache")]
     end
 
     subgraph "Intelligence Layer"
-        ML1[ml-premium — XGBoost Pricing :9001]
-        ML2[ml-fraud — IsolationForest + DBSCAN :9002]
-        ML3[ml-forecast — Prophet Forecasting :9003]
+        ML["Unified ML Service (FastAPI :9000)"]
+        subgraph "Engines"
+            PREM["Premium Pricing"]
+            FRD["Fraud Detection"]
+            FCT["Forecasting"]
+        end
     end
 
-    subgraph "Execution Layer"
-        ID[Insurer Review Dashboard]
-        PD[Platform Dashboard — Zone Telemetry]
-        KF[Kafka Async Payout Engine + Zookeeper]
-        RP[Razorpay UPI Payout Rails]
+    subgraph "Async Pipeline"
+        KF["Kafka (KRaft Mode :9092)"]
     end
 
-    WA <-->|Heartbeat Tracking| API
-    ES -->|Event Pushes| API
-    CE -->|Simulated Signals| API
-    API <--> DB
-    DE <--> DB
-    CO <--> DB
-    DE -->|Verified Event| KF
-    DB --> ID
-    DB --> PD
-    API <--> ML1
-    API <--> ML2
-    API <--> ML3
-    KF -->|Idempotent Transfer| RP
+    subgraph "External Integration"
+        ENV["Environmental APIs (Weather/AQI)"]
+        RP["Razorpay UPI Payout Rails"]
+    end
+
+    %% Client Routing
+    WA <-->|REST| AGW
+    ID <-->|REST| AGW
+    PD <-->|REST| AGW
+
+    %% Gateway Routing
+    AGW -->|/api/v1/worker| WGW
+    AGW -->|/api/v1/insurer| IGW
+    AGW -->|/api/v1/platform| PGW
+
+    %% Internal Communication
+    WGW <-->|Internal API| CS
+    IGW <-->|Internal API| CS
+    PGW <-->|Internal API| CS
+
+    %% Data Access
+    WGW <--> DB
+    IGW <--> DB
+    PGW <--> DB
+    CS <--> DB
+    WGW <--> RD
+
+    %% Intelligence & Messaging
+    WGW -->|Inference| ML
+    IGW -->|Inference| ML
+    PGW -->|Inference| ML
+    CS -->|Inference| ML
+    
+    ML --- PREM
+    ML --- FRD
+    ML --- FCT
+
+    CS -->|Produce Events| KF
+    KF -->|Consume Tasks| CS
+
+    %% External Rails
+    ENV -->|Webhooks/Jobs| CS
+    CS -->|Payouts| RP
 ```
 
 ---

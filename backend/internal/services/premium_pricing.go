@@ -335,6 +335,7 @@ func fallbackPremiumQuote(context PremiumContext) *PremiumQuote {
 
 	base := context.AvgDailyEarnings * 0.055
 	premium := base * (0.65 + 1.1*riskScore) * vehicleFactor
+	premium = clamp(premium, 20, 250) // High visibility for dynamic demo flows
 
 	explainability := []PremiumExplainItem{
 		{Feature: "order_volatility", Impact: roundTo(context.OrderVolatility*0.34, 3)},
