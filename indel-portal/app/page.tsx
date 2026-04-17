@@ -175,7 +175,7 @@ export default function HomePage() {
         <h2 className="text-2xl md:text-3xl font-bold mb-8 text-indigo-700">Product Demo</h2>
         <div className="aspect-w-16 aspect-h-9 w-full rounded-xl overflow-hidden shadow-lg mb-6">
           <iframe
-            src="https://www.youtube.com/embed/R1_1X-f7-MM"
+            src={import.meta.env.VITE_YOUTUBE_DEMO_URL}
             title="InDel Demo"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
