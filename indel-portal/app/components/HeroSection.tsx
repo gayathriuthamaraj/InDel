@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+// @ts-ignore
+const PITCH_DECK_URL = import.meta.env.VITE_PITCH_DECK_URL;
 import { motion } from "framer-motion";
 
 const stats = [
@@ -114,14 +116,22 @@ export default function HeroSection() {
             <span>▶</span> Watch Demo
           </motion.a>
           <motion.a
-            href="#how-it-works"
-            onClick={(e) => { e.preventDefault(); document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }); }}
+            href="#ecosystem"
+            onClick={(e) => { e.preventDefault(); document.getElementById("ecosystem")?.scrollIntoView({ behavior: "smooth" }); }}
             className="px-8 py-3.5 rounded-xl border border-white/20 text-white/80 hover:border-white/50 hover:text-white text-sm font-semibold transition-all"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            See How It Works →
+            Try It Out →
           </motion.a>
+          <a
+            href={PITCH_DECK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-3.5 rounded-xl border border-white/70 bg-white/10 text-white hover:bg-white/20 hover:text-primary text-sm font-semibold transition-all ml-2"
+          >
+            Pitch Deck
+          </a>
         </motion.div>
       </div>
 

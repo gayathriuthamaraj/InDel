@@ -87,18 +87,6 @@ export default function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <a
-              href="https://indel-platform-dashboard.onrender.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                scrolled
-                  ? "text-primary border border-primary hover:bg-primary-light"
-                  : "text-white/80 border border-white/30 hover:bg-white/10"
-              }`}
-            >
-              Platform
-            </a>
             <motion.a
               href="#demo"
               onClick={(e) => { e.preventDefault(); scrollTo("demo"); }}
@@ -144,14 +132,7 @@ export default function Navbar() {
                 </button>
               ))}
               <div className="mt-2 pt-2 border-t border-primary/10 flex flex-col gap-2">
-                <a
-                  href="https://indel-platform-dashboard.onrender.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-3 rounded-lg text-sm font-medium text-primary border border-primary text-center"
-                >
-                  Platform Dashboard
-                </a>
+                {/* Platform Dashboard link removed as requested */}
                 <a
                   href="https://indel-urn9.onrender.com"
                   target="_blank"
