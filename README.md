@@ -432,7 +432,19 @@ The financial control center built specifically for actuaries and risk-managemen
 
 ### Worker App — for Delivery Partners
 Coverage status, this week's AI-computed premium, earnings vs protected baseline, active disruption alerts, claim history, continuity reward progress, and the **Maintenance Check** self-service SHAP audit — all on one screen. Payment via Razorpay UPI.<br>
-<img width="2715" height="1920" alt="orders" src="https://github.com/user-attachments/assets/b0e39c5e-0a68-4246-b163-899d25cc3b08" /> <br> <img width="3000" height="1920" alt="fraud" src="https://github.com/user-attachments/assets/fe3787ee-4907-434d-ab9e-2e8a5015e407" /> <br> <img width="2578" height="1920" alt="multi" src="https://github.com/user-attachments/assets/7b74f2fb-b144-4708-93a6-6890939fa57c" /> <br> <img width="1024" height="1536" alt="app screen" src="https://github.com/user-attachments/assets/ed9123cb-4826-4691-848a-5f2e02eb4c3d" />
+
+#### Registration Journey
+<img width="1536" height="1024" alt="Registration" src="https://github.com/user-attachments/assets/e63b44d6-aff2-41f2-b7be-dddb7265cc57" />
+
+#### Premium Payout & Notifications
+<img width="1536" height="1024" alt="PayoutPipeline" src="https://github.com/user-attachments/assets/95b5fc44-f7b8-49be-b34c-3e83619715e3" />
+
+#### Order & Premium Payout Pipeline
+<img width="1536" height="1024" alt="Claims" src="https://github.com/user-attachments/assets/14d238fa-4c0c-4aa9-86dd-07995e97f670" />
+
+#### Multi language feature
+<img width="1536" height="1024" alt="Lang" src="https://github.com/user-attachments/assets/98be8d84-a4c6-41fc-bdb5-95fb158d6d65" />
+
 
 ---
 
