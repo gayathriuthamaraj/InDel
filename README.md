@@ -465,15 +465,17 @@ The platform records key financial and workflow events in the database, includin
 
 ## Security & Compliance
 
-| Concern | Implementation |
-|---------|----------------|
-| **Authentication** | JWT signed with RS256; short-lived access tokens (30 min) + refresh tokens in HttpOnly cookies |
-| **Authorization** | RBAC enforced in Go middleware (`role` claim). Insurer, Platform-admin, and Worker roles have distinct endpoint scopes |
-| **Secret Management** | All secrets (DB password, JWT private key, Razorpay API key) injected via Docker secrets or `.env` files that are **git-ignored** |
-| **Transport Security** | Nginx terminates TLS (self-signed for demo, production uses Let's Encrypt). All internal traffic runs over Docker overlay network |
-| **Data Privacy** | PII (phone, name) stored encrypted at rest (PostgreSQL `pgcrypto`). No logs contain raw PII |
-| **Vulnerability Scanning** | `trivy` CI step scans Docker images for CVEs; any HIGH-severity finding fails the pipeline |
-| **Rate Limiting** | Nginx `limit_req_zone` caps requests to 20 rps per IP, protecting the ML inference endpoint from abuse |
+| Concern | Current Implementation |
+|---------|------------------------|
+| Authentication | JWT-based authentication using HMAC signing with a shared secret from environment configuration |
+| Authorization | Role-based access control enforced in gateway and internal middleware for worker, insurer, platform, and internal operations |
+| Secret Management | Runtime secrets are read from environment variables and local env files excluded from version control |
+| Transport | Local Docker setup runs service traffic over internal container networking through the API gateway |
+| Data Handling | Core workflow data is stored in PostgreSQL, with claim and payout state transitions persisted for auditability |
+| Session and Access Scope | Worker session state and role-scoped routes are separated across worker, insurer, platform, and core service surfaces |
+| Abuse Controls | Route-level role guards and internal authorization checks are applied on sensitive control endpoints |
+
+InDel currently emphasizes application-level auth, authorization, and operational audit trails for payout and claim workflows.
 
 ---
 
@@ -493,26 +495,44 @@ The platform records key financial and workflow events in the database, includin
 
 ## CI/CD Pipeline
 
-The repository ships a **GitHub Actions** workflow (`.github/workflows/ci.yml`) with the following stages:
+The repository includes automated workflows for validation, testing, build checks, and deployment orchestration.
 
-**1. Lint & Static Analysis**
-- Go: `golangci-lint`
-- Python: `flake8`, `mypy`
-- TypeScript: `eslint`, `prettier`
+### Continuous Integration Workflow
 
-**2. Unit & Integration Tests**
-- `go test ./...`
-- `pytest -m integration` (spins up a temporary Docker Compose stack)
+1. Compose Validation
+- Validates primary Docker Compose files.
 
-**3. Docker Build & Scan**
-- Multi-arch (`linux/amd64`, `linux/arm64`) images for each service
-- `trivy` scans each image; build fails on any **HIGH** CVE
+2. Backend Quality Checks
+- Runs Go test suites.
+- Runs Go lint checks with golangci-lint.
 
-**4. Deploy (Manual Approval)**
-- A `workflow_dispatch` job lets maintainers trigger a **staging** deployment
-- Post-deployment health checks (`curl http://localhost/health`) gate promotion to **production**
+3. ML Service Tests
+- Sets up Python environment and dependencies.
+- Runs ML test suite with pytest.
 
-> **Result:** Every commit is verified, scanned, and ready for a one-click production rollout.
+4. Frontend Build Validation
+- Installs dependencies and builds insurer dashboard.
+- Installs dependencies and builds platform dashboard.
+
+5. Endpoint Contract Verification
+- Executes endpoint contract check script from the scripts folder.
+
+6. Docker Image Build Verification
+- Builds backend and ML images as CI build checks.
+
+7. Integration Tests
+- Boots demo stack with Docker Compose.
+- Waits for core health readiness.
+- Runs backend worker integration tests.
+- Captures logs on failure and performs teardown.
+
+### Deployment Workflow
+
+- Includes a manual or main-branch deployment workflow for service rollout.
+- Performs post-deploy health sweeps across configured public service URLs.
+- Supports deployment notifications through configured webhook integration.
+
+This pipeline ensures each change is validated through tests and build checks before release operations.
 
 ---
 
