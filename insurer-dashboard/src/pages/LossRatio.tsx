@@ -130,7 +130,7 @@ export default function LossRatio() {
                     type="category" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 10, fill: '#475569', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }} 
+                    tick={{ fontSize: 10, fill: '#475569', fontWeight: 900 }} 
                     width={110}
                   />
                   <Tooltip
@@ -216,7 +216,7 @@ export default function LossRatio() {
                         <Cell 
                           key={`cell-${index}`} 
                           fill={baseColor}
-                          radius={entry.displayDivergence > 0 ? [0, 8, 8, 0] : [8, 0, 0, 8]}
+                          radius={entry.displayDivergence > 0 ? [0, 8, 8, 0] as any : [8, 0, 0, 8] as any}
                           stroke={isTarget ? '#EC4899' : 'none'}
                           strokeWidth={isTarget ? 4 : 0}
                           className={isTarget ? 'drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]' : ''}

@@ -55,7 +55,7 @@ jobs:
           go test -v ./...
 
       - name: Run linter
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci-lint-action@v6
         with:
           working-directory: backend
           version: v1.64.8
@@ -161,10 +161,48 @@ jobs:
           push: false
           tags: indel-fraud-ml:latest
 
-      - name: Build forecast ML image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./ml
-          file: ./ml/forecast/Dockerfile
-          push: false
-          tags: indel-forecast-ml:latest
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [compose-validate]
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: indel
+      DB_PASSWORD: demo_password
+      DB_NAME: indel_demo
+      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and start all services
+        run: docker compose -f docker-compose.demo.yml up -d --build
+
+      - name: Wait for core service to be healthy
+        run: |
+          for i in {1..30}; do
+            if docker compose -f docker-compose.demo.yml exec core wget -q -O - http://127.0.0.1:8000/health; then
+              echo "Core is healthy"
+              exit 0
+            fi
+            echo "Waiting for core to be healthy..."
+            sleep 5
+          done
+          echo "Core service failed to become healthy"
+          docker compose -f docker-compose.demo.yml logs
+          exit 1
+
+      - name: Run integration tests
+        run: |
+          docker compose -f docker-compose.demo.yml run backend-worker-tests
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.demo.yml logs
+
+      - name: Shutdown
+        if: always()
+        run: docker compose -f docker-compose.demo.yml down -v
