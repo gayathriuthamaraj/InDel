@@ -4,9 +4,6 @@ This document is the evaluator runbook for **InDel — Insure, Deliver** (Guidew
 
 It explains exactly what is needed and how to run the complete Phase 3 implementation locally: backend services, dashboards, and Android worker app.
 
-> [!IMPORTANT]
-> For Phase 3 evaluation, we are not distributing a standalone APK. We kindly request evaluators to run the Worker App using the provided project setup (Android Studio + local backend services) so the full integrated asynchronous workflow (Kafka + Razorpay) can be verified.
-
 ---
 
 ## 1. Project Details
