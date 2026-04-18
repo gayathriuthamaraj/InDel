@@ -456,10 +456,11 @@ InDel provides operational visibility through service health checks, runtime log
 | Kafka                | Broker health checks and event-processing logs |
 | PostgreSQL           | Container health checks and query/audit data persisted in tables |
 
-## Observability Summary
+### Observability Summary
 
 Logging is available through Docker and Docker Compose service logs, enabling issue diagnosis across API, ML, async processing, and payout execution paths.
 The platform records key financial and workflow events in the database, including claim state transitions, payout attempts, retries, and final payout outcomes, providing an end-to-end audit trail from disruption processing to payout completion.
+
 ---
 
 ## Security & Compliance
@@ -471,7 +472,6 @@ The platform records key financial and workflow events in the database, includin
 | **Secret Management** | All secrets (DB password, JWT private key, Razorpay API key) injected via Docker secrets or `.env` files that are **git-ignored** |
 | **Transport Security** | Nginx terminates TLS (self-signed for demo, production uses Let's Encrypt). All internal traffic runs over Docker overlay network |
 | **Data Privacy** | PII (phone, name) stored encrypted at rest (PostgreSQL `pgcrypto`). No logs contain raw PII |
-| **Regulatory** | Built to satisfy **IRDAI** actuarial audit requirements and **GDPR**-style data-subject rights (`DELETE /api/v1/users/{id}` endpoint) |
 | **Vulnerability Scanning** | `trivy` CI step scans Docker images for CVEs; any HIGH-severity finding fails the pipeline |
 | **Rate Limiting** | Nginx `limit_req_zone` caps requests to 20 rps per IP, protecting the ML inference endpoint from abuse |
 
