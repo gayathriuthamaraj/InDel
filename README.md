@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=R1_1X-f7-MM">
-    <img src="https://img.shields.io/badge/🎥%20Demo-2%20Min%20Walkthrough-red?style=for-the-badge" />
+  <a href="https://www.youtube.com/watch?v=tQliernHGDI&t=30s">
+    <img src="https://img.shields.io/badge/Demo-5%20Min%20Walkthrough-red?style=for-the-badge" />
   </a>
   &nbsp;&nbsp;
   <a href="./SETUP.md">
