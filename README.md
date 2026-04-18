@@ -443,23 +443,23 @@ Five thousand workers claiming simultaneously during a citywide curfew: **handle
 
 ## Observability & Monitoring
 
-| Component | Metrics (Prometheus) | Traces (OpenTelemetry) | Alerts (Alertmanager) |
-|-----------|----------------------|------------------------|-----------------------|
-| **API-Gateway (NGINX)** | request_rate, latency, 5xx_rate | HTTP request IDs | 5xx > 1% over 5 min |
-| **Go Services** | go_goroutine, db_query_latency, kafka_consumer_lag | gRPC/HTTP spans | DB latency > 100 ms |
-| **ML Service** | inference_latency, model_load_time | FastAPI request spans | inference latency > 500 ms |
-| **Redis** | ops_total, hit_rate, memory_usage | N/A | hit_rate < 80% |
-| **Kafka** | consumer_lag, broker_cpu | N/A | lag > 5 min |
-| **PostgreSQL** | pg_stat_user_tables, connection_count | N/A | connections > 80% of max |
+InDel provides operational visibility through service health checks, runtime logs, and transactional audit records across the core workflow.
 
-All metrics are scraped by **Prometheus** and visualised in **Grafana** dashboards. Alerts are routed to Slack via **Alertmanager**.
+## System Component Visibility
 
-**Logging** — Structured JSON logs emitted by every service (Go: `zap`, Python: `structlog`). Collected by **Loki**, searchable via Grafana Loki UI.
+| Component              | Current Visibility |
+|----------------------|-------------------|
+| API Gateway (Nginx)  | Gateway health endpoint and access/error logs |
+| Go Services          | Service health endpoints, request handling logs, and database operation traces in logs |
+| ML Service (FastAPI) | Health endpoint, startup/model-load logs, and inference request logs |
+| Redis                | Service health checks and runtime logs |
+| Kafka                | Broker health checks and event-processing logs |
+| PostgreSQL           | Container health checks and query/audit data persisted in tables |
 
-**Tracing** — Go services and FastAPI ML container instrumented with OpenTelemetry SDKs, exporting spans to **Jaeger** at `http://localhost:16686`.
+## Observability Summary
 
-> **Result:** Full-stack visibility from the UI click to the final UPI payout, enabling rapid root-cause analysis during a mass disruption event.
-
+Logging is available through Docker and Docker Compose service logs, enabling issue diagnosis across API, ML, async processing, and payout execution paths.
+The platform records key financial and workflow events in the database, including claim state transitions, payout attempts, retries, and final payout outcomes, providing an end-to-end audit trail from disruption processing to payout completion.
 ---
 
 ## Security & Compliance
@@ -508,11 +508,7 @@ The repository ships a **GitHub Actions** workflow (`.github/workflows/ci.yml`) 
 - Multi-arch (`linux/amd64`, `linux/arm64`) images for each service
 - `trivy` scans each image; build fails on any **HIGH** CVE
 
-**4. Artifact Publishing**
-- Built images pushed to **GitHub Container Registry** (`ghcr.io/Shravanthi20/indel-<service>`)
-- Swagger/OpenAPI spec generated from Go annotations uploaded as a release asset
-
-**5. Deploy (Manual Approval)**
+**4. Deploy (Manual Approval)**
 - A `workflow_dispatch` job lets maintainers trigger a **staging** deployment
 - Post-deployment health checks (`curl http://localhost/health`) gate promotion to **production**
 
@@ -547,8 +543,6 @@ COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.demo.yml up --build -d
 | **Scale ML Tier** | `docker compose up -d --scale ml-service=3` | Nginx load-balances via DNS round-robin |
 | **DB Backup** | `docker exec -t indel-postgres-1 pg_dump -U indel indel_demo > backup_$(date +%F).sql` | Daily logical dump |
 | **Redis Snapshot** | `redis-cli BGSAVE` | Runs automatically every 5 min |
-| **View Metrics** | `open http://localhost:3000` | Grafana dashboard |
-| **View Traces** | `open http://localhost:16686` | Jaeger distributed tracing |
 
 ---
 
@@ -623,17 +617,6 @@ erDiagram
     POLICIES ||--o{ CLAIMS : "generates"
     ZONES ||--o{ WORKER_PROFILES : "covers"
 ```
-
----
-
-## API Documentation
-
-- **OpenAPI spec** generated automatically from Go annotations (`swaggo/swag`).
-- Available at `http://localhost:8004/swagger/index.html` after the stack is up.
-- JSON spec downloadable from `docs/openapi.json`.
-
-> **Tip:** Import into Postman or Insomnia to explore full request/response contracts, including `/api/v1/ml/forecast` and `/api/v1/claims/{id}/approve`.
-
 ---
 
 ## Environment Variables
@@ -844,9 +827,6 @@ A: The current model (Prophet + XGBoost) is CPU-bound; GPU acceleration would on
 
 **Q: What happens if Redis goes down?**
 A: Go services fall back to PostgreSQL on a cache miss. Because the cache-aside pattern writes-through on updates, data consistency is never compromised.
-
-**Q: Is the system GDPR-ready?**
-A: All personal data is encrypted at rest, and we provide a `DELETE /api/v1/users/{id}` endpoint that purges PII from both Postgres and Redis. Audit logs are retained for compliance.
 
 **Q: What about IRDAI compliance?**
 A: The platform is architected to satisfy IRDAI actuarial audit requirements. Full actuarial-grade audit trails for every premium calculation, claim event, and payout are stored immutably in Kafka and PostgreSQL.
