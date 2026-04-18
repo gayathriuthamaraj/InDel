@@ -21,39 +21,10 @@
 
 ---
 
-> **To run this project locally, follow the steps in [SETUP.md](./SETUP.md).**
-
-[**View Pitch Deck →**](https://drive.google.com/file/d/1xtUFPMNEktznhHQtsVwRI5vB8clwfVZw/view?usp=sharing)
-
----
-
-## Table of Contents
-
-1. [The Problem Nobody Has Solved](#the-problem-nobody-has-solved)
-2. [What Makes InDel Different](#what-makes-indel-different)
-3. [Numbers That Matter](#numbers-that-matter)
-4. [Phase 3 Deliverables — Every Box Checked](#phase-3-deliverables--every-box-checked)
-5. [System Architecture](#system-architecture)
-6. [Tech Stack & Version Matrix](#tech-stack--version-matrix)
-7. [Cache & Redis Layer](#cache--redis-layer)
-8. [Zero-Touch Claim Flow](#zero-touch-claim-flow--end-to-end)
-9. [Fraud Defense: 3-Layer Stacked Threat Engine](#fraud-defense-3-layer-stacked-threat-engine)
-10. [Dynamic Pricing Engine](#dynamic-pricing-engine)
-11. [Kafka Payout Pipeline](#kafka-payout-pipeline)
-12. [Observability & Monitoring](#observability--monitoring)
-13. [Security & Compliance](#security--compliance)
-14. [Testing Strategy](#testing-strategy)
-15. [CI/CD Pipeline](#cicd-pipeline)
-16. [Deployment & Operations](#deployment--operations)
-17. [Scalability & Performance Benchmarks](#scalability--performance-benchmarks)
-18. [Disaster Recovery & High Availability](#disaster-recovery--high-availability)
-19. [Data Model Overview](#data-model-overview)
-20. [API Documentation](#api-documentation)
-21. [Environment Variables](#environment-variables)
-22. [The Dashboards](#the-dashboards)
-23. [Resource Optimization](#increasing-efficiency-of-resource-utilization)
-24. [FAQ & Known Limitations](#faq--known-limitations)
-25. [Team ImaginAI](#team-imaginai)
+> [!IMPORTANT]  
+> **To run this project locally, follow the steps in [SETUP.md](./SETUP.md).**  
+>  
+> **[View Pitch Deck →](https://drive.google.com/file/d/1xtUFPMNEktznhHQtsVwRI5vB8clwfVZw/view?usp=sharing)**
 
 ---
 
