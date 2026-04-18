@@ -416,7 +416,8 @@ The primary administrative command center governing all continuous telemetry nat
 - **Analytics & Disruption Intelligence:** Visualize 7-day multi-city forecast metadata and monitor global claim-generation vs. manual-review queues in real-time.
 - **The Chaos Engine:** A dedicated systems-testing panel. Select any tracked zone (e.g., Bhopal) and instantly trigger a `COLLAPSE DEMAND` event, or inject mock `Rain` and `Curfew` signals to validate the end-to-end Kafka payout pipeline safely without waiting for a real-world disaster.
 
-<img width="1920" height="1080" alt="platform" src="https://github.com/user-attachments/assets/42574167-adbf-4871-b5fc-af469a730621" />
+<img width="1536" height="1024" alt="PlatformDashboard" src="https://github.com/user-attachments/assets/8f063489-ced5-4295-8e44-491cf6d22d3b" />
+
 
 ### Insurer Dashboard — for Providers
 The financial control center built specifically for actuaries and risk-management operators.
@@ -425,7 +426,8 @@ The financial control center built specifically for actuaries and risk-managemen
 - **Fraud Analysis Queue:** The human-in-the-loop audit portal. Underwriters review high-risk claims directly seeing the exact ML-identified signal (e.g., `NO_LIVE_WINDOW_ACTIVITY`) alongside the specific anomaly score, empowering them to quickly `Approve` or `Reject` flagged events.
 - **Plan Status Management:** A visualization mapping active subscriber distribution across multiple zones, coupled with manual administrative controls to start or terminate individual coverage plans natively. 
 
-<img width="1920" height="1080" alt="FotoJet" src="https://github.com/user-attachments/assets/a7863870-45d5-4e0a-b2c1-3581f6a1b704" />
+<img width="1536" height="1024" alt="InsurerDashboard" src="https://github.com/user-attachments/assets/3384c08d-2a3f-4855-ba40-a32363e04012" />
+
 
 
 ### Worker App — for Delivery Partners
