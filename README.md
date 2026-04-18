@@ -23,6 +23,11 @@
 
 ---
 
+> [!IMPORTANT]
+> To run this project locally, follow the steps in `SETUP.md`.
+
+---
+
 ## Pitch Deck
 
 You can view our complete project pitch deck here:
