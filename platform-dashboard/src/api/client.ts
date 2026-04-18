@@ -109,6 +109,6 @@ client.interceptors.response.use(
   }
 )
 
-export const forecastClient = axios.create({ baseURL: forecastGatewayBaseUrl })
+export const forecastClient = axios.create({ baseURL: defaultGatewayBaseUrl })
 
 export default client

@@ -246,6 +246,8 @@ services:
         condition: service_healthy
       insurer-gateway:
         condition: service_healthy
+      ml-service:
+        condition: service_healthy
     healthcheck:
       test:
       - CMD-SHELL

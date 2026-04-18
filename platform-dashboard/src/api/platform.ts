@@ -77,4 +77,4 @@ export const postExternalSignal = (data: {zone_id: number, source: string, statu
   client.post('/api/v1/platform/webhooks/external-signal', data)
 
 export const getForecast = (zone_id: number) =>
-  forecastClient.post('/forecast', { zone_id })
+  forecastClient.post('/api/v1/ml/forecast', { zone_id })
