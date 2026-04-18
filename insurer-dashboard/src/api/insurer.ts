@@ -60,6 +60,16 @@ export type FraudQueueRow = {
   created_at: string
 }
 
+export type LedgerRow = {
+  timestamp: string
+  worker_id: number
+  zone: string
+  event_type: 'premium' | 'payout'
+  amount: number
+  status: string
+  reference_id: string
+}
+
 const unwrapSuccess = <T>(response: { data: SuccessEnvelope<T> }) => response.data.data
 const unwrapPaginated = <T>(response: { data: PaginatedEnvelope<T> }) => response.data
 
@@ -103,6 +113,12 @@ export const getPoolHealth = async <T = any>(): Promise<T> => {
 export const getMoneyExchange = async <T = any>(params?: { level?: string; zone?: string }): Promise<T> =>
   unwrapSuccess<T>(await client.get<SuccessEnvelope<T>>('/api/v1/insurer/money-exchange', { params }))
 
+export const getLedger = async (params?: {
+  page?: number
+  limit?: number
+}): Promise<PaginatedEnvelope<LedgerRow[]>> =>
+  unwrapPaginated<LedgerRow[]>(await client.get<PaginatedEnvelope<LedgerRow[]>>('/api/v1/insurer/ledger', { params }))
+
 export const getPlanUsers = async <T = any>(): Promise<T[]> => {
   const payload = await unwrapSuccess<PlanUsersPayload<T>>(await client.get<SuccessEnvelope<PlanUsersPayload<T>>>('/api/v1/insurer/users'))
   return payload.users
@@ -127,6 +143,9 @@ export const endUserPlan = async <T = any>(userId: string | number): Promise<T> 
 
 // Kept for compatibility with legacy Register flow.
 export const getZones = () => client.get('/api/v1/platform/zones')
+export const getZoneHealth = () => client.get('/api/v1/platform/zones/health')
+export const getDisruptions = () => client.get('/api/v1/platform/disruptions')
+export const getMLForecast = (zone_id: number) => client.post('/api/v1/ml/forecast', { zone_id })
 
 export const getAvailableBatches = async <T = any>(): Promise<T> => {
   const response = await coreClient.get<T>('/api/v1/worker/batches')

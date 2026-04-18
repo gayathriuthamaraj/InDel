@@ -41,11 +41,8 @@ app.include_router(forecast_router)
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok",
-        "service": "unified-ml",
-        "components": ["premium", "fraud", "forecast"]
-    }
+    return {"status": "ok", "service": "unified-ml", "components": ["premium", "fraud", "forecast"]}
+
 
 if __name__ == "__main__":
     import uvicorn
