@@ -1,6 +1,6 @@
-module github.com/Shravanthi20/InDel/backend
 
-go 1.25.0
+module github.com/Shravanthi20/InDel/backend
+go 1.22
 
 require (
 	github.com/IBM/sarama v1.43.2
