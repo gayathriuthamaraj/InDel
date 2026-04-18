@@ -76,14 +76,14 @@ jobs:
               return 0
             fi
 
-            for attempt in $(seq 1 18); do
+            for attempt in $(seq 1 36); do
               code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
               if [ "$code" = "200" ]; then
                 echo "$name healthy at $url"
                 return 0
               fi
               echo "$name not ready yet (attempt $attempt, status=$code): $url"
-              sleep 10
+              sleep 15
             done
 
             echo "$name failed health check: $url"
