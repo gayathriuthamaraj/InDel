@@ -32,9 +32,9 @@ export default function FooterSection() {
               <p className="text-white/30 text-xs uppercase tracking-widest font-semibold mb-4">Dashboards</p>
               <div className="space-y-2.5">
                 {[
-                  { label: "Platform Dashboard", link: "https://indel-platform-dashboard.vercel.app" },
-                  { label: "Insurer Dashboard", link: "https://indel-insurer-dashboard.vercel.app" },
-                  { label: "GitHub Repo", link: "https://github.com/Shravanthi20/InDel" },
+                  { label: "Platform Dashboard", link: import.meta.env.VITE_PLATFORM_DASHBOARD_URL },
+                  { label: "Insurer Dashboard", link: import.meta.env.VITE_INSURER_DASHBOARD_URL },
+                  { label: "GitHub Repo", link: import.meta.env.VITE_GITHUB_REPO_URL },
                 ].map((l, i) => (
                   <a
                     key={i}
