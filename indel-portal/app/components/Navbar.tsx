@@ -134,7 +134,7 @@ export default function Navbar() {
               <div className="mt-2 pt-2 border-t border-primary/10 flex flex-col gap-2">
                 {/* Platform Dashboard link removed as requested */}
                 <a
-                  href="https://indel-urn9.onrender.com"
+                  href={import.meta.env.VITE_INSURER_DASHBOARD_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-3 rounded-lg text-sm font-medium bg-primary text-white text-center"
