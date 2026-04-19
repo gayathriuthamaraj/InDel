@@ -32,8 +32,8 @@ export default function FooterSection() {
               <p className="text-white/30 text-xs uppercase tracking-widest font-semibold mb-4">Dashboards</p>
               <div className="space-y-2.5">
                 {[
-                  { label: "Platform Dashboard", link: "https://indel-platform-dashboard.onrender.com" },
-                  { label: "Insurer Dashboard", link: "https://indel-urn9.onrender.com" },
+                  { label: "Platform Dashboard", link: "https://indel-platform-dashboard.vercel.app" },
+                  { label: "Insurer Dashboard", link: "https://indel-insurer-dashboard.vercel.app" },
                   { label: "GitHub Repo", link: "https://github.com/Shravanthi20/InDel" },
                 ].map((l, i) => (
                   <a
