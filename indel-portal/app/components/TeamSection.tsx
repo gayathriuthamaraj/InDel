@@ -27,7 +27,7 @@ const team = [
     color: "bg-orange-50 border-orange-100",
   },
   {
-    name: "Subikha MV",
+    name: "Subiksha MV",
     built: "Insurer System · Claims Intelligence & Overall System Design",
       // emoji: "👩‍⚖️",
     color: "bg-green-50 border-green-100",
