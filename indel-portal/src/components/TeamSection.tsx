@@ -23,7 +23,7 @@ const team = [
     color: "bg-brand-soft/30 border-brand-primary/5",
   },
   {
-    name: "Subikha MV",
+    name: "Subiksha MV",
     built: "Insurer System · Claims Intelligence & Overall System Design",
     color: "bg-gray-50 border-gray-100",
   },

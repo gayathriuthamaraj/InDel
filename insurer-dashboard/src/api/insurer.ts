@@ -145,7 +145,7 @@ export const endUserPlan = async <T = any>(userId: string | number): Promise<T> 
 export const getZones = () => coreClient.get('/api/v1/platform/zones')
 export const getZoneHealth = () => coreClient.get('/api/v1/platform/zones/health')
 export const getDisruptions = () => coreClient.get('/api/v1/platform/disruptions')
-export const getMLForecast = (zone_id: number) => forecastClient.post('/forecast', { zone_id })
+export const getMLForecast = (zone_id: number) => forecastClient.post('/api/v1/ml/forecast', { zone_id })
 
 export const getAvailableBatches = async <T = any>(): Promise<T> => {
   const response = await workerClient.get<T>('/api/v1/worker/batches')

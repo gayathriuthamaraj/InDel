@@ -96,6 +96,8 @@ const logNetwork = (clientName: string) => {
 
 const insurerLogs = logNetwork('Insurer-Gateway')
 const coreLogs = logNetwork('Gateway-Service')
+const workerLogs = logNetwork('Worker-Gateway')
+const forecastLogs = logNetwork('Forecast-Service')
 
 insurerClient.interceptors.response.use(
   (response) => {
@@ -131,8 +133,14 @@ workerClient.interceptors.response.use(
 )
 
 forecastClient.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
+  (response) => {
+    handleUnauthorized(response)
+    return forecastLogs.logResponse(response)
+  },
+  (error) => {
+    rejectUnauthorized(error)
+    return forecastLogs.logError(error)
+  }
 )
 
 export { coreClient, workerClient, forecastClient }
