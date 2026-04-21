@@ -58,7 +58,10 @@ func main() {
 	routerpkg.SetupWorkerRoutes(router)
 
 	// Start server
-	port := os.Getenv("WORKER_GATEWAY_PORT")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = os.Getenv("WORKER_GATEWAY_PORT")
+	}
 	if port == "" {
 		port = "8001"
 	}
