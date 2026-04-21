@@ -2,11 +2,14 @@ import axios from 'axios'
 
 const currentHost = typeof window !== 'undefined' && window.location?.hostname
   ? window.location.hostname
-  : '192.168.1.8'
+  : '127.0.0.1'
 const defaultGatewayBaseUrl = `http://${currentHost}:8004`
 
 const INSURER_API_URL = import.meta.env.VITE_INSURER_API_URL || defaultGatewayBaseUrl
-const CORE_API_URL = import.meta.env.VITE_CORE_API_URL || defaultGatewayBaseUrl
+const GATEWAY_API_URL =
+  import.meta.env.VITE_GATEWAY_API_URL ||
+  import.meta.env.VITE_CORE_API_URL ||
+  defaultGatewayBaseUrl
 const ENABLE_NETWORK_LOGS = import.meta.env.DEV && import.meta.env.VITE_ENABLE_API_DEBUG === 'true'
 
 const insurerClient = axios.create({
@@ -17,7 +20,7 @@ const insurerClient = axios.create({
 })
 
 const coreClient = axios.create({
-  baseURL: CORE_API_URL,
+  baseURL: GATEWAY_API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -26,7 +29,8 @@ const coreClient = axios.create({
 // Add JWT token to requests
 const attachAuthToken = (config: any) => {
   const token = localStorage.getItem('token')
-  if (token && config.headers) {
+  if (token) {
+    config.headers = config.headers || {}
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
@@ -66,7 +70,7 @@ const logNetwork = (clientName: string) => {
 }
 
 const insurerLogs = logNetwork('Insurer-Gateway')
-const coreLogs = logNetwork('Core-Service')
+const coreLogs = logNetwork('Gateway-Service')
 
 insurerClient.interceptors.response.use(
   (response) => {

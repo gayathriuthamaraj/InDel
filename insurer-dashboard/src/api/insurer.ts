@@ -142,10 +142,10 @@ export const endUserPlan = async <T = any>(userId: string | number): Promise<T> 
 }
 
 // Kept for compatibility with legacy Register flow.
-export const getZones = () => client.get('/api/v1/platform/zones')
-export const getZoneHealth = () => client.get('/api/v1/platform/zones/health')
-export const getDisruptions = () => client.get('/api/v1/platform/disruptions')
-export const getMLForecast = (zone_id: number) => client.post('/api/v1/ml/forecast', { zone_id })
+export const getZones = () => coreClient.get('/api/v1/platform/zones')
+export const getZoneHealth = () => coreClient.get('/api/v1/platform/zones/health')
+export const getDisruptions = () => coreClient.get('/api/v1/platform/disruptions')
+export const getMLForecast = (zone_id: number) => coreClient.post('/api/v1/ml/forecast', { zone_id })
 
 export const getAvailableBatches = async <T = any>(): Promise<T> => {
   const response = await coreClient.get<T>('/api/v1/worker/batches')
