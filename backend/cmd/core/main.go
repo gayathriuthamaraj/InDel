@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/Shravanthi20/InDel/backend/internal/pollers"
+
 	"github.com/Shravanthi20/InDel/backend/internal/config"
 	"github.com/Shravanthi20/InDel/backend/internal/database"
 	"github.com/Shravanthi20/InDel/backend/internal/handlers/core"
@@ -38,6 +40,15 @@ func main() {
 	if err := database.Migrate(db); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
+
+	// Start keep-alive poller to ping backend services every 5 minutes
+	keepAlive := &pollers.KeepAlivePoller{
+		ServiceURLs: []string{
+			"https://indel-core-backend.onrender.com/health", // core backend health endpoint
+			// Add other backend service health URLs here as needed
+		},
+	}
+	keepAlive.Start()
 
 	core.SetDB(db)
 

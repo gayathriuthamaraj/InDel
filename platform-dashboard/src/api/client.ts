@@ -16,6 +16,7 @@ function resolveBaseUrl(envValue: unknown, port: number) {
 }
 
 const defaultGatewayBaseUrl = resolveBaseUrl(import.meta.env.VITE_PLATFORM_API_URL, 8004)
+const coreBackendBaseUrl = resolveBaseUrl(import.meta.env.VITE_CORE_API_URL, 8000)
 const forecastGatewayBaseUrl = resolveBaseUrl(import.meta.env.VITE_FORECAST_API_URL, 9003)
 
 const client = axios.create({
