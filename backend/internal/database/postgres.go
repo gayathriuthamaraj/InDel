@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Shravanthi20/InDel/backend/internal/config"
 	"github.com/Shravanthi20/InDel/backend/internal/models"
@@ -18,12 +19,26 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 			cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// PgBouncer/pooler connections (common on hosted Postgres) can fail with
+	// statement-cache errors unless simple protocol is used.
+	preferSimpleProtocol := cfg.DBPreferSimpleProtocol || shouldForceSimpleProtocol(cfg)
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: preferSimpleProtocol,
+	}), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
 	return db, nil
+}
+
+func shouldForceSimpleProtocol(cfg *config.Config) bool {
+	if strings.EqualFold(strings.TrimSpace(cfg.InDelEnv), "production") {
+		return true
+	}
+	databaseURL := strings.ToLower(strings.TrimSpace(cfg.DatabaseURL))
+	return strings.Contains(databaseURL, "pooler.") || strings.Contains(databaseURL, "pgbouncer")
 }
 
 func Migrate(db *gorm.DB) error {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Shravanthi20/InDel/backend/internal/pollers"
 
@@ -43,10 +44,7 @@ func main() {
 
 	// Start keep-alive poller to ping backend services every 5 minutes
 	keepAlive := &pollers.KeepAlivePoller{
-		ServiceURLs: []string{
-			"https://indel-core-backend.onrender.com/health", // core backend health endpoint
-			// Add other backend service health URLs here as needed
-		},
+		ServiceURLs: resolveKeepAliveURLs(),
 	}
 	keepAlive.Start()
 
@@ -75,4 +73,30 @@ func main() {
 	if err := router.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+func resolveKeepAliveURLs() []string {
+	// Highest priority: explicit comma-separated list of full health URLs.
+	if raw := strings.TrimSpace(os.Getenv("KEEPALIVE_URLS")); raw != "" {
+		parts := strings.Split(raw, ",")
+		urls := make([]string, 0, len(parts))
+		for _, part := range parts {
+			if url := strings.TrimSpace(part); url != "" {
+				urls = append(urls, url)
+			}
+		}
+		if len(urls) > 0 {
+			return urls
+		}
+	}
+
+	// Next: known public base URLs, then append /health.
+	for _, key := range []string{"PUBLIC_CORE_URL", "RENDER_EXTERNAL_URL"} {
+		if base := strings.TrimSpace(os.Getenv(key)); base != "" {
+			return []string{strings.TrimRight(base, "/") + "/health"}
+		}
+	}
+
+	// Last-resort fallback.
+	return []string{"https://indel-backend.onrender.com/health"}
 }
