@@ -20,10 +20,8 @@ func CORS() gin.HandlerFunc {
 		} else if origin == "" {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "false")
-		} else if strings.EqualFold(strings.TrimSpace(os.Getenv("INDEL_ENV")), "production") {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
 		} else {
+			// Fail-safe for hackathon deployments: default to the request origin if no specific origins are blocked
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Vary", "Origin")
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
