@@ -865,7 +865,7 @@ A: The platform is architected to satisfy IRDAI actuarial audit requirements. Fu
 | Gayathri U | Delivery Management, Postgres Schema, DevOps & Docker Compositions |
 | Rithanya K A | Python FastAPI ML Services — XGBoost Training & Inference |
 | Saravana Priyaa C R | Platform Integration, Chaos Engine, Disruption Engine |
-| Subikha MV | Insurer System, Claims Intelligence & Overall System Design |
+| Subiksha MV | Insurer System, Claims Intelligence & Overall System Design |
 
 ---
 

@@ -235,13 +235,13 @@ export default function PlanStatusDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                {sortedUsers.map((user) => {
+                {sortedUsers.map((user, index) => {
                   const isActive = user.status === 'active'
                   const isPending = pendingUserId === user.id
 
                   return (
                     <tr 
-                      key={user.id} 
+                      key={`${user.id}-${index}`} 
                       className={`group transition-all duration-300 ${!isActive ? 'bg-brand-soft/30 dark:bg-brand-primary/5' : 'hover:bg-slate-50/50 dark:hover:bg-slate-900/30'}`}
                     >
                       <td className="py-6 px-4">
@@ -275,10 +275,10 @@ export default function PlanStatusDashboard() {
                       <td className="py-6 px-4 text-right align-middle">
                         <div className="relative inline-block group">
                            <div className="flex flex-col items-end">
-                              <p className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                              <div className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
                                 ₹{user.weekly_premium?.toFixed(2) ?? '0.00'}
                                 <div className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-pulse" />
-                              </p>
+                              </div>
                               <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1 hover:text-brand-primary transition-colors cursor-help">
                                 SHAP Audit <Info size={9} />
                               </p>

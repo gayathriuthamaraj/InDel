@@ -1,4 +1,4 @@
-import client, { coreClient } from './client'
+import client, { coreClient, workerClient, forecastClient } from './client'
 
 type SuccessEnvelope<T> = {
   data: T
@@ -145,14 +145,14 @@ export const endUserPlan = async <T = any>(userId: string | number): Promise<T> 
 export const getZones = () => coreClient.get('/api/v1/platform/zones')
 export const getZoneHealth = () => coreClient.get('/api/v1/platform/zones/health')
 export const getDisruptions = () => coreClient.get('/api/v1/platform/disruptions')
-export const getMLForecast = (zone_id: number) => coreClient.post('/api/v1/ml/forecast', { zone_id })
+export const getMLForecast = (zone_id: number) => forecastClient.post('/api/v1/ml/forecast', { zone_id })
 
 export const getAvailableBatches = async <T = any>(): Promise<T> => {
-  const response = await coreClient.get<T>('/api/v1/worker/batches')
+  const response = await workerClient.get<T>('/api/v1/worker/batches')
   return response.data
 }
 
 export const getAssignedBatches = async <T = any>(): Promise<T> => {
-  const response = await coreClient.get<T>('/api/v1/worker/batches/assigned')
+  const response = await workerClient.get<T>('/api/v1/worker/batches/assigned')
   return response.data
 }
